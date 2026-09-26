@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Unbiased round-trip flight search: real fares from Duffel and Google Flights,
+"""Unbiased round-trip flight search: real fares from ITA Matrix and Google Flights,
 sorted by price then duration. No ranking weights, no affiliate links.
 
     python search.py --from YYZ --to VNO --out 2026-12-28..2026-12-30 \
@@ -8,17 +8,12 @@ sorted by price then duration. No ranking weights, no affiliate links.
 import argparse
 import itertools
 import json
-import os
 import re
 import sys
 import time
-import urllib.error
 import urllib.request
 from datetime import date, datetime, timedelta
 from pathlib import Path
-
-DUFFEL_URL = "https://api.duffel.com/air/offer_requests?return_offers=true&supplier_timeout=20000"
-
 
 def date_range(spec):
     """'2026-12-28..2026-12-30' -> ['2026-12-28', '2026-12-29', '2026-12-30']; a single date also works."""
@@ -31,60 +26,87 @@ def date_range(spec):
     return out
 
 
-def iso_minutes(dur):
-    """'P1DT2H30M' / 'PT12H5M' -> minutes."""
-    m = re.fullmatch(r"P(?:(\d+)D)?T?(?:(\d+)H)?(?:(\d+)M)?", dur or "")
-    if not m:
-        return None
-    d, h, mi = (int(x or 0) for x in m.groups())
-    return d * 1440 + h * 60 + mi
+# --- ITA Matrix: the fare engine itself, full fare construction, no sponsored layer ---
+
+_pw = _browser = None
 
 
-# --- Duffel: bookable offers straight from airlines (NDC/GDS) ---
+def matrix(orig, dest, out, ret):
+    """Every Matrix search carries a Google BotGuard token, so we drive the real page in headless
+    Chromium and rewrite the search request it sends (the token isn't bound to the request body).
+    ponytail: one search at a time, ~30s each; open several pages concurrently if grids get big."""
+    global _pw, _browser
+    from playwright.sync_api import sync_playwright
+    if _browser is None:
+        _pw = sync_playwright().start()
+        _browser = _pw.chromium.launch(headless=True)
+    got = []
 
-def duffel(orig, dest, out, ret):
-    token = os.environ.get("DUFFEL_TOKEN")
-    if not token:
-        sys.exit("DUFFEL_TOKEN not set (see CLAUDE.md)")
-    body = {"data": {
-        "slices": [
-            {"origin": orig, "destination": dest, "departure_date": out},
-            {"origin": dest, "destination": orig, "departure_date": ret},
-        ],
-        "passengers": [{"type": "adult"}],
-        "cabin_class": "economy",
-        "max_connections": 2,
-    }}
-    req = urllib.request.Request(DUFFEL_URL, json.dumps(body).encode(), {
-        "Authorization": f"Bearer {token}",
-        "Duffel-Version": "v2",
-        "Accept": "application/json",
-        "Content-Type": "application/json",
-    })
-    with urllib.request.urlopen(req, timeout=120) as r:
-        offers = json.load(r)["data"]["offers"]
-    return [norm_duffel(o) for o in offers]
+    def rewrite(route):
+        body = route.request.post_data or ""
+        if "/v1/search" not in body:
+            return route.continue_()
+        i, j = body.index("{"), body.rindex("}") + 1
+        q = json.loads(body[i:j])
+        for sl, (o, d, day) in zip(q["inputs"]["slices"], [(orig, dest, out), (dest, orig, ret)]):
+            sl.update(origins=[o], destinations=[d], date=day, dateModifier={"minus": 0, "plus": 0})
+        q["inputs"]["page"]["size"] = 100
+        route.continue_(post_data=body[:i] + json.dumps(q) + body[j:])
+
+    page = _browser.new_page()
+    try:
+        page.route("**/content-alkalimatrix-pa.googleapis.com/batch*", rewrite)
+        page.on("response", lambda r: "alkalimatrix-pa" in r.url
+                and "/v1/search" in (r.request.post_data or "") and got.append(r.text()))
+        page.goto("https://matrix.itasoftware.com/search")
+        boxes = page.get_by_role("combobox", name="Add airport")
+        for i, code in enumerate([orig, dest]):
+            boxes.nth(i).click()
+            boxes.nth(i).press_sequentially(code, delay=80)
+            page.wait_for_timeout(1500)
+            page.keyboard.press("Enter")
+        mdy = lambda d: f"{d[5:7]}/{d[8:10]}/{d[:4]}"
+        page.get_by_role("textbox", name="Start date").fill(mdy(out))
+        page.get_by_role("textbox", name="End date").fill(mdy(ret))
+        page.keyboard.press("Tab")
+        page.get_by_role("button", name="Search").last.click()
+        for _ in range(150):
+            if got:
+                break
+            page.wait_for_timeout(1000)
+    finally:
+        page.close()
+    if not got:
+        raise TimeoutError("Matrix returned nothing in 150s")
+    d = json.loads(got[0][got[0].index("{"):got[0].rindex("}") + 1])
+    if "error" in d:
+        raise RuntimeError(d["error"]["message"])
+    return norm_matrix(d)
 
 
-def norm_duffel(o):
-    out, back = o["slices"]
-    segs = [s for sl in o["slices"] for s in sl["segments"]]
-    return {
-        "source": "duffel",
-        "price": float(o["total_amount"]),
-        "currency": o["total_currency"],
-        "carriers": sorted({s["marketing_carrier"]["name"] for s in segs}),
-        "route": "-".join([out["segments"][0]["origin"]["iata_code"]]
-                          + [s["destination"]["iata_code"] for s in out["segments"]]),
-        "flights": " ".join(s["marketing_carrier"]["iata_code"] + s["marketing_carrier_flight_number"]
-                            for s in out["segments"]),
-        "stops": len(out["segments"]) - 1,
-        "depart": out["segments"][0]["departing_at"][:16],
-        "arrive": out["segments"][-1]["arriving_at"][:16],
-        "duration": iso_minutes(out.get("duration")),
-        "return_depart": back["segments"][0]["departing_at"][:16],
-        "return_arrive": back["segments"][-1]["arriving_at"][:16],
-    }
+def norm_matrix(d):
+    rows = []
+    for s in d.get("solutionList", {}).get("solutions", []):
+        out, back = s["itinerary"]["slices"]
+        cur, amount = re.fullmatch(r"([A-Z]{3})([\d.]+)", s["displayTotal"]).groups()
+        rows.append({
+            "source": "matrix",
+            "price": float(amount),
+            "currency": cur,
+            "carriers": [c["shortName"] for c in s["itinerary"]["carriers"]],
+            "route": "-".join([out["origin"]["code"]] + [x["code"] for x in out.get("stops", [])]
+                              + [out["destination"]["code"]]),
+            "flights": " ".join(out["flights"]),
+            "stops": len(out.get("stops", [])),
+            "depart": out["departure"][:16],
+            "arrive": out["arrival"][:16],
+            "duration": out["duration"],
+            "return_depart": back["departure"][:16],
+            "return_arrive": back["arrival"][:16],
+            # Matrix's own flags, e.g. RISKY_CONNECTION, OVERNIGHT, CHANGE_OF_AIRPORT
+            "warnings": sorted({w for sl in (out, back) for w in sl.get("ext", {}).get("warnings", {}).get("types", [])}),
+        })
+    return rows
 
 
 # --- Google Flights via fast-flights (baseline to compare against) ---
@@ -175,26 +197,60 @@ def print_table(rows, currency, top):
     for r, rets in list(groups.values())[:top]:
         print(f"{r['price_cmp']:>11,.0f}  {r['source']:6} {r['depart']:16} {r['arrive']:16} "
               f"{fmt_min(r['duration']):>6} {r['stops']:>2}  {r['route']}  {r['flights']}  "
-              f"{', '.join(r['carriers'])}  [{rets[0]}{''.join(',' + x[3:] for x in rets[1:])}]")
+              f"{', '.join(r['carriers'])}  [{rets[0]}{''.join(',' + x[3:] for x in rets[1:])}]"
+              + (f"  ⚠ {' '.join(r['warnings'])}" if r.get("warnings") else ""))
 
 
 def print_compare(rows, pairs, currency):
-    print(f"\nCheapest per date pair ({currency}):\n{'out→ret':14} {'duffel':>8} {'google':>8} {'diff':>7}")
+    print(f"\nCheapest per date pair ({currency}):\n{'out→ret':14} {'matrix':>8} {'google':>8} {'diff':>7}")
     diffs = []
     for out, ret in pairs:
         m = {s: min((r["price_cmp"] for r in rows if r["source"] == s
                      and (r["search_out"], r["search_ret"]) == (out, ret)), default=None)
-             for s in ("duffel", "google")}
-        diff = m["duffel"] - m["google"] if None not in m.values() else None
+             for s in ("matrix", "google")}
+        diff = m["matrix"] - m["google"] if None not in m.values() else None
         if diff is not None:
             diffs.append(diff)
         show = lambda v: f"{v:>8,.0f}" if v is not None else f"{'—':>8}"
-        print(f"{out[5:]}→{ret[5:]:8} {show(m['duffel'])} {show(m['google'])} "
+        print(f"{out[5:]}→{ret[5:]:8} {show(m['matrix'])} {show(m['google'])} "
               f"{(f'{diff:>+7,.0f}' if diff is not None else f'{chr(8212):>7}')}")
     if diffs:
-        print(f"\nDuffel cheaper in {sum(d < 0 for d in diffs)}/{len(diffs)} pairs, "
+        print(f"\nMatrix cheaper in {sum(d < 0 for d in diffs)}/{len(diffs)} pairs, "
               f"Google in {sum(d > 0 for d in diffs)}/{len(diffs)}; mean diff {sum(diffs) / len(diffs):+,.0f} {currency} "
-              f"(negative = Duffel cheaper)")
+              f"(negative = Matrix cheaper)")
+
+
+def run_search(orig, dest, pairs, sources, currency, arrive_between=None, progress=lambda *a: None):
+    """Search each (out, ret) date pair on each source. Returns deduped rows sorted by price, then duration.
+    progress(src, out, ret, result) runs before each search (result=None) and after it (result = the
+    offers found, or the exception that sank that one search). An exception raised by progress aborts the run."""
+    global _pw, _browser
+    rows = []
+    try:
+        for (out, ret), src in itertools.product(pairs, sources):
+            progress(src, out, ret, None)
+            try:
+                found = matrix(orig, dest, out, ret) if src == "matrix" else google(orig, dest, out, ret, currency)
+            except Exception as e:  # one failed search shouldn't sink the run
+                progress(src, out, ret, e)
+                continue
+            for r in found:
+                r.update(search_out=out, search_ret=ret)
+            progress(src, out, ret, found)
+            rows += found
+            if src == "google":
+                time.sleep(1)  # be polite to Google
+    finally:
+        if _browser:
+            _browser.close()
+            _pw.stop()
+            _pw = _browser = None
+    convert(rows, currency)
+    rows = dedupe(rows)
+    if arrive_between:
+        rows = [r for r in rows if arrives_within(r, arrive_between)]
+    rows.sort(key=lambda r: (r["price_cmp"], r["duration"] or 10**6))
+    return rows
 
 
 def main():
@@ -204,35 +260,24 @@ def main():
     ap.add_argument("--out", required=True, help="outbound date or range A..B")
     ap.add_argument("--ret", required=True, help="return date or range A..B")
     ap.add_argument("--arrive-between", help="keep outbound arrivals within local dates A,B (inclusive)")
-    ap.add_argument("--source", choices=["duffel", "google", "both"], default="both")
+    ap.add_argument("--source", choices=["matrix", "google", "both"], default="both")
     ap.add_argument("--currency", default="CAD")
     ap.add_argument("--top", type=int, default=15)
     a = ap.parse_args()
 
-    sources = ["duffel", "google"] if a.source == "both" else [a.source]
+    sources = ["matrix", "google"] if a.source == "both" else [a.source]
     pairs = list(itertools.product(date_range(a.out), date_range(a.ret)))
-    rows = []
-    for (out, ret), src in itertools.product(pairs, sources):
-        print(f"{src:6} {a.orig}→{a.dest} {out} / {ret} ...", end=" ", file=sys.stderr, flush=True)
-        try:
-            found = duffel(a.orig, a.dest, out, ret) if src == "duffel" else google(a.orig, a.dest, out, ret, a.currency)
-        except Exception as e:  # one failed search shouldn't sink the run
-            detail = e.read().decode()[:300] if isinstance(e, urllib.error.HTTPError) else ""
-            print(f"FAILED: {e} {detail}", file=sys.stderr)
-            continue
-        for r in found:
-            r.update(search_out=out, search_ret=ret)
-        print(f"{len(found)} offers", file=sys.stderr)
-        rows += found
-        if src == "google":
-            time.sleep(1)  # be polite to Google
 
-    convert(rows, a.currency)
-    rows = dedupe(rows)
-    if a.arrive_between:
-        window = tuple(a.arrive_between.split(","))
-        rows = [r for r in rows if arrives_within(r, window)]
-    rows.sort(key=lambda r: (r["price_cmp"], r["duration"] or 10**6))
+    def progress(src, out, ret, result):
+        if result is None:
+            print(f"{src:6} {a.orig}→{a.dest} {out} / {ret} ...", end=" ", file=sys.stderr, flush=True)
+        elif isinstance(result, Exception):
+            print(f"FAILED: {result}", file=sys.stderr)
+        else:
+            print(f"{len(result)} offers", file=sys.stderr)
+
+    window = tuple(a.arrive_between.split(",")) if a.arrive_between else None
+    rows = run_search(a.orig, a.dest, pairs, sources, a.currency, window, progress)
 
     Path("results").mkdir(exist_ok=True)
     path = Path("results") / f"{datetime.now():%Y%m%d-%H%M%S}-{a.orig}-{a.dest}.json"

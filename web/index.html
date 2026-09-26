@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Altaria AI</title>
+<meta name="description" content="Round-trip flight search sorted by price, straight from ITA Matrix and Google Flights. No paid placement, nothing estimated.">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M4 24.5a5.5 5.5 0 0 1 4.6-5.4 7.5 7.5 0 0 1 14.3-2.3A5 5 0 0 1 28 24.5z' fill='%234B45E0'/%3E%3Cpath d='M3 12.5C9 6.5 19 5 29 8.5' fill='none' stroke='%234B45E0' stroke-width='2.4' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wdth,wght@75..100,400..700&display=swap">
+<link rel="stylesheet" href="styles.css">
+<script src="app.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#search">Skip to search</a>
+
+<svg class="defs" aria-hidden="true" focusable="false">
+  <defs>
+    <!-- Clouds: plain ellipses, lit with a radial gradient, then roughened by fractal noise. -->
+    <filter id="c-front" x="-25%" y="-50%" width="150%" height="200%" color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency="0.012" numOctaves="5" seed="4" result="noise"/>
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="80" xChannelSelector="R" yChannelSelector="G" result="shaped"/>
+      <feGaussianBlur in="shaped" stdDeviation="2"/>
+    </filter>
+    <filter id="c-back" x="-25%" y="-50%" width="150%" height="200%" color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency="0.008" numOctaves="4" seed="11" result="noise"/>
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="150" xChannelSelector="R" yChannelSelector="G" result="shaped"/>
+      <feGaussianBlur in="shaped" stdDeviation="9"/>
+    </filter>
+    <filter id="haze" x="-30%" y="-80%" width="160%" height="260%" color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency="0.006" numOctaves="4" seed="2" result="noise"/>
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="140" xChannelSelector="R" yChannelSelector="G" result="shaped"/>
+      <feGaussianBlur in="shaped" stdDeviation="16"/>
+    </filter>
+    <radialGradient id="puff" cx=".42" cy=".28" r=".8">
+      <stop offset="0" class="s-hi"/><stop offset=".5" class="s-mid"/><stop offset="1" class="s-lo"/>
+    </radialGradient>
+    <linearGradient id="floor" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" class="s-mid"/><stop offset=".55" class="s-floor"/><stop offset="1" class="s-bg"/>
+    </linearGradient>
+    <linearGradient id="mark-fill" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="var(--accent-2)"/>
+      <stop offset="1" stop-color="var(--accent)"/>
+    </linearGradient>
+    <!-- Original mark: a cloud crest under a single swept flight path. -->
+    <symbol id="mark" viewBox="0 0 32 32">
+      <path d="M4 24.5a5.5 5.5 0 0 1 4.6-5.4 7.5 7.5 0 0 1 14.3-2.3A5 5 0 0 1 28 24.5z" fill="url(#mark-fill)"/>
+      <path d="M3 12.5C9 6.5 19 5 29 8.5" fill="none" stroke="var(--accent)" stroke-width="2.4" stroke-linecap="round"/>
+    </symbol>
+  </defs>
+</svg>
+
+<header class="nav">
+  <a class="brand" href="#top"><svg class="mark" aria-hidden="true"><use href="#mark"/></svg>Altaria AI</a>
+  <nav aria-label="Page">
+    <a href="#how">How it ranks</a>
+    <a class="pill" href="#search">Search flights</a>
+  </nav>
+</header>
+
+<main>
+  <section class="hero" id="top" aria-labelledby="hero-title">
+    <span id="how" class="how-anchor"></span>
+    <div class="stage">
+      <div class="sky" aria-hidden="true">
+        <svg class="far" viewBox="0 0 1600 500" preserveAspectRatio="xMidYMid slice">
+          <g filter="url(#haze)" class="far-g">
+            <ellipse cx="220" cy="210" rx="210" ry="40"/>
+            <ellipse cx="820" cy="120" rx="170" ry="28"/>
+            <ellipse cx="1380" cy="240" rx="240" ry="44"/>
+          </g>
+        </svg>
+        <svg class="bank bank-l" viewBox="0 0 1000 560" preserveAspectRatio="xMaxYMax slice">
+          <g filter="url(#c-back)" class="back">
+            <ellipse cx="90" cy="300" rx="230" ry="130"/>
+            <ellipse cx="360" cy="250" rx="240" ry="150"/>
+            <ellipse cx="640" cy="270" rx="220" ry="140"/>
+            <ellipse cx="900" cy="330" rx="200" ry="120"/>
+            <ellipse cx="480" cy="560" rx="720" ry="250"/>
+          </g>
+          <g filter="url(#c-front)" fill="url(#puff)">
+            <ellipse cx="70" cy="330" rx="170" ry="110"/>
+            <ellipse cx="250" cy="290" rx="160" ry="120"/>
+            <ellipse cx="420" cy="250" rx="150" ry="120"/>
+            <ellipse cx="560" cy="300" rx="140" ry="100"/>
+            <ellipse cx="700" cy="260" rx="150" ry="120"/>
+            <ellipse cx="860" cy="330" rx="140" ry="100"/>
+            <ellipse cx="980" cy="380" rx="120" ry="90"/>
+            <ellipse cx="330" cy="200" rx="80" ry="60"/>
+            <ellipse cx="640" cy="190" rx="90" ry="70"/>
+          </g>
+          <ellipse cx="480" cy="600" rx="700" ry="250" fill="url(#floor)" filter="url(#c-front)"/>
+        </svg>
+        <svg class="bank bank-r" viewBox="0 0 1000 560" preserveAspectRatio="xMinYMax slice">
+          <g filter="url(#c-back)" class="back">
+            <ellipse cx="120" cy="340" rx="200" ry="120"/>
+            <ellipse cx="380" cy="260" rx="240" ry="150"/>
+            <ellipse cx="650" cy="240" rx="250" ry="150"/>
+            <ellipse cx="920" cy="300" rx="220" ry="140"/>
+            <ellipse cx="480" cy="560" rx="720" ry="250"/>
+          </g>
+          <g filter="url(#c-front)" fill="url(#puff)">
+            <ellipse cx="40" cy="380" rx="120" ry="90"/>
+            <ellipse cx="170" cy="330" rx="150" ry="105"/>
+            <ellipse cx="330" cy="270" rx="150" ry="120"/>
+            <ellipse cx="470" cy="220" rx="110" ry="90"/>
+            <ellipse cx="600" cy="260" rx="160" ry="125"/>
+            <ellipse cx="780" cy="230" rx="150" ry="115"/>
+            <ellipse cx="940" cy="300" rx="170" ry="120"/>
+            <ellipse cx="700" cy="160" rx="80" ry="60"/>
+          </g>
+          <ellipse cx="480" cy="600" rx="700" ry="250" fill="url(#floor)" filter="url(#c-front)"/>
+        </svg>
+        <svg class="wisp" viewBox="0 0 1200 200" preserveAspectRatio="none">
+          <g filter="url(#haze)" class="far-g"><ellipse cx="420" cy="110" rx="360" ry="26"/><ellipse cx="900" cy="90" rx="220" ry="18"/></g>
+        </svg>
+      </div>
+
+      <h1 id="hero-title" class="lift">The sky, sorted <br>by&nbsp;price.</h1>
+      <div class="hero-copy lift">
+        <p class="lede">Altaria AI asks two real fare engines, ITA Matrix and Google Flights, about every date pair you give it. Then it shows you what came back, cheapest first.</p>
+        <a class="btn" href="#search">Search flights</a>
+      </div>
+
+      <aside class="sample lift" aria-labelledby="sample-title">
+        <h2 id="sample-title">Your last saved search</h2>
+        <div class="sample-body"><p class="muted">Loading a real fare from your saved runs…</p></div>
+      </aside>
+
+      <ul class="principles" aria-label="How Altaria AI ranks fares">
+        <li><h2>No paid placement</h2><p>Fares are ordered by price, then by flight time. There is no other signal, no sponsored slot and no affiliate link.</p></li>
+        <li><h2>Only real fare engines</h2><p>Every fare comes from ITA Matrix or Google Flights, fetched live when you press search.</p></li>
+        <li><h2>Nothing estimated</h2><p>If a search didn't return a price, you won't see one. Matrix's own warnings, like risky connections, are shown as it gives them.</p></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="search" id="search" aria-labelledby="search-title">
+    <div class="wrap">
+      <h2 id="search-title">Where are you headed?</h2>
+      <div class="thread" id="thread">
+        <article class="msg agent">
+          <svg class="avatar" aria-hidden="true"><use href="#mark"/></svg>
+          <div class="body">
+            <p>Tell me where and when you could fly. I'll ask ITA Matrix and Google Flights about every combination of dates and report back only what they return, cheapest first.</p>
+            <p class="muted">Use three-letter airport codes, and ask again for nearby airports. Matrix takes about 30 seconds per date pair, Google a few. Flexible dates multiply: three leaving days and four return days make twelve pairs.</p>
+          </div>
+        </article>
+      </div>
+
+      <form id="form" class="panel composer" novalidate aria-labelledby="search-title">
+        <p class="say">
+          <span>Fly me from</span>
+          <label class="vh" for="from">From, three-letter airport code</label>
+          <input id="from" class="code" required maxlength="3" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="YYZ">
+          <span class="grp">
+            <span>to</span>
+            <label class="vh" for="to">To, three-letter airport code</label>
+            <input id="to" class="code" required maxlength="3" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="VNO">
+            <button type="button" class="swap" id="swap" aria-label="Swap origin and destination">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h14l-4-4M20 16H6l4 4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+          </span>
+        </p>
+        <p class="say">
+          <span>leaving</span>
+          <label class="vh" for="out-from">Leaving, earliest date</label>
+          <input type="date" id="out-from" required>
+          <span class="grp">
+            <span class="soft">flexible until</span>
+            <label class="vh" for="out-to">Leaving, latest date (optional)</label>
+            <input type="date" id="out-to">
+          </span>
+        </p>
+        <p class="say">
+          <span>coming back</span>
+          <label class="vh" for="ret-from">Coming back, earliest date</label>
+          <input type="date" id="ret-from" required>
+          <span class="grp">
+            <span class="soft">flexible until</span>
+            <label class="vh" for="ret-to">Coming back, latest date (optional)</label>
+            <input type="date" id="ret-to">
+          </span>
+        </p>
+        <p class="say small">
+          <span>Only flights landing between</span>
+          <label class="vh" for="arr-from">Land no earlier than this local date (optional)</label>
+          <input type="date" id="arr-from">
+          <span>and</span>
+          <label class="vh" for="arr-to">Land no later than this local date (optional)</label>
+          <input type="date" id="arr-to">
+          <span class="soft">if it matters</span>
+        </p>
+
+        <div class="composer-foot">
+          <fieldset class="sources">
+            <legend class="vh">Sources to ask</legend>
+            <span aria-hidden="true">Ask</span>
+            <label class="toggle"><input type="checkbox" name="sources" value="matrix" checked>ITA Matrix</label>
+            <label class="toggle"><input type="checkbox" name="sources" value="google" checked>Google Flights</label>
+            <label class="currency"><span>in</span><input id="currency" value="CAD" maxlength="3" autocapitalize="characters" spellcheck="false" aria-label="Currency, three-letter code"></label>
+          </fieldset>
+          <div class="submit">
+            <p id="estimate" class="muted"></p>
+            <button class="btn" type="submit" id="go">Search</button>
+          </div>
+        </div>
+        <p id="form-error" class="error" role="alert" hidden></p>
+      </form>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <p><svg class="mark" aria-hidden="true"><use href="#mark"/></svg> Altaria AI runs on your machine and books nothing. Before you pay, confirm the fare on the operating airline's own site.</p>
+    <p class="muted">Named for a soft-winged bird that hums above the clouds. Neither source prices Ryanair or Wizz. Matrix shows marketing flight numbers, Google shows operating ones, so one flight can appear under two numbers.</p>
+  </div>
+</footer>
+</body>
+</html>
