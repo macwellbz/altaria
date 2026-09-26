@@ -1,7 +1,7 @@
 """Run: python test_search.py. Fixtures are real Google and ITA Matrix responses (YYZ-VNO, 2026-12-29/2027-01-12)."""
 import json
 
-from search import arrives_within, date_range, norm_google, norm_matrix
+from search import arrival_window, arrives_within, date_range, norm_google, norm_matrix
 
 fx = json.load(open("test_fixtures.json"))
 
@@ -22,6 +22,9 @@ assert "RISKY_CONNECTION" in sas["warnings"] and ac_m["route"] == "YYZ-FRA-VNO"
 window = ("2026-12-30", "2026-12-31")
 assert arrives_within(klm, window) and arrives_within(ac, window)
 assert not arrives_within({"arrive": "2027-01-01T00:30"}, window)  # 00:30 on Jan 1 is too late
+land_by = arrival_window(",2026-12-31")  # blank start: "land by Dec 31"
+assert arrives_within({"arrive": "2026-12-20T09:00"}, land_by) and not arrives_within({"arrive": "2027-01-01T00:30"}, land_by)
+assert arrival_window("2026-12-30,") == ("2026-12-30", "9999-12-31")
 
 assert date_range("2026-12-30..2027-01-01") == ["2026-12-30", "2026-12-31", "2027-01-01"]
 print("ok")

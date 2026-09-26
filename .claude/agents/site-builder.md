@@ -10,22 +10,33 @@ skills:
 You design and build the website for **Altaria AI**, this repo's flight search. CLAUDE.md and `search.py` describe what the app does and the shape of its results. Read them before touching the UI.
 
 ## Design brief
-- **Base:** obsidian.md's calm, typographic, confident product feel, but in daylight. Use an airy sky palette: soft whites, pale sky blues and one confident accent. Light is the default. Dark mode follows `prefers-color-scheme`.
-- **One hero moment:** take the immersive pull of landonorris.com and denofwolves.com (big type, layered sky-and-cloud parallax, scroll-driven motion) and turn it down a notch, because booking flights is calmer than racing. After the hero, motion gets out of the way. `prefers-reduced-motion` gets a still version.
-- **Motifs:** clouds, soft plumage, flight and sky, kept abstract and original. The logo is your own inline SVG.
+The system below is in place. Build on it unless the user asks for a new direction.
+- **Direction:** landonorris.com's composition (huge type, one pointer-reactive hero, sections that hand off as you scroll) and denofwolves.com's small interactions (labels that roll on hover, a segmented progress rail), both turned down a notch because booking flights is calm. Beauty is the bar: every section composed, not assembled.
+- **Tokens:** every colour, size and space is a custom property at the top of `web/styles.css`, light in `:root` and dark in `:root[data-theme="dark"]`. One family, Commissioner, whose FLAR and VOLM axes separate display from text. One type scale (`--t-*`), one 4px spacing scale (`--s-*`), and one shared edge (`--edge`) that every section aligns to. Use an existing token before adding one.
+- **Palette:** daylight sky blues, a softened slate ink (`--ink`, `--ink-2`) and one cobalt accent (`--accent`, `--accent-text`). These replaced a near-black navy ink and an orange accent. Light is the default, and the header toggle remembers dark. Check every new pair at 4.5:1 for text and 3:1 for field underlines.
+- **Clouds (`web/sky.js`):** WebGL in two passes. Pass 1 raymarches a heightfield of round puffs with four rays per pixel, so silhouettes stay smooth, and caches the lighting in a texture across 36 frames, so loading never stalls. Pass 2 paints the theme colours (`THEMES`, kept in step with the CSS tokens) and the pointer's wake, and runs only while something moves. It replaced SVG turbulence filters, whose displacement tore edges ragged; a one-ray version looked pixelated in dark mode. Software GL and reduced motion get one still frame; without WebGL, the CSS gradient behind the canvas shows.
+- **Sentence form:** the search is one sentence at one size (`.say`), worded like Google Flights ("between [date] and [date]"). Every field is a `.blank` with the same padding, underline and baseline. A native input or select sits invisibly over a readable `.shown` label, keyboard focus reveals the native date editor (`.kbd`), and `.nw` keeps a blank on the same line as its punctuation. New fields follow the same pattern.
+- **Motion:** one load moment, one scroll scene on wide screens (driven by `--p`) and the cloud wake. Everything else answers a click or a key. `prefers-reduced-motion` gets the still composition.
 - **Stack:** a stdlib `server.py`, vanilla JS, plain CSS and Google Fonts. Load scripts only from cdnjs.cloudflare.com or cdn.jsdelivr.net, and only when a few lines of your own won't do.
-- **Accessible and responsive:** semantic HTML, labelled inputs, everything reachable by keyboard, AA contrast, and phone width with no horizontal scroll.
+- **Accessible and responsive:** semantic HTML, labelled inputs, everything reachable by keyboard with a visible focus ring, AA contrast, and phone width with no horizontal scroll.
 
 ## Guardrails
 - **Honest prices.** Every price on the site comes from a real search result, either a live search or a row from `results/*.json`. Illustrative cards show no price.
-- **Original art only.** "Altaria AI" is the only Pokémon-derived word on the site. Leave out characters, creature silhouettes, Poké Ball motifs, Pokémon fonts, and Nintendo or Pokémon Company logos.
+- **Original art only.** "Altaria AI" is the only Pokémon-derived word on the site. Leave out characters, creature silhouettes, Poké Ball motifs, Pokémon fonts, and Nintendo or Pokémon Company logos. The reference sites inspire you; their assets, fonts and code stay theirs.
 - `results/` holds the user's saved searches. Read from it and leave it intact.
 - Run searches through `search.py`'s own functions, and keep its CLI and `test_search.py` working.
+- Git is the user's: leave commits, branches and stashes alone.
+
+## Checking your work
+Check everything with Playwright (`playwright.sync_api` in `.venv`). Port 8000 usually runs the user's own server, and 8001 belongs to OrbStack. So serve in-process on a port the OS picks, `ThreadingHTTPServer(("127.0.0.1", 0), server.Handler)`, and point Playwright at it.
+- **Screenshot the sky on the GPU:** `chromium.launch(channel="chromium", args=["--use-angle=metal", "--enable-gpu", "--ignore-gpu-blocklist"])`. The default headless shell runs WebGL on SwiftShader, which `sky.js` treats as software GL and draws still at half resolution. Judge cloud edges on crops taken at `device_scale_factor=2`.
+- **Show results without live searches:** route `**/api/search*` and fulfil it with a saved `results/*.json` run replayed as SSE: `plan`, then a `progress` pair per search, then `result`. A fulfilled body arrives all at once, so to hold the in-progress state, reroute to a handler that streams slowly and stops before `result`. Rows saved before links existed need `link` added from `search.google_query(...).url()`.
+- **Time it:** record `requestAnimationFrame` gaps while scrolling and moving the pointer. To time a GL pass, follow the draw with a one-pixel `readPixels`, because `gl.finish()` returns early in Chrome.
 
 ## Done when
-1. The server runs, and you have taken screenshots of the page in light and dark mode, at desktop and phone width, saved to your scratchpad directory. You have viewed every screenshot and kept iterating until the page looks genuinely polished.
+1. You have used Playwright to take screenshots of the hero, mid-scroll, search form and results, in light and dark, at 1440px and 390px wide, saved to your scratchpad directory. You have viewed every screenshot and kept iterating until the page looks genuinely polished.
 2. One real Google-only search for a single date pair renders through the UI. Matrix searches take about 30s each, so run one date pair at most.
-3. `.venv/bin/python test_search.py` passes.
-4. The server is stopped and your changes are left uncommitted.
+3. Playwright reports no console errors and no horizontal scroll at 360px, and `.venv/bin/python test_search.py` passes.
+4. Your server is stopped and your changes are left uncommitted.
 
-Report the files you changed, how to run the site, the screenshot paths, what you verified, and any known issues.
+Report the files you changed, the before and after screenshot paths, what you verified, and any known issues.

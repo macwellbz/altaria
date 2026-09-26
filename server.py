@@ -28,15 +28,17 @@ def parse(q):
     orig, dest, currency = (q.get(k, d).upper() for k, d in (("from", ""), ("to", ""), ("currency", "CAD")))
     if not all(CODE.fullmatch(c) for c in (orig, dest, currency)):
         raise ValueError("Airports and currency must be 3-letter codes, like YYZ, VNO and CAD.")
-    window = tuple(q["arrive"].split(",")) if q.get("arrive") else None
     try:
         spans = [days(q.get(k, "")) for k in ("out", "ret")]
-        if window and len([date.fromisoformat(d) for d in window]) != 2:
-            raise ValueError
+        window = search.arrival_window(q["arrive"]) if q.get("arrive", "").strip(",") else None
     except ValueError:
         raise ValueError("Dates must look like 2026-12-29.") from None
-    if min(spans) < 1:
+    if min(spans) < 1 or (window and window[0] > window[1]):
         raise ValueError("Each date range must run forwards: the first date can't be after the second.")
+    stops = q.get("stops", "")
+    if stops not in ("", "0", "1", "2"):
+        raise ValueError("Max stops must be 0 (nonstop), 1 or 2, or left open.")
+    stops = int(stops) if stops else None
     sources = [s for s in ("matrix", "google") if s in q.get("sources", "").split(",")]
     if not sources:
         raise ValueError("Pick at least one source.")
@@ -45,7 +47,7 @@ def parse(q):
         raise ValueError(f"That's {spans[0] * spans[1] * len(sources)} searches. Narrow the dates to "
                          f"{MAX_SEARCHES} or fewer (date pairs × sources).")
     pairs = list(itertools.product(search.date_range(q["out"]), search.date_range(q["ret"])))
-    return orig, dest, currency, pairs, sources, window
+    return orig, dest, currency, pairs, sources, window, stops
 
 
 def days(spec):
@@ -77,6 +79,11 @@ class Handler(SimpleHTTPRequestHandler):
         except (BrokenPipeError, ConnectionResetError):
             pass  # the page closed or pressed Stop; for a search this also aborted the run
 
+    def end_headers(self):
+        # Without this, browsers cache web/ files by guesswork and a normal reload can show a stale page.
+        self.send_header("Cache-Control", "no-cache")
+        super().end_headers()
+
     def json_response(self, body):
         data = json.dumps(body).encode()
         self.send_response(200)
@@ -99,7 +106,6 @@ class Handler(SimpleHTTPRequestHandler):
     def search(self, q):
         self.send_response(200)
         self.send_header("Content-Type", "text/event-stream")
-        self.send_header("Cache-Control", "no-cache")
         self.end_headers()
 
         def send(event, data):
@@ -109,7 +115,7 @@ class Handler(SimpleHTTPRequestHandler):
             self.wfile.flush()
 
         try:
-            orig, dest, currency, pairs, sources, window = parse(q)
+            orig, dest, currency, pairs, sources, window, stops = parse(q)
         except ValueError as e:
             return send("fail", {"message": str(e)})
 
@@ -132,7 +138,7 @@ class Handler(SimpleHTTPRequestHandler):
                 send("progress", event)
 
             try:
-                rows = search.run_search(orig, dest, pairs, sources, currency, window, progress)
+                rows = search.run_search(orig, dest, pairs, sources, currency, window, progress, stops)
             except (BrokenPipeError, ConnectionResetError):
                 raise
             except Exception as e:  # e.g. the currency-rate lookup failed

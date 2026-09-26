@@ -31,7 +31,7 @@ def date_range(spec):
 _pw = _browser = None
 
 
-def matrix(orig, dest, out, ret):
+def matrix(orig, dest, out, ret, max_stops=None):
     """Every Matrix search carries a Google BotGuard token, so we drive the real page in headless
     Chromium and rewrite the search request it sends (the token isn't bound to the request body).
     ponytail: one search at a time, ~30s each; open several pages concurrently if grids get big."""
@@ -51,6 +51,8 @@ def matrix(orig, dest, out, ret):
         for sl, (o, d, day) in zip(q["inputs"]["slices"], [(orig, dest, out), (dest, orig, ret)]):
             sl.update(origins=[o], destinations=[d], date=day, dateModifier={"minus": 0, "plus": 0})
         q["inputs"]["page"]["size"] = 100
+        if max_stops is not None:
+            q["inputs"]["maxStopCount"] = max_stops  # Matrix's own "Up to N stops", applied to each leg
         route.continue_(post_data=body[:i] + json.dumps(q) + body[j:])
 
     page = _browser.new_page()
@@ -111,13 +113,19 @@ def norm_matrix(d):
 
 # --- Google Flights via fast-flights (baseline to compare against) ---
 
-def google(orig, dest, out, ret, currency):
-    from fast_flights import FlightQuery, create_query, fetch_flights_html
-    q = create_query(
+def google_query(orig, dest, out, ret, currency, max_stops=None):
+    """One date pair's Google Flights query. max_stops applies to each leg (0 = nonstop only).
+    Its .url() is also every result's link: Matrix can't sell tickets and its result links expire."""
+    from fast_flights import FlightQuery, create_query
+    return create_query(
         flights=[FlightQuery(date=out, from_airport=orig, to_airport=dest),
                  FlightQuery(date=ret, from_airport=dest, to_airport=orig)],
-        trip="round-trip", currency=currency, language="en")
-    return parse_google(fetch_flights_html(q), currency)
+        trip="round-trip", currency=currency, language="en", max_stops=max_stops)
+
+
+def google(orig, dest, out, ret, currency, max_stops=None):
+    from fast_flights import fetch_flights_html
+    return parse_google(fetch_flights_html(google_query(orig, dest, out, ret, currency, max_stops)), currency)
 
 
 def parse_google(html, currency):
@@ -161,6 +169,16 @@ def norm_google(payload, currency):
 def arrives_within(row, window):
     """window = ('2026-12-30', '2026-12-31'), inclusive, in local arrival time."""
     return window[0] <= row["arrive"][:10] <= window[1]
+
+
+def arrival_window(spec):
+    """'2026-12-30,2026-12-31' -> ('2026-12-30', '2026-12-31'). Either side may be blank for no bound,
+    so ',2026-12-31' means "land by Dec 31". Raises ValueError on a malformed date."""
+    lo, _, hi = spec.partition(",")
+    for d in (lo, hi):
+        if d:
+            date.fromisoformat(d)
+    return (lo or "0001-01-01", hi or "9999-12-31")
 
 
 def convert(rows, currency):
@@ -220,8 +238,10 @@ def print_compare(rows, pairs, currency):
               f"(negative = Matrix cheaper)")
 
 
-def run_search(orig, dest, pairs, sources, currency, arrive_between=None, progress=lambda *a: None):
+def run_search(orig, dest, pairs, sources, currency, arrive_between=None, progress=lambda *a: None,
+               max_stops=None):
     """Search each (out, ret) date pair on each source. Returns deduped rows sorted by price, then duration.
+    Each row's link opens Google Flights for its route and dates. max_stops caps stops on each leg.
     progress(src, out, ret, result) runs before each search (result=None) and after it (result = the
     offers found, or the exception that sank that one search). An exception raised by progress aborts the run."""
     global _pw, _browser
@@ -230,12 +250,14 @@ def run_search(orig, dest, pairs, sources, currency, arrive_between=None, progre
         for (out, ret), src in itertools.product(pairs, sources):
             progress(src, out, ret, None)
             try:
-                found = matrix(orig, dest, out, ret) if src == "matrix" else google(orig, dest, out, ret, currency)
+                found = (matrix(orig, dest, out, ret, max_stops) if src == "matrix"
+                         else google(orig, dest, out, ret, currency, max_stops))
             except Exception as e:  # one failed search shouldn't sink the run
                 progress(src, out, ret, e)
                 continue
+            link = google_query(orig, dest, out, ret, currency, max_stops).url()
             for r in found:
-                r.update(search_out=out, search_ret=ret)
+                r.update(search_out=out, search_ret=ret, link=link)
             progress(src, out, ret, found)
             rows += found
             if src == "google":
@@ -259,9 +281,11 @@ def main():
     ap.add_argument("--to", dest="dest", required=True, help="destination IATA, e.g. VNO")
     ap.add_argument("--out", required=True, help="outbound date or range A..B")
     ap.add_argument("--ret", required=True, help="return date or range A..B")
-    ap.add_argument("--arrive-between", help="keep outbound arrivals within local dates A,B (inclusive)")
+    ap.add_argument("--arrive-between", help="keep outbound arrivals within local dates A,B (inclusive; "
+                                             "either may be blank, e.g. ,2026-12-31 to land by Dec 31)")
     ap.add_argument("--source", choices=["matrix", "google", "both"], default="both")
     ap.add_argument("--currency", default="CAD")
+    ap.add_argument("--max-stops", type=int, choices=[0, 1, 2], help="most stops on each leg (default: any)")
     ap.add_argument("--top", type=int, default=15)
     a = ap.parse_args()
 
@@ -276,8 +300,8 @@ def main():
         else:
             print(f"{len(result)} offers", file=sys.stderr)
 
-    window = tuple(a.arrive_between.split(",")) if a.arrive_between else None
-    rows = run_search(a.orig, a.dest, pairs, sources, a.currency, window, progress)
+    window = arrival_window(a.arrive_between) if a.arrive_between else None
+    rows = run_search(a.orig, a.dest, pairs, sources, a.currency, window, progress, a.max_stops)
 
     Path("results").mkdir(exist_ok=True)
     path = Path("results") / f"{datetime.now():%Y%m%d-%H%M%S}-{a.orig}-{a.dest}.json"
