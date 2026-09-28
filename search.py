@@ -33,8 +33,7 @@ _pw = _browser = None
 
 def matrix(orig, dest, out, ret, max_stops=None):
     """Every Matrix search carries a Google BotGuard token, so we drive the real page in headless
-    Chromium and rewrite the search request it sends (the token isn't bound to the request body).
-    ponytail: one search at a time, ~30s each; open several pages concurrently if grids get big."""
+    Chromium and rewrite the search request it sends (the token isn't bound to the request body)."""
     global _pw, _browser
     from playwright.sync_api import sync_playwright
     if _browser is None:
@@ -124,8 +123,39 @@ def google_query(orig, dest, out, ret, currency, max_stops=None):
 
 
 def google(orig, dest, out, ret, currency, max_stops=None):
+    from concurrent.futures import ThreadPoolExecutor
     from fast_flights import fetch_flights_html
-    return parse_google(fetch_flights_html(google_query(orig, dest, out, ret, currency, max_stops)), currency)
+    rows = parse_google(fetch_flights_html(google_query(orig, dest, out, ret, currency, max_stops)), currency)
+    with ThreadPoolExecutor(5) as pool:
+        list(pool.map(lambda r: add_return(r, orig, dest, out, ret, currency, max_stops), rows))
+    return rows
+
+
+def picked(segments):
+    """Protobuf for 'these flights are chosen' on one leg: FlightData field 4, which Google's own URLs
+    carry after a click but fast-flights doesn't model. Every length here fits in one byte."""
+    f = lambda n, s: bytes([n << 3 | 2, len(s)]) + s
+    return b"".join(f(4, b"".join(f(n, v.encode()) for n, v in zip((1, 2, 3, 5, 6), (
+        g["from"], g["depart"][:10], g["to"], g["flight"][:2], g["flight"][2:])))) for g in segments)
+
+
+def add_return(r, orig, dest, out, ret, currency, max_stops=None):
+    """Google details the return only once an outbound is chosen, so choose this row's outbound and take
+    the cheapest return, then the shortest. Its price is the whole trip's. A failed lookup leaves the
+    return blank, never guessed."""
+    from fast_flights import fetch_flights_html
+    q = google_query(orig, dest, out, ret, currency, max_stops)
+    q.flight_data[0].MergeFromString(picked(r["segments"]))
+    try:
+        backs = parse_google(fetch_flights_html(q), currency)
+    except Exception:
+        return
+    if backs:
+        b = min(backs, key=lambda x: (x["price"], x["duration"] or 0))
+        q.flight_data[1].MergeFromString(picked(b["segments"]))   # both legs chosen: the link opens this trip
+        r.update(link=q.url(), price=b["price"], return_depart=b["depart"], return_arrive=b["arrive"], return_route=b["route"],
+                 return_flights=b["flights"], return_stops=b["stops"], return_duration=b["duration"],
+                 return_segments=b["segments"])
 
 
 def parse_google(html, currency):
@@ -136,8 +166,7 @@ def parse_google(html, currency):
 
 def norm_google(payload, currency):
     """Own parser: fast_flights.parse ignores Google's 'best' list (payload[2]) and
-    crashes on rows Google shows without a price. Unpriced rows are dropped, never guessed.
-    ponytail: positional indexes into Google's private JSON; breaks when Google reshapes it."""
+    crashes on rows Google shows without a price. Unpriced rows are dropped, never guessed."""
     hm = lambda t: "%02d:%02d" % ((t or [0])[0] or 0, ((t or []) + [0, 0])[1] or 0)
     ymd = lambda d: "%04d-%02d-%02d" % tuple(d)
     rows = []
@@ -157,9 +186,13 @@ def norm_google(payload, currency):
                 "depart": f"{ymd(f[4])}T{hm(f[5])}",
                 "arrive": f"{ymd(f[7])}T{hm(f[8])}",
                 "duration": f[9],
-                # Google prices the round trip but only details the outbound until you pick one.
+                # Google prices the round trip but only details the outbound until you pick one (add_return).
                 "return_depart": None,
                 "return_arrive": None,
+                # One entry per flight, in local times; flight codes start with the 2-letter IATA airline code.
+                "segments": [{"from": s[3], "to": s[6], "depart": f"{ymd(s[20])}T{hm(s[8])}",
+                              "arrive": f"{ymd(s[21])}T{hm(s[10])}", "flight": s[22][0] + s[22][1],
+                              "airline": s[22][3], "duration": s[11]} for s in f[2]],
             })
     return rows
 
@@ -183,7 +216,7 @@ def arrival_window(spec):
 
 def convert(rows, currency):
     """Add price_cmp in one currency so sources can be compared.
-    ponytail: ECB spot rate via frankfurter.dev, not your card's rate."""
+    Uses the ECB spot rate from frankfurter.dev, not a card's rate."""
     rates = {currency: 1.0}
     for r in rows:
         c = r["currency"]
@@ -210,12 +243,14 @@ def print_table(rows, currency, top):
     """Rows are sorted by price. The same outbound at the same price for several return dates becomes one line."""
     groups = {}
     for r in rows:
-        groups.setdefault((r["source"], r["search_out"], r["flights"], r["price_cmp"]), [r, []])[1].append(r["search_ret"][5:])
+        groups.setdefault((r["source"], r["search_out"], r["flights"], r["price_cmp"], r.get("return_flights")),
+                          [r, []])[1].append(r["search_ret"][5:])
     print(f"\n{'price ' + currency:>11}  {'src':6} {'depart':16} {'arrive':16} {'dur':>6} st  route / flights / carriers  [return dates]")
     for r, rets in list(groups.values())[:top]:
         print(f"{r['price_cmp']:>11,.0f}  {r['source']:6} {r['depart']:16} {r['arrive']:16} "
               f"{fmt_min(r['duration']):>6} {r['stops']:>2}  {r['route']}  {r['flights']}  "
-              f"{', '.join(r['carriers'])}  [{rets[0]}{''.join(',' + x[3:] for x in rets[1:])}]"
+              f"{', '.join(r['carriers'])}  [{rets[0]}{''.join(',' + x[3:] for x in rets[1:])}"
+              + (f" {r['return_depart'][11:]} {r['return_flights']}" if r.get("return_flights") else "") + "]"
               + (f"  ⚠ {' '.join(r['warnings'])}" if r.get("warnings") else ""))
 
 
@@ -241,7 +276,7 @@ def print_compare(rows, pairs, currency):
 def run_search(orig, dest, pairs, sources, currency, arrive_between=None, progress=lambda *a: None,
                max_stops=None):
     """Search each (out, ret) date pair on each source. Returns deduped rows sorted by price, then duration.
-    Each row's link opens Google Flights for its route and dates. max_stops caps stops on each leg.
+    Each row links to its trip on Google Flights, or else the search for its dates. max_stops caps stops on each leg.
     progress(src, out, ret, result) runs before each search (result=None) and after it (result = the
     offers found, or the exception that sank that one search). An exception raised by progress aborts the run."""
     global _pw, _browser
@@ -257,7 +292,8 @@ def run_search(orig, dest, pairs, sources, currency, arrive_between=None, progre
                 continue
             link = google_query(orig, dest, out, ret, currency, max_stops).url()
             for r in found:
-                r.update(search_out=out, search_ret=ret, link=link)
+                r.update(search_out=out, search_ret=ret)
+                r.setdefault("link", link)   # a Google row whose return was found already links to its own trip
             progress(src, out, ret, found)
             rows += found
             if src == "google":
@@ -273,6 +309,15 @@ def run_search(orig, dest, pairs, sources, currency, arrive_between=None, progre
         rows = [r for r in rows if arrives_within(r, arrive_between)]
     rows.sort(key=lambda r: (r["price_cmp"], r["duration"] or 10**6))
     return rows
+
+
+def save(args, rows):
+    """Every run, from the CLI or the site, lands in results/ as {args, rows}."""
+    folder = Path(__file__).parent / "results"   # the same folder whichever directory the run started in
+    folder.mkdir(exist_ok=True)
+    path = folder / f"{datetime.now():%Y%m%d-%H%M%S}-{args['orig']}-{args['dest']}.json"
+    path.write_text(json.dumps({"args": args, "rows": rows}, indent=1))
+    return path
 
 
 def main():
@@ -303,9 +348,7 @@ def main():
     window = arrival_window(a.arrive_between) if a.arrive_between else None
     rows = run_search(a.orig, a.dest, pairs, sources, a.currency, window, progress, a.max_stops)
 
-    Path("results").mkdir(exist_ok=True)
-    path = Path("results") / f"{datetime.now():%Y%m%d-%H%M%S}-{a.orig}-{a.dest}.json"
-    path.write_text(json.dumps({"args": vars(a), "rows": rows}, indent=1))
+    path = save(vars(a), rows)
 
     print_table(rows, a.currency, a.top)
     if len(sources) == 2:

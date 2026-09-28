@@ -4,17 +4,16 @@ const $$ = (s, el = document) => [...el.querySelectorAll(s)];
 const esc = (v) => String(v ?? "").replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
 const MONTHS = "Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec".split(" ");
 const DAYS = "Sun Mon Tue Wed Thu Fri Sat".split(" ");
-const SOURCE = { matrix: "ITA Matrix", google: "Google Flights" };
-const SHORT = { matrix: "Matrix", google: "Google" };
-const SECONDS = { matrix: 30, google: 4 };
+const SECONDS = { google: 8 };   // the outbound list, then each outbound's cheapest return
 const STOPS = { "": "any number of stops", 0: "no stops", 1: "at most 1 stop", 2: "at most 2 stops" };   // "with ___ each way"
 const still = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-// "2026-12-29" -> "Dec 29"; with weekday -> "Tue Dec 29". Parsed by hand: these are local airport times.
-const day = (iso, weekday) => {
+// "2026-12-29" -> "Tue"; day() -> "Dec 29", or with the weekday "Tue Dec 29". Parsed by hand: these are local airport times.
+const weekday = (iso) => {
   const [y, m, d] = iso.slice(0, 10).split("-").map(Number);
-  return `${weekday ? DAYS[new Date(y, m - 1, d).getDay()] + " " : ""}${MONTHS[m - 1]} ${d}`;
+  return DAYS[new Date(y, m - 1, d).getDay()];
 };
+const day = (iso, wd) => `${wd ? weekday(iso) + " " : ""}${MONTHS[Number(iso.slice(5, 7)) - 1]} ${Number(iso.slice(8, 10))}`;
 const time = (iso) => esc(iso.slice(11, 16));
 const fmtMin = (m) => (m ? `${Math.floor(m / 60)}h${String(m % 60).padStart(2, "0")}` : "?");
 const money = (v) => Math.round(v).toLocaleString("en-US");
@@ -81,6 +80,7 @@ onScroll();
 const pass = $(".pass");
 fetch("/api/example")
   .then((r) => r.json())
+  .then((ex) => airportsLoaded.then(() => ex))   // city names for the flights line
   .then((ex) => {
     const top = $(".pass-top"), stub = $(".pass-stub");
     if (!ex) {
@@ -103,10 +103,10 @@ fetch("/api/example")
       <dl>
         <dt>Out</dt><dd>${day(r.depart, true)}, ${time(r.depart)} to ${time(r.arrive)}${later(r.depart, r.arrive)}</dd>
         <dt>Back</dt><dd>${r.return_depart ? `${day(r.return_depart, true)}, ${time(r.return_depart)}` : day(r.search_ret, true)}</dd>
-        <dt>Flights</dt><dd>${esc(r.flights)}, ${esc(r.carriers.join(", "))}</dd>
+        <dt>Flights</dt><dd>${esc(r.segments?.length ? airlines(r.segments) : `${r.flights}, ${r.carriers.join(", ")}`)}</dd>
       </dl>`;
     stub.innerHTML = `
-      <p class="fare-big"><span class="n"></span><small>${esc(a.currency)} round trip on ${esc(SOURCE[r.source])}</small></p>
+      <p class="fare-big"><span class="n"></span><small>${esc(a.currency)} round trip</small></p>
       ${badges(r.warnings)}
       <p class="fine" title="results/${esc(f)}">The cheapest fare it returned on ${esc(saved)}. Fares change, so search again for today's price.</p>`;
     stub.hidden = false;
@@ -118,21 +118,56 @@ fetch("/api/example")
 /* ---------- the sentence ---------- */
 const form = $("#form");
 const val = (id) => $(`#${id}`).value;
+
+// Airport names: airports.json holds large and medium airports with scheduled service
+// (OurAirports, public domain). A field only ever shows its chosen code; names are typed
+// into the finder that drops down from it (see openFinder), so the sentence never reflows.
+const fold = (s) => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();   // "montreal" finds Montréal
+let AIRPORTS = [], airportsFailed = false;
+const airportsLoaded = fetch("airports.json")
+  .then((r) => r.json())
+  .then((a) => {
+    AIRPORTS = a.map((x) => ({ ...x, ft: fold(x.t), fn: fold(x.n), fk: fold(x.k) }));
+    if (owner) fill();
+  })
+  .catch(() => { airportsFailed = true; });   // without the list, three-letter codes still work
+
+// What an airport field means right now: a bare code, a picked suggestion,
+// or a typed city or airport name, resolved against the list.
+function codeOf(id) {
+  const v = $(`#${id}`).value.trim();
+  const m = v.toUpperCase().match(/^([A-Z]{3})\b/);
+  if (m) return m[1];
+  const q = v.toLowerCase();
+  if (!q) return "";
+  const hit = AIRPORTS.find((a) => a.t.toLowerCase() === q || a.n.toLowerCase() === q)
+    || AIRPORTS.find((a) => a.t.toLowerCase().startsWith(q) || a.n.toLowerCase().startsWith(q));
+  return hit ? hit.c : "";
+}
 const today = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10);
 const range = (a, b) => (b && b !== a ? `${a}..${b}` : a);
 const count = (a, b) => (a && b ? Math.round((new Date(b) - new Date(a)) / 864e5) + 1 : a ? 1 : 0);
 
-// Each blank shows a readable value; empty optional dates are a bare line to fill in.
+const pickLabel = (s, v = s.value) => (s.id === "stops" ? STOPS[v] : v);
+// a select's blank holds the width of its widest label (see .pick::after)
+for (const s of $$(".pick select")) s.parentElement.dataset.fit = [...s.options].map((o) => pickLabel(s, o.value)).join("\n");
+
+// Each blank shows a readable value; empty dates show a prompt until picked.
 function syncBlanks() {
-  for (const input of $$(".code input")) input.parentElement.dataset.v = input.value || input.placeholder;
   for (const input of $$('.date input')) {
     const blank = input.parentElement;
     blank.classList.toggle("empty", !input.value);
-    // an empty optional date is a bare line; the no-break space gives it a line's height, so it can be clicked
-    $(".shown", blank).textContent = input.value ? day(input.value, true) : blank.classList.contains("opt") ? "\u00a0" : "pick a date";
+    $(".shown", blank).textContent = input.value ? day(input.value, true) : blank.classList.contains("opt") ? "(optional)" : "pick a date";
   }
-  for (const s of $$(".pick select")) $(".shown", s.parentElement).textContent = s.id === "stops" ? STOPS[s.value] : s.value;
-  $(".dest").textContent = /^[A-Z]{3}$/.test(val("to")) ? ` in ${val("to")}` : "";
+  for (const s of $$(".pick select")) $(".shown", s.parentElement).textContent = pickLabel(s);
+  for (const b of $$(".code > button")) {   // an airport blank shows its code, or a greyed example until one is chosen
+    b.textContent = b.value || b.dataset.placeholder;
+    b.parentElement.classList.toggle("empty", !b.value);
+    b.setAttribute("aria-label", `${b.dataset.name} airport: ${b.value || "not chosen yet"}`);
+  }
+  $(".dest").textContent = /^[A-Z]{3}$/.test(codeOf("to")) ? ` in ${codeOf("to")}` : "";
+  $(".odep").textContent = /^[A-Z]{3}$/.test(codeOf("from")) ? ` from ${codeOf("from")}` : "";
+  $(".rdest").textContent = /^[A-Z]{3}$/.test(codeOf("from")) ? ` to ${codeOf("from")}` : "";
   // each range's second date starts at its first, so no range can be picked backwards
   const floor = { "out-from": today, "out-to": val("out-from"), "arr-from": val("out-from"), "arr-to": val("arr-from") || val("out-from"),
                   "ret-from": val("out-from"), "ret-to": val("ret-from") || val("out-from") };
@@ -146,14 +181,13 @@ addEventListener("pointerdown", () => document.documentElement.classList.remove(
 function plan() {
   const outs = count(val("out-from"), val("out-to"));
   const rets = count(val("ret-from"), val("ret-to"));
-  const sources = $$('[name="sources"]:checked', form).map((c) => c.value);
-  return { pairs: outs * rets, sources };
+  return { pairs: outs * rets, sources: ["google"] };
 }
 function updateEstimate() {
   syncBlanks();
   const { pairs, sources } = plan();
   const label = $("#go .roll");
-  if (pairs < 1 || !sources.length) {
+  if (pairs < 1) {
     label.textContent = "Search";
     $("#estimate").textContent = "";
     return;
@@ -165,7 +199,105 @@ function updateEstimate() {
 }
 form.addEventListener("input", updateEstimate);
 form.addEventListener("change", updateEstimate);
-for (const id of ["from", "to"]) $(`#${id}`).addEventListener("input", (e) => (e.target.value = e.target.value.toUpperCase().replace(/[^A-Z]/g, "")));
+/* ---------- the airport finder ----------
+   An airport blank is a button that holds and shows only a code. It opens a finder below it: a search box
+   (an ARIA combobox) over a listbox of matches. Typing stays in the search box; Enter, Tab or a click picks
+   the active match, and Escape or clicking away keeps the code the blank already had. */
+const finder = $("#finder"), query = $("#finder-q"), list = $("#finder-list"), note = $("#finder-note");
+let owner = null, picks = [], at = -1;   // the blank's button while open, the matches on show, the active one
+
+function airportsFor(q) {
+  const k = fold(q.trim());
+  if (!k) return [];
+  const c = (a) => a.c.toLowerCase();
+  const rank = (a) => (c(a) === k ? 0 : a.ft.startsWith(k) ? 1 : c(a).startsWith(k) ? 2 : a.fn.startsWith(k) ? 3
+    : a.fn.includes(k) || a.ft.includes(k) ? 4 : a.fk.startsWith(k) ? 5 : 9);
+  return AIRPORTS.map((a) => [rank(a), a]).filter(([r]) => r < 9).sort((x, y) => x[0] - y[0]).slice(0, 8).map(([, a]) => a);
+}
+function fill() {
+  const q = query.value.trim();
+  picks = airportsFor(q).map((a) => [a.c, a.n, `${a.t}, ${a.k}`]);
+  // a three-letter code that isn't in the list can still be used as typed
+  if (/^[a-z]{3}$/i.test(q) && !picks.some(([code]) => code === q.toUpperCase())) picks.push([q.toUpperCase(), "Use this code", "It isn't in the airport list, so check it's right"]);
+  list.innerHTML = picks.map(([code, name, place], i) =>
+    `<span role="option" id="finder-${i}" aria-selected="false"><b>${esc(code)}</b><span>${esc(name)}<small>${esc(place)}</small></span></span>`).join("");
+  list.hidden = !picks.length;
+  query.setAttribute("aria-expanded", String(picks.length > 0));
+  note.textContent = !q ? "Matching airports show as you type."
+    : picks.length ? "" : airportsFailed ? "The airport list didn't load. Type a three-letter code instead." : "No airport matches that.";
+  mark(picks.length ? 0 : -1);
+  finder.scrollIntoView({ block: "nearest" });
+}
+function mark(i, scroll = true) {
+  at = i;
+  $$('[role="option"]', list).forEach((o, j) => o.setAttribute("aria-selected", String(j === at)));
+  if (at < 0) return query.removeAttribute("aria-activedescendant");
+  query.setAttribute("aria-activedescendant", `finder-${at}`);
+  if (scroll) $(`#finder-${at}`).scrollIntoView({ block: "nearest" });
+}
+function openFinder(btn, typed = "") {
+  owner = btn;
+  btn.parentElement.append(finder);   // it drops down from its own blank
+  finder.setAttribute("aria-label", `${btn.dataset.name} airport`);
+  finder.style.left = "";
+  finder.hidden = false;
+  btn.setAttribute("aria-expanded", "true");
+  const r = finder.getBoundingClientRect(), room = document.documentElement.clientWidth - 16;
+  if (r.right > room) finder.style.left = `${room - r.right}px`;   // near the right edge, it slides left to stay on screen
+  query.value = typed;
+  query.focus();
+  fill();
+}
+function closeFinder(refocus) {
+  if (!owner) return;
+  const btn = owner;
+  owner = null;
+  finder.hidden = true;
+  btn.setAttribute("aria-expanded", "false");
+  if (refocus) btn.focus();
+}
+function choose(i) {
+  if (!owner || !picks[i]) return false;
+  owner.value = picks[i][0];
+  updateEstimate();
+  return true;
+}
+for (const btn of $$(".code > button")) {
+  btn.addEventListener("pointerdown", () => (btn.dataset.wasOpen = owner === btn ? "1" : ""));
+  btn.addEventListener("click", () => {
+    if (btn.dataset.wasOpen) return (btn.dataset.wasOpen = "");   // a click on its own blank closes the finder
+    openFinder(btn);
+  });
+  btn.addEventListener("keydown", (e) => {
+    if (e.key === "ArrowDown" || e.key === "ArrowUp") { e.preventDefault(); openFinder(btn); }
+    else if (e.key.length === 1 && e.key !== " " && !e.ctrlKey && !e.metaKey && !e.altKey) { e.preventDefault(); openFinder(btn, e.key); }   // typing starts a search
+  });
+}
+query.addEventListener("input", fill);
+query.addEventListener("keydown", (e) => {
+  if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+    e.preventDefault();
+    if (picks.length) mark((at + (e.key === "ArrowDown" ? 1 : picks.length - 1)) % picks.length);
+  } else if (e.key === "Enter") {
+    e.preventDefault();   // never submits the form
+    if (choose(at)) closeFinder(true);
+  } else if (e.key === "Escape") {
+    e.preventDefault();
+    closeFinder(true);
+  } else if (e.key === "Tab" && !e.shiftKey) {
+    choose(at);   // focus then moves on as usual, and the finder closes behind it
+  }
+});
+finder.addEventListener("focusout", (e) => { if (!finder.contains(e.relatedTarget)) closeFinder(false); });
+list.addEventListener("pointerdown", (e) => e.preventDefault());   // keep the search box focused
+list.addEventListener("pointermove", (e) => {
+  const o = e.target.closest('[role="option"]');
+  if (o && o.id !== `finder-${at}`) mark(Number(o.id.slice(7)), false);
+});
+list.addEventListener("click", (e) => {
+  const o = e.target.closest('[role="option"]');
+  if (o && choose(Number(o.id.slice(7)))) closeFinder(true);
+});
 $("#swap").addEventListener("click", () => {
   [$("#from").value, $("#to").value] = [val("to"), val("from")];
   updateEstimate();
@@ -175,15 +307,14 @@ for (const el of $$(".date input")) el.addEventListener("click", () => { try { e
 
 function check() {
   const code = /^[A-Z]{3}$/;
-  if (!code.test(val("from")) || !code.test(val("to"))) return ["from", "Enter both airports as three-letter codes, like YYZ and VNO."];
+  if (!code.test(val("from")) || !code.test(val("to"))) return ["from", "Pick both airports from the suggestions, or type three-letter codes like YYZ and VNO."];
   if (val("from") === val("to")) return ["to", "Origin and destination are the same airport."];
-  if (!val("out-from")) return ["out-from", "Choose the first day you could leave."];
-  if (!val("ret-from")) return ["ret-from", "Choose the first day you could come back."];
-  if (val("out-to") && val("out-to") < val("out-from")) return ["out-to", "The leaving dates run backwards: the second is before the first."];
+  if (!val("out-from")) return ["out-from", "Choose the first day you could depart."];
+  if (!val("ret-from")) return ["ret-from", "Choose the first day you could return."];
+  if (val("out-to") && val("out-to") < val("out-from")) return ["out-to", "The departure dates run backwards: the second is before the first."];
   if (val("ret-to") && val("ret-to") < val("ret-from")) return ["ret-to", "The return dates run backwards: the second is before the first."];
-  if (val("ret-from") < val("out-from")) return ["ret-from", "The return starts before you leave."];
+  if (val("ret-from") < val("out-from")) return ["ret-from", "The return starts before you depart."];
   if (val("arr-to") && val("arr-from") && val("arr-to") < val("arr-from")) return ["arr-to", "The arrival dates run backwards: the second is before the first."];
-  if (!plan().sources.length) return [null, "Pick at least one source."];
   return null;
 }
 function showError(msg, id) {
@@ -200,25 +331,27 @@ let active = null; // { stop } for the search in flight
 
 form.addEventListener("submit", (e) => {
   e.preventDefault();
+  // names and picked suggestions become codes before anything else reads the fields
+  for (const id of ["from", "to"]) $(`#${id}`).value = codeOf(id);
+  updateEstimate();
   const bad = check();
   if (bad) return showError(bad[1], bad[0]);
   showError("");
   const arrive = val("arr-from") || val("arr-to") ? `${val("arr-from")},${val("arr-to")}` : "";   // either side may be open
-  const sources = plan().sources;
   const q = new URLSearchParams({
     from: val("from"), to: val("to"), currency: val("currency"),
     out: range(val("out-from"), val("out-to")), ret: range(val("ret-from"), val("ret-to")),
-    sources: sources.join(","),
+    sources: "google",
   });
   if (arrive) q.set("arrive", arrive);
   if (val("stops")) q.set("stops", val("stops"));
   // Echo the sentence back as the user's turn.
   const when = (a, b) => (b && b !== a ? `between ${day(a, true)} and ${day(b, true)}` : `on ${day(a, true)}`);
   const said = `Fly me from ${val("from")} to ${val("to")}${val("stops") ? ` with ${STOPS[val("stops")]} each way` : ""}.` +
-    ` Leave ${when(val("out-from"), val("out-to"))}.` +
-    (arrive ? ` Arrive in ${val("to")} ${landing(arrive, true)} on the flight out.` : "") +
-    ` Come back ${when(val("ret-from"), val("ret-to"))}.` +
-    ` Ask ${sources.map((x) => SOURCE[x]).join(" and ")}, with prices in ${val("currency")}.`;
+    ` Depart from ${val("from")} ${when(val("out-from"), val("out-to"))}.` +
+    (arrive ? ` Land in ${val("to")} ${landing(arrive, true)}.` : "") +
+    ` Return to ${val("from")} ${when(val("ret-from"), val("ret-to"))}.` +
+    ` Show prices in ${val("currency")}.`;
   converse(q, said, { from: val("from"), to: val("to"), arrive, stops: val("stops") });
 });
 
@@ -263,7 +396,7 @@ function converse(q, said, trip) {
   const failures = () => {
     const failed = $$('.s[data-s="failed"]', tasks);
     if (failed.length) tasks.insertAdjacentHTML("afterend", `<details class="failures"><summary>Why ${failed.length === 1 ? "one search" : `${failed.length} searches`} failed</summary><ul>${failed
-      .map((s) => `<li>${esc(s.closest("li").querySelector("b").textContent)}, ${esc(SOURCE[s.dataset.k.split("|")[0]])}: ${esc(s.title)}</li>`).join("")}</ul></details>`);
+      .map((s) => `<li>${esc(s.closest("li").querySelector("b").textContent)}: ${esc(s.title)}</li>`).join("")}</ul></details>`);
     return failed.length;
   };
   const stop = (why) => {
@@ -286,7 +419,7 @@ function converse(q, said, trip) {
     const keys = meta.pairs.flatMap(([o, r]) => meta.sources.map((s) => `${s}|${o}|${r}`));
     rail.innerHTML = keys.map((k) => `<i data-k="${k}" data-s="pending"></i>`).join("");
     tasks.innerHTML = meta.pairs.map(([o, r]) => `<li><b>${day(o)} – ${day(r)}</b>${meta.sources
-      .map((s) => `<span class="s" data-k="${s}|${o}|${r}" data-s="pending">${SHORT[s]} <i>waiting</i></span>`).join("")}</li>`).join("");
+      .map((s) => `<span class="s" data-k="${s}|${o}|${r}" data-s="pending"><i>waiting</i></span>`).join("")}</li>`).join("");
     clock = setInterval(tick, 1000);
     tick();
   });
@@ -319,39 +452,78 @@ function converse(q, said, trip) {
 }
 
 // "2026-12-30,2026-12-31" -> "Dec 30 to Dec 31"; open bounds read "by Dec 31" or "Dec 30 or later".
-function landing(arrive, weekday) {
+function landing(arrive, wd) {
   const [a, b] = arrive.split(",");
-  return a && b ? (a === b ? `on ${day(a, weekday)}` : `between ${day(a, weekday)} and ${day(b, weekday)}`) : a ? `on ${day(a, weekday)} or later` : `by ${day(b, weekday)}`;
+  return a && b ? (a === b ? `on ${day(a, wd)}` : `between ${day(a, wd)} and ${day(b, wd)}`) : a ? `on ${day(a, wd)} or later` : `by ${day(b, wd)}`;
 }
 
 /* ---------- the answer ---------- */
 const TOP = 25;
+const LONG = 6 * 60;   // a layover longer than this is highlighted, and the summary looks for a fare without one
 
-// Plain-English findings, built only from returned rows: nothing here is estimated.
+// Minutes between two local times at one airport. Both parse as UTC, so no time zone or clock change enters.
+const gap = (a, b) => (Date.parse(`${b}Z`) - Date.parse(`${a}Z`)) / 6e4;
+// "AMS" -> "Amsterdam", from the finder's airport list, minus any district: "Helsinki (Vantaa)" -> "Helsinki".
+const city = (code) => (AIRPORTS.find((a) => a.c === code)?.t || code).replace(/ \(.*\)$/, "");
+// The waits between one leg's flights, from landing to the next take-off. Leaving from another airport means changing airports.
+const layovers = (segs) => (segs || []).slice(1).map((s, i) => {
+  const m = gap(segs[i].arrive, s.depart);
+  return { at: segs[i].to, next: s.from, m, long: m > LONG, night: s.depart.slice(0, 10) > segs[i].arrive.slice(0, 10) };
+});
+const waits = (r) => [...layovers(r.segments), ...layovers(r.return_segments)];   // a fare's layovers, out and back
+// "Air Canada to Amsterdam, then Air Baltic to Vilnius": who flies which part. One airline's flights in a row read as one part.
+function airlines(segs) {
+  const runs = [];
+  for (const s of segs) runs.at(-1)?.[0].airline === s.airline ? runs.at(-1).push(s) : runs.push([s]);
+  return runs.map((run, i) => `${i ? "then " : ""}${run[0].airline}${segs.length === 1 ? " nonstop" : ""} to ${city(run.at(-1).to)}` +
+    (run.length > 1 ? ` via ${run.slice(0, -1).map((s) => city(s.to)).join(" and ")}` : "")).join(", ");
+}
+
+// Plain-English findings, built only from returned rows: every price, time and layover here is one a search returned.
 function brief(rows, cur) {
-  const fare = (r) => `${money(r.price_cmp)} ${cur}`;
-  const what = (r) => `${SOURCE[r.source]}, ${r.flights} via ${r.route.split("-").slice(1, -1).join(" and ") || "nonstop"}, leaving ${day(r.depart, true)} at ${time(r.depart)} and taking ${fmtMin(r.duration)}`;
   const best = rows[0];
-  const lines = [`The cheapest is <strong><span class="n">${money(best.price_cmp)}</span> ${esc(cur)}</strong> on ${esc(what(best))}.`];
+  const flown = (r) => esc(r.segments?.length ? airlines(r.segments)
+    : `${r.flights} ${r.stops ? `via ${r.route.split("-").slice(1, -1).join(" and ")}` : "nonstop"}, ${r.carriers.join(" and ")}`);
+  // " It takes 33h30, including 23h55 overnight in Amsterdam."
+  const takes = (minutes, segs) => {
+    const long = layovers(segs).filter((l) => l.long).map((l) => `${fmtMin(l.m)}${l.night ? " overnight" : ""} in ${esc(city(l.at))}`);
+    return minutes ? ` It takes ${fmtMin(minutes)}${long.length ? `, including ${long.join(" and ")}` : ""}.` : "";
+  };
+  const leaving = (iso) => `leaving <span class="nw">${day(iso, true)} at ${time(iso)}</span>.`;
+  const back = best.return_depart
+    ? `${best.return_segments?.length ? `${esc(airlines(best.return_segments))}, ` : ""}${leaving(best.return_depart)}${takes(best.return_duration, best.return_segments)}`
+    : `on ${day(best.search_ret, true)}. Google didn't detail the flights.`;
+  const out = [`<p class="lead">The cheapest round trip is <strong><span class="n">${money(best.price_cmp)}</span> ${esc(cur)}</strong>.</p>`,
+    `<p><b>Out:</b> ${flown(best)}, ${leaving(best.depart)}${takes(best.duration, best.segments)}</p>`,
+    `<p><b>Back:</b> ${back}</p>`];
+  const picks = new Map();   // row -> what makes it worth a look, listed below the cheapest
+  const pick = (r, why) => picks.set(r, [...(picks.get(r) || []), why]);
   if (best.warnings?.length) {
     const has = (w) => best.warnings.includes(w);
     const why = has("TIGHT_CONNECTION") && has("RISKY_CONNECTION")
       ? " Those are two different things: tight means little time to change planes, risky means Matrix expects missing that connection to be very inconvenient."
       : has("RISKY_CONNECTION") ? " Matrix calls a connection risky when missing it would be very inconvenient."
       : has("TIGHT_CONNECTION") ? " Tight means little time to change planes." : "";
-    lines.push(`Matrix flags it: ${best.warnings.map((w) => (WARN[w]?.[1] || w).toLowerCase()).join(", ")}.${why}`);
+    out.push(`<p>Matrix flags it: ${best.warnings.map((w) => (WARN[w]?.[1] || w).toLowerCase()).join(", ")}.${why}</p>`);
     const risky = (r) => r.warnings?.some((w) => (WARN[w]?.[0] || "warn") !== "info");
     const clean = risky(best) && rows.find((r) => r.source === "matrix" && !risky(r));
-    if (clean) lines.push(`The cheapest Matrix fare without connection warnings is ${fare(clean)} (${esc(clean.flights)}, ${fmtMin(clean.duration)}), ${money(clean.price_cmp - best.price_cmp)} more.`);
+    if (clean) pick(clean, "no connection warnings from Matrix");
+  }
+  // Only a fare whose every flight, out and back, is known can be said to have no long layover.
+  if (waits(best).some((l) => l.long)) {
+    const calm = rows.find((r) => r.segments?.length && r.return_segments?.length && !waits(r).some((l) => l.long));
+    if (calm) pick(calm, `no layover over ${LONG / 60} hours`);
   }
   const timed = rows.filter((r) => r.duration);
   const fastest = timed.reduce((a, r) => (r.duration < a.duration ? r : a), timed[0]);
-  if (fastest && best.duration && best.duration > fastest.duration * 1.5)
-    lines.push(`It's a long trip, though: the quickest outbound takes ${fmtMin(fastest.duration)} (${esc(fastest.flights)}) for ${fare(fastest)}.`);
-  else if (fastest && fastest !== best && fastest.price_cmp > best.price_cmp)
-    lines.push(`The quickest outbound, ${fmtMin(fastest.duration)} on ${esc(fastest.flights)}, costs ${fare(fastest)}.`);
-  lines.push("Confirm the fare on the operating airline's own site before you pay.");
-  return lines.map((l) => `<p>${l}</p>`).join("");
+  if (fastest && fastest !== best && fastest.price_cmp > best.price_cmp) pick(fastest, "the quickest outbound");
+  if (picks.size) out.push(`<ul class="picks">${[...picks].sort(([a], [b]) => a.price_cmp - b.price_cmp).map(([r, why]) => {
+    const said = why.join(" and ");
+    return `<li><span class="pp"><b>${money(r.price_cmp)} ${esc(cur)}</b><small>${money(r.price_cmp - best.price_cmp)} more</small></span>` +
+      `<span><span class="why">${said[0].toUpperCase()}${said.slice(1)}</span> <span class="who">${flown(r)}${r.duration ? `, ${fmtMin(r.duration)} out` : ""}${r.return_duration ? `, ${fmtMin(r.return_duration)} back` : ""}</span></span></li>`;
+  }).join("")}</ul>`);
+  out.push(`<p class="confirm">Before you pay, confirm the fare on the operating airline's own site.</p>`);
+  return out.join("");
 }
 
 function render(box, rows, meta, trip) {
@@ -366,7 +538,7 @@ function render(box, rows, meta, trip) {
   // Same outbound at the same price for several return dates becomes one row, as print_table does.
   const groups = new Map();
   for (const r of rows) {
-    const k = [r.source, r.search_out, r.flights, r.price_cmp].join("|");
+    const k = [r.source, r.search_out, r.flights, r.price_cmp, r.return_flights].join("|");
     if (!groups.has(k)) groups.set(k, { r, rets: [] });
     groups.get(k).rets.push(r.search_ret);
   }
@@ -378,10 +550,10 @@ function render(box, rows, meta, trip) {
     ${meta.sources.length === 2 ? compare(rows, meta.pairs, cur) : ""}
     <section class="block">
       <h3>${rows.length} ${rows.length === 1 ? "fare" : "fares"} from ${esc(trip.from)} to ${esc(trip.to)}, cheapest first</h3>
-      <p class="muted">Across ${pairs} date ${pairs === 1 ? "pair" : "pairs"}. Prices are for the whole round trip in ${esc(cur)}; ties go to the shorter flight.${list.length < rows.length ? " Fares that differ only by return date share a row." : ""}${rows.some((r) => r.source === "google") ? " Google details the outbound flights only, so its return shows just the date." : ""}${trip.arrive ? ` Only outbound flights landing ${landing(trip.arrive)}, local time.` : ""}${trip.stops ? ` ${STOPS[trip.stops][0].toUpperCase()}${STOPS[trip.stops].slice(1)} each way.` : ""}${warnCol ? " Matrix's warnings cover the flights out and back together." : ""}${rows.some((r) => r.source === "matrix" && r.link) ? " ITA Matrix can't sell tickets and its links expire, so its fares link to the same search on Google Flights: look for the same flight numbers there." : ""}</p>
+      <p class="muted">Across ${pairs} date ${pairs === 1 ? "pair" : "pairs"}. Prices are for the whole round trip in ${esc(cur)}; ties go to the shorter flight.${list.length < rows.length ? " Fares that differ only by return date share a row." : ""}${rows.some((r) => !r.return_depart) ? " A return with just a date is one Google didn't detail." : ""}${trip.arrive ? ` Only outbound flights landing ${landing(trip.arrive)}, local time.` : ""}${trip.stops ? ` ${STOPS[trip.stops][0].toUpperCase()}${STOPS[trip.stops].slice(1)} each way.` : ""}${rows.some((r) => waits(r).some((l) => l.long)) ? ` Layovers over ${LONG / 60} hours are highlighted.` : ""}${warnCol ? " Warnings cover the flights out and back together." : ""}</p>
       <div class="table-scroll">
         <table class="fares-table">
-          <thead><tr><th scope="col">Price and source</th><th scope="col">Outbound</th><th scope="col">Route and flights</th><th scope="col">Return</th>${warnCol ? '<th scope="col">Matrix warnings</th>' : ""}</tr></thead>
+          <thead><tr><th scope="col">Price</th><th scope="col">Outbound</th><th scope="col">Return</th>${warnCol ? '<th scope="col">Warnings</th>' : ""}</tr></thead>
           <tbody>${html(list.slice(0, TOP), true)}</tbody>
         </table>
       </div>
@@ -398,29 +570,50 @@ function render(box, rows, meta, trip) {
 
 function fareRow(r, rets, cur, top, warnCol) {
   const quoted = r.currency !== cur ? `<div class="quoted">quoted ${esc(r.currency)} ${money(r.price)}</div>` : "";
-  const later = (a, b) => (b.slice(0, 10) !== a.slice(0, 10) ? ` ${day(b)}` : "");
-  const retText = r.return_depart && rets.length === 1
-    ? `<span class="when"><span class="t">${day(r.return_depart, true)}</span>, ${time(r.return_depart)} to ${time(r.return_arrive)}${later(r.return_depart, r.return_arrive)}</span>`
-    : `<span class="when">${rets.length === 1 ? day(rets[0], true)
-      : rets.map((x, i) => (i && x.slice(5, 7) === rets[i - 1].slice(5, 7) ? Number(x.slice(8)) : day(x))).join(", ")}</span>`;
+  const back = r.return_depart && rets.length === 1
+    ? leg({ depart: r.return_depart, arrive: r.return_arrive, duration: r.return_duration, stops: r.return_stops,
+            segments: r.return_segments, route: r.return_route, flights: r.return_flights })
+    : `<div class="leg-h"><p class="when"><span class="t">${rets.length === 1 ? day(rets[0], true)
+      : rets.map((x, i) => (i && x.slice(5, 7) === rets[i - 1].slice(5, 7) ? Number(x.slice(8)) : day(x))).join(", ")}</span></p></div>`;
   return `<tr${top ? ' class="row-top"' : ""}>
-    <td class="c-price fare"><div class="price">${money(r.price_cmp)}<small>${esc(cur)}</small></div>${quoted}<span class="src ${esc(r.source)}">${SOURCE[r.source] || esc(r.source)}</span></td>
-    <td class="c-out" data-label="Outbound"><span class="when"><span class="t">${day(r.depart, true)}</span>, ${time(r.depart)} to ${time(r.arrive)}${later(r.depart, r.arrive)}</span><div class="sub">${fmtMin(r.duration)}, ${stops(r.stops)}</div></td>
-    <td class="c-route" data-label="Route"><div class="route-t">${esc(r.route.replaceAll("-", " – "))}</div><div class="sub">${esc(r.flights)}, ${esc(r.carriers.join(", "))}</div>${bookLink(r)}</td>
-    <td class="c-ret" data-label="Return">${retText}</td>
+    <td class="c-price fare"><div class="price">${money(r.price_cmp)} <small>${esc(cur)}</small></div>${quoted}</td>
+    <td class="c-leg" data-label="Outbound"><div class="leg">${leg(r)}</div></td>
+    <td class="c-leg" data-label="Return"><div class="leg">${back}${bookLink(r)}</div></td>
     ${warnCol ? `<td class="c-warn">${badges(r.warnings)}</td>` : ""}
   </tr>`;
 }
 
-// Every new row carries a Google Flights link for its route, dates, currency and stops limit. Saved rows from
-// before links existed have none, and show nothing. Matrix sells nothing and its links expire, so its fares point
-// at the same Google search, where the user finds the itinerary by its flight numbers.
+// One leg: when it leaves and lands and how long it takes, then a line per flight with the layover between
+// flights. A day name marks each time that falls on a new day. Rows without per-flight detail (Matrix rows,
+// runs saved before segments existed) list their route and flight numbers instead.
+function leg(L) {
+  const later = L.arrive.slice(0, 10) !== L.depart.slice(0, 10) ? ` ${day(L.arrive, true)}` : "";
+  const head = `<div class="leg-h"><p class="when"><span class="t">${day(L.depart, true)}</span>, ${time(L.depart)} to ${time(L.arrive)}${later}</p>` +
+    `${L.duration ? `<p class="sub">${fmtMin(L.duration)}, ${stops(L.stops)}</p>` : ""}</div>`;
+  if (!L.segments?.length) {
+    const via = L.route ? L.route.split("-").slice(1, -1) : [];
+    return head + (L.flights ? `<p class="sub">${via.length ? `Via ${esc(via.join(" and "))}` : "Nonstop"} on ${esc(L.flights)}${L.carriers ? `, ${esc(L.carriers.join(" and "))}` : ""}</p>` : "");
+  }
+  let last = L.depart;
+  const at = (code, iso) => {
+    const d = iso.slice(0, 10) !== last.slice(0, 10) ? ` <span class="d">${weekday(iso)}</span>` : "";
+    last = iso;
+    return `<span class="ap">${esc(code)}</span> ${time(iso)}${d}`;
+  };
+  const lays = layovers(L.segments);
+  return `${head}<ol class="hops">${L.segments.map((s, i) => (i ? layover(lays[i - 1]) : "") +
+    `<li class="fl"><span class="fl-r">${at(s.from, s.depart)}<span class="to" aria-hidden="true">→</span><span class="vh"> to </span>${at(s.to, s.arrive)}</span>` +
+    `<span class="fl-a">${esc(s.airline)} <span class="fn">${esc(s.flight)}</span></span><span class="fl-d">${fmtMin(s.duration)}</span></li>`).join("")}</ol>`;
+}
+// The wait between two flights. A long one, or one that changes airports, is highlighted.
+const layover = (l) => `<li class="lay${l.long || l.next !== l.at ? " warn" : ""}"><span>${fmtMin(l.m)}${l.long && l.night ? " overnight" : ""} layover in ${esc(city(l.at))}` +
+  `${l.next !== l.at ? `, changing airports from ${esc(l.at)} to ${esc(l.next)}` : ""}</span></li>`;
+
+// Every new row carries a Google Flights link: its own trip's booking page, or the search for its dates.
+// Saved rows from before links existed have none, and show nothing.
 function bookLink(r) {
   if (!/^https:\/\//.test(r.link || "")) return "";
-  const a = (label, note) => `<a class="book" href="${esc(r.link)}" target="_blank" rel="noopener noreferrer"${note ? ` title="${esc(note)}"` : ""}>${label} <span aria-hidden="true">↗</span><span class="vh"> (opens in a new tab)</span></a>`;
-  return r.source === "matrix"
-    ? `${a("Find on Google Flights", "ITA Matrix can't sell tickets and its links expire. This opens the same dates on Google Flights, where the price may differ.")}<div class="sub">Matrix sells no tickets and its links expire. Google's price may differ.</div>`
-    : a("View on Google Flights");
+  return `<a class="book" href="${esc(r.link)}" target="_blank" rel="noopener noreferrer">View flight <span aria-hidden="true">↗</span><span class="vh"> (opens in a new tab)</span></a>`;
 }
 
 // Cheapest per date pair on each source, as print_compare does. diff = matrix - google.

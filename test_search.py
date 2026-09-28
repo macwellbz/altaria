@@ -12,6 +12,8 @@ klm, ac = rows
 assert (klm["price"], klm["route"], klm["flights"]) == (1409.0, "YYZ-AMS-VNO", "KL692 BT962")
 assert (klm["depart"], klm["arrive"], klm["duration"]) == ("2026-12-29T17:55", "2026-12-30T13:20", 745)
 assert ac["arrive"] == "2026-12-31T13:20" and ac["return_depart"] is None
+assert [(g["from"], g["to"], g["flight"], g["airline"]) for g in klm["segments"]] == [
+    ("YYZ", "AMS", "KL692", "KLM"), ("AMS", "VNO", "BT962", "Air Baltic")]
 
 sas, ac_m = norm_matrix(fx["matrix_response"])
 assert (sas["price"], sas["currency"], sas["route"], sas["stops"]) == (1054.42, "CAD", "YYZ-CPH-VNO", 1)

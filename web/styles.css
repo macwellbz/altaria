@@ -1,26 +1,26 @@
 /* Altaria AI. One type scale, one spacing scale, one accent. Light is the default; the header toggle sets data-theme="dark". */
 :root {
-  --paper: #F4F8FC;
+  --paper: #EEF5FF;        /* ice */
   --surface: #FFFFFF;
-  --ink: #34496A;          /* softened slate: 8.5:1 on paper */
-  --ink-2: #566B8A;        /* secondary text: 5.1:1 on paper */
-  --line: #DCE5F0;
-  --rule: #7890AF;         /* input underlines: 3.3:1, enough to mark a field */
-  --accent: #3150DF;       /* the deep blue overhead at cruising altitude: 6.3:1 under white text */
+  --ink: #003D57;          /* deep teal: 10.6:1 on paper */
+  --ink-2: #4C6E7B;        /* secondary text: 5.0:1 on paper */
+  --line: #D4E6FF;
+  --rule: #6694D2;         /* input underlines: 3.1:1, enough to mark a field */
+  --accent: #176B87;       /* teal: 6.0:1 under white text */
   --on-accent: #FFFFFF;
-  --accent-text: #3150DF;  /* the accent as text: 6.3:1 on white */
-  --wash: #EAF3FC;
-  --user: #DCEAF9;
-  --focus: #23324D;
-  --mark-cloud: #8FB3DD;
-  --sky-top: #A9CDF0;
-  --sky-mid: #CBE1F6;
-  --horizon: #EEF4FA;
+  --accent-text: #176B87;  /* the accent as text: 6.0:1 on white, 5.5:1 on paper */
+  --wash: #EEF5FF;
+  --user: #CEE3FF;
+  --focus: #003D57;
+  --mark-cloud: #86B6F6;
+  --sky-top: #86B6F6;
+  --sky-mid: #B4D4FF;
+  --horizon: #EEF5FF;
   --risk: #B42318;  --risk-bg: #FDECEA;
   --warn: #7A5A00;  --warn-bg: #FFF4CC;
-  --info: #3F5577;  --info-bg: #E6EEF7;
+  --info: #4C6E7B;  --info-bg: #EEF5FF;
   --good: #1D7A4C;
-  --shadow: 0 30px 60px -30px rgba(36, 70, 120, .35), 0 2px 8px -2px rgba(36, 70, 120, .10);
+  --shadow: 0 30px 60px -30px rgba(0, 61, 87, .35), 0 2px 8px -2px rgba(0, 61, 87, .10);
 
   /* type: one family, one scale */
   --font: "Commissioner", ui-sans-serif, system-ui, sans-serif;
@@ -43,25 +43,25 @@
   color-scheme: light;
 }
 :root[data-theme="dark"] {
-  --paper: #0E1829;
-  --surface: #15223A;
-  --ink: #D6E1EF;
-  --ink-2: #9BAECA;
-  --line: #22324D;
-  --rule: #5F7599;
-  --accent: #9DB2FF;
-  --on-accent: #0E1A33;
-  --accent-text: #A7B8FF;
-  --wash: #1A2A45;
-  --user: #22375A;
-  --focus: #A7B8FF;
-  --mark-cloud: #9DB8DD;
-  --sky-top: #070F20;
-  --sky-mid: #0E1D3A;
-  --horizon: #25304F;
+  --paper: #061925;        /* a navy-teal night */
+  --surface: #092435;
+  --ink: #D7E5F1;          /* 14:1 on paper */
+  --ink-2: #86A3B3;        /* 6.0:1 on cards */
+  --line: #1B3647;
+  --rule: #4B728C;         /* 3.1:1 on cards */
+  --accent: #64C3E2;       /* the teal, lifted: 8.8:1 under the dark label */
+  --on-accent: #011B27;
+  --accent-text: #73CCEA;  /* 8.8:1 on cards */
+  --wash: #113143;
+  --user: #143C53;
+  --focus: #73CCEA;
+  --mark-cloud: #96BBE3;
+  --sky-top: #01101C;
+  --sky-mid: #002135;
+  --horizon: #173A4B;
   --risk: #FF9C91;  --risk-bg: #3A1A1D;
   --warn: #F2CD6B;  --warn-bg: #33290F;
-  --info: #B9C8DD;  --info-bg: #1D2B45;
+  --info: #A9C2D1;  --info-bg: #143040;
   --good: #72D9A5;
   --shadow: 0 30px 60px -30px rgba(0, 0, 0, .75), 0 2px 8px -2px rgba(0, 0, 0, .4);
   color-scheme: dark;
@@ -95,10 +95,10 @@ a { color: inherit; }
   height: 52px; padding: 0 var(--s-5); overflow: hidden;
   font: 560 var(--t-md)/1 var(--font); color: var(--on-accent); text-decoration: none; white-space: nowrap;
   background: var(--accent); border: 0; border-radius: 999px; cursor: pointer;
-  box-shadow: 0 12px 28px -14px color-mix(in oklab, var(--accent) 75%, #0B1A4A);
+  box-shadow: 0 12px 28px -14px color-mix(in oklab, var(--accent) 75%, #003D57);
   transition: background-color .2s var(--ease);
 }
-.btn:hover { background: color-mix(in oklab, var(--accent) 86%, #0B1A4A); }
+.btn:hover { background: color-mix(in oklab, var(--accent) 86%, #003D57); }   /* in both themes the button deepens toward the palette's deep teal */
 .btn:disabled { opacity: .5; cursor: not-allowed; }
 .btn-sm { height: 40px; padding: 0 var(--s-4); font-size: var(--t-sm); }
 /* The label rolls up on hover and its own shadow rolls in from below: one element, no duplicate text. */
@@ -148,7 +148,7 @@ h1 {
 
 
 /* the fare card is a boarding pass: itinerary on top, the price on a stub below a perforation */
-.pass { position: relative; width: min(100% - 2 * var(--margin), 400px); margin: var(--s-8) var(--edge) var(--s-9); filter: drop-shadow(0 26px 34px rgba(36, 70, 120, .22)) drop-shadow(0 2px 3px rgba(36, 70, 120, .10)); }
+.pass { position: relative; width: min(100% - 2 * var(--margin), 400px); margin: var(--s-8) var(--edge) var(--s-9); filter: drop-shadow(0 26px 34px color-mix(in oklab, var(--ink) 22%, transparent)) drop-shadow(0 2px 3px color-mix(in oklab, var(--ink) 10%, transparent)); }
 :root[data-theme="dark"] .pass { filter: drop-shadow(0 26px 34px rgba(0, 0, 0, .55)) drop-shadow(0 2px 3px rgba(0, 0, 0, .4)); }
 .pass-top, .pass-stub { background: var(--surface); padding: var(--s-5) var(--s-5); }
 .pass-top {
@@ -197,39 +197,60 @@ h1 {
 .search h2 { font-size: var(--t-2xl); font-weight: 400; letter-spacing: -.03em; font-variation-settings: "FLAR" 100, "VOLM" 100; }
 
 /* The composer is one sentence at one size. Every blank shares the same padding and underline,
-   sizes itself to its contents, and sits on the text's baseline. */
+   holds the width of the widest value it can show, and sits on the text's baseline. */
 .composer { width: fit-content; max-width: 100%; margin-top: var(--s-7); padding: clamp(24px, 4vw, 56px); background: var(--surface); border: 1px solid var(--line); border-radius: 32px; box-shadow: var(--shadow); scroll-margin-top: 96px; }
 .say { font-size: var(--t-xl); line-height: 2.05; letter-spacing: -.01em; font-weight: 400; text-wrap: pretty; }
 .blank {
   position: relative; display: inline-grid; vertical-align: baseline;
-  padding: 0 .12em;
+  padding: 0 .2em;    /* room for the focus ring, which sits inside the blank, clear of the words beside it */
   line-height: 1.35; color: var(--ink); font-weight: 520;
+  text-align: center;    /* spare width splits evenly, so values sit centered in their blanks */
   border-bottom: 1.5px solid var(--rule); border-radius: .22em .22em 0 0;
   transition: background-color .2s, border-color .2s;
 }
 .blank > * { grid-area: 1 / 1; }
-.nw { white-space: nowrap; }   /* a blank keeps its punctuation: no line starts with a comma */
+/* an invisible sizer shares the value's grid cell, so filling in a blank never reflows the sentence */
+.blank::after { grid-area: 1 / 1; height: 0; overflow: hidden; visibility: hidden; white-space: pre; }
+.code::after { content: "WWW"; }           /* three of the widest capital */
+.date::after { content: "Mon May 30"; }    /* the widest date Commissioner sets, wider than "pick a date" */
+.pick::after { content: attr(data-fit); }  /* every label the select can show, one per line (app.js) */
+.nw { white-space: nowrap; }   /* the "to" blank and its swap button stay on one line */
 .blank:hover { border-bottom-color: var(--ink); }
 .blank:focus-within { background: var(--wash); border-bottom-color: var(--accent-text); }
-.blank:has(:focus-visible) { outline: 2px solid var(--focus); outline-offset: 3px; }   /* the controls inside are unstyled, so the blank carries the ring */
+.blank:has(:focus-visible) { outline: 2px solid var(--focus); outline-offset: -2px; }   /* the controls inside are unstyled, so the blank carries the ring */
 .blank input, .blank select { font: inherit; letter-spacing: inherit; color: inherit; background: none; border: 0; border-radius: 0; margin: 0; padding: 0; min-width: 0; width: 100%; outline: none; }
 .blank input::placeholder { color: var(--ink-2); font-weight: 400; opacity: 1; }
-/* codes: the input and an invisible copy of its text share one grid cell, so the blank fits what's typed */
-.code::after { content: attr(data-v); grid-area: 1 / 1; visibility: hidden; white-space: pre; }
-.code input { width: 0; min-width: 100%; text-transform: uppercase; }   /* the invisible copy sets the width, not the input */
+/* airports: the blank is a button that only ever shows the chosen code; the finder below it takes the typing (app.js) */
+.code > button { font: inherit; letter-spacing: inherit; color: inherit; text-align: inherit; background: none; border: 0; margin: 0; padding: 0; width: 100%; cursor: pointer; outline: none; }
+.code.empty > button { color: var(--ink-2); font-weight: 400; }
+.finder {
+  position: absolute; top: calc(100% + 8px); left: 0; z-index: 20;
+  width: min(22em, 100vw - 2 * var(--s-4)); padding: 6px;
+  font: 400 var(--t-sm)/1.35 var(--font); letter-spacing: 0; text-align: start; white-space: normal; color: var(--ink); cursor: default;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow);
+}
+.finder input { padding: 9px 12px; color: var(--ink); text-align: start; background: var(--wash); border: 1px solid var(--rule); border-radius: 10px; }
+.finder input:focus { border-color: var(--focus); box-shadow: inset 0 0 0 1px var(--focus); }
+.finder-list { display: block; max-height: min(45vh, 340px); overflow-y: auto; margin-top: 6px; }
+.finder-list[hidden] { display: none; }
+.finder [role="option"] { display: grid; grid-template-columns: 3.1em minmax(0, 1fr); gap: var(--s-2); padding: 8px 10px; border-radius: 10px; cursor: pointer; }
+.finder [role="option"] b { font-weight: 600; letter-spacing: .02em; }
+.finder small { display: block; font-size: var(--t-xs); color: var(--ink-2); }
+.finder [role="option"]:hover { background: var(--wash); }
+.finder [aria-selected="true"] { background: var(--wash); box-shadow: inset 0 0 0 2px var(--focus); }   /* the active match: where Enter or Tab lands */
+.finder-note { display: block; padding: 8px 10px 4px; font-size: var(--t-xs); color: var(--ink-2); }
+.finder-note:empty { display: none; }
 /* dates and currency: a readable label on show, the native control on top of it, invisible, taking the clicks.
    Keyboard users see the native date editor while it has focus (see .kbd in app.js). */
 .shown { white-space: nowrap; pointer-events: none; }
 .date input, .pick select { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
 .date input::-webkit-calendar-picker-indicator { position: absolute; inset: 0; width: auto; height: auto; opacity: 0; cursor: pointer; }
 .date.empty .shown { color: var(--ink-2); font-weight: 400; }
-.date.empty.opt { min-width: 4.2em; }
-.kbd .date:focus-within { min-width: 7.8em; }   /* room for the native editor and its calendar button */
 .kbd .date:focus-within .shown { visibility: hidden; }
-.kbd .date:focus-within input { opacity: 1; }
-.kbd .date:focus-within input::-webkit-calendar-picker-indicator { position: static; opacity: .75; }
-.kbd .blank:focus-within { outline: 2px solid var(--focus); outline-offset: 3px; }   /* also while the calendar button inside a date has focus */
-.pick select { appearance: none; }
+.kbd .date:focus-within input { opacity: 1; font-size: .7em; padding-inline-end: .2em; text-align: inherit; }   /* at this size the native editor and its calendar button fit the blank */
+.kbd .date:focus-within input::-webkit-calendar-picker-indicator { position: static; width: revert; height: revert; margin-inline-start: .3em; opacity: .75; }
+.kbd .blank:focus-within { outline: 2px solid var(--focus); outline-offset: -2px; }   /* also while the calendar button inside a date has focus */
+.pick select { appearance: none; overflow: hidden; }   /* the select's own label is invisible but wider than the blank; clipped, it can't widen a phone's page */
 /* Where the browser allows it, the open list is drawn in the page in the site's own type; elsewhere it's the native list. */
 @supports (appearance: base-select) {
   .pick select, .pick ::picker(select) { appearance: base-select; }
@@ -257,6 +278,8 @@ h1 {
 .swap:hover { background: var(--user); }
 .swap:active { transform: rotate(180deg); }
 .swap svg { width: .72em; height: .72em; }
+/* a breath between the outbound dates (Depart, Land) and the return: one leg, then the other */
+.leg-gap { display: block; height: var(--s-2); }
 .go { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-3) var(--s-5); margin-top: var(--s-6); }
 .go .btn { min-width: 12em; }
 #estimate { font-size: var(--t-sm); }
@@ -301,10 +324,18 @@ h1 {
 .answer:empty { display: none; }
 .answer { margin-top: var(--s-6); }
 .brief { max-width: 62ch; }
-.brief p { font-size: var(--t-lg); line-height: 1.55; }
-.brief p:first-child { font-size: var(--t-xl); line-height: 1.35; letter-spacing: -.01em; }
+.brief p { font-size: var(--t-lg); line-height: 1.55; text-wrap: pretty; }
+.brief .lead { font-size: var(--t-xl); line-height: 1.35; letter-spacing: -.01em; }
 .brief p + p { margin-top: var(--s-2); }
 .brief strong { font-weight: 600; }
+/* the fares worth a look besides the cheapest: prices in a column, then why and who flies it */
+.picks { list-style: none; margin: var(--s-5) 0 0; padding: 0; display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: var(--s-4) var(--s-5); }
+.picks li { grid-column: 1 / -1; display: grid; grid-template-columns: subgrid; align-items: baseline; }
+.picks .pp { justify-self: end; text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.picks b { font-size: var(--t-lg); font-weight: 600; }
+.picks .pp small, .picks .why, .picks .who { display: block; }
+.picks .pp small, .picks .who { font-size: var(--t-sm); color: var(--ink-2); }
+.brief .confirm { margin-top: var(--s-5); font-size: var(--t-md); }
 .again { margin-top: var(--s-6); }
 .again a { font-weight: 520; text-underline-offset: 4px; }
 
@@ -321,19 +352,39 @@ tbody tr:last-child > * { border-bottom: 0; }
 .cmp tbody th { font-size: var(--t-sm); font-weight: 520; color: var(--ink); white-space: nowrap; }
 .cmp td, .cmp th { padding: var(--s-3) var(--s-4); }
 .cmp .win { color: var(--good); font-weight: 600; }
+/* The legs size to their cells (their container query needs that), so the price column shrinks to its widest price,
+   warnings get a fixed width, and the two legs split the rest evenly. */
+.fares-table td.c-price { width: 1%; }
+.fares-table td.c-warn { width: 13.5em; }
 .fare .price { font-size: 26px; font-weight: 450; line-height: 1.1; letter-spacing: -.02em; white-space: nowrap; font-variation-settings: "FLAR" 100, "VOLM" 80; }
-.fare .price small { margin-left: 4px; font-size: var(--t-xs); font-weight: 500; letter-spacing: 0; color: var(--ink-2); }
+.fare .price small { font-size: var(--t-xs); font-weight: 500; letter-spacing: 0; color: var(--ink-2); }
 .fare .quoted { font-size: var(--t-xs); color: var(--ink-2); }
-.src { display: inline-flex; align-items: center; gap: 7px; margin-top: 6px; font-size: var(--t-xs); color: var(--ink-2); white-space: nowrap; }
-.src::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
-.src.google::before { background: var(--mark-cloud); }
-.when { white-space: nowrap; }
 .when .t { font-weight: 560; }
 .sub { font-size: var(--t-xs); color: var(--ink-2); }
-.route-t { font-weight: 560; letter-spacing: .01em; white-space: nowrap; }
-.book { display: inline-block; margin-top: var(--s-2); font-size: var(--t-xs); font-weight: 560; color: var(--accent-text); text-underline-offset: 3px; text-decoration-thickness: 1px; }
+/* A leg reads like a timetable: its dates and length, then one line per flight along a rail that is solid
+   while you fly and pale while you wait. A layover over six hours, or a change of airport, turns warm. */
+.leg { container: leg / inline-size; contain-intrinsic-inline-size: 10em; }   /* equal stand-in widths, so both legs get equal columns */
+.leg-h { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 var(--s-3); }
+.hops { list-style: none; margin: var(--s-2) 0 0; padding: 0; display: grid; grid-template-columns: max-content minmax(0, max-content) max-content; gap: 2px var(--s-4); }
+.hops > li { grid-column: 1 / -1; position: relative; padding-left: var(--s-4); }
+.hops > li::before { content: ""; position: absolute; left: 0; top: 1px; bottom: 1px; width: 3px; border-radius: 2px; background: var(--accent); }
+.fl { display: grid; grid-template-columns: subgrid; align-items: baseline; }
+.fl-r { white-space: nowrap; }
+.fl .ap { font-weight: 560; letter-spacing: .02em; }
+.fl .to { margin: 0 .4em; color: var(--ink-2); }
+.fl .d { font-size: var(--t-xs); font-weight: 500; color: var(--ink-2); }
+.fl .fn, .fl-d { color: var(--ink-2); white-space: nowrap; }
+.fl-d { text-align: right; }
+.lay { contain: inline-size; font-size: var(--t-xs); color: var(--ink-2); }   /* sized by the flights' columns, never widening them */
+.hops > .lay::before { background: color-mix(in oklab, var(--rule) 45%, transparent); }
+.lay.warn { color: var(--warn); font-weight: 560; }
+.hops > .lay.warn::before { background: var(--warn); }
+@container leg (width < 440px) {   /* narrow: each flight takes two lines, the route over the airline */
+  .hops { grid-template-columns: minmax(0, 1fr) max-content; }
+  .fl-r { grid-column: 1 / -1; }
+}
+.book { display: block; width: fit-content; margin-top: var(--s-3); font-size: var(--t-xs); font-weight: 560; color: var(--accent-text); text-underline-offset: 3px; text-decoration-thickness: 1px; }
 .book:hover { text-decoration-thickness: 2px; }
-.book + .sub { margin-top: 2px; }
 .row-top td { background: color-mix(in oklab, var(--accent) 9%, var(--surface)); }
 .badges { display: flex; flex-wrap: wrap; gap: 6px; }
 .badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; font-size: 12.5px; font-weight: 560; line-height: 1.5; white-space: nowrap; color: var(--info); background: var(--info-bg); border-radius: 999px; }
@@ -378,13 +429,12 @@ tbody tr:last-child > * { border-bottom: 0; }
 @media (max-width: 1000px) {
   .fares-table thead { display: none; }
   .fares-table, .fares-table tbody, .fares-table tr, .fares-table td { display: block; }
-  .fares-table tr { display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; padding: var(--s-4); border-bottom: 1px solid var(--line); }
+  .fares-table tr { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--s-3); padding: var(--s-4); border-bottom: 1px solid var(--line); }
   .fares-table tbody tr:last-child { border-bottom: 0; }
   .fares-table td, .fares-table .row-top td { padding: 0; border: 0; background: none; }
+  .fares-table td.c-price, .fares-table td.c-warn { width: auto; }
   .fares-table tr.row-top { background: color-mix(in oklab, var(--accent) 9%, var(--surface)); }
   .fares-table td.c-price { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px var(--s-3); }
-  .fares-table .c-price .src { margin: 0; }
-  .fares-table .route-t, .fares-table .when { white-space: normal; }
   .fares-table td.c-warn:empty { display: none; }
   .fares-table td[data-label]::before { content: attr(data-label); display: block; font-size: 12px; color: var(--ink-2); }
 }

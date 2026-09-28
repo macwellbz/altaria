@@ -19,7 +19,7 @@ import search
 ROOT = Path(__file__).parent
 CODE = re.compile(r"[A-Z]{3}")
 MAX_SEARCHES = 80  # date pairs x sources; Matrix alone at this size is ~40 minutes
-# ponytail: Matrix's Playwright browser is a module global in search.py, so one search at a time.
+# Matrix's Playwright browser is a module global in search.py, so one search at a time.
 one_search = threading.Lock()
 
 
@@ -93,7 +93,7 @@ class Handler(SimpleHTTPRequestHandler):
         self.wfile.write(data)
 
     def example(self):
-        """The cheapest row of the newest saved CLI run: a real fare, never a made-up one."""
+        """The cheapest row of the newest saved run: a real fare, never a made-up one."""
         for f in sorted((ROOT / "results").glob("*.json"), reverse=True):
             try:
                 d = json.loads(f.read_text())
@@ -143,6 +143,8 @@ class Handler(SimpleHTTPRequestHandler):
                 raise
             except Exception as e:  # e.g. the currency-rate lookup failed
                 return send("fail", {"message": f"The search stopped: {e}"})
+            search.save({"orig": orig, "dest": dest, "out": q["out"], "ret": q["ret"], "arrive_between": q.get("arrive") or None,
+                         "source": ",".join(sources), "currency": currency, "max_stops": stops}, rows)   # the CLI's args
             send("result", {"rows": rows})
         finally:
             one_search.release()

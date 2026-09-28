@@ -223,10 +223,10 @@
   // Colours per theme, as 0..1 RGB. Light: morning above the clouds. Dark: a night flight over a lit-up country.
   const hex = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16) / 255);
   const THEMES = {
-    light: { skyTop: "#8FBDEA", skyMid: "#CFE3F7", haze: "#F1F5FA", glow: "#23272C", lit: "#FFFFFF", shade: "#B4C7DF",
-             deep: "#869FC2", rim: "#FFFFFF", ground: "#6D8CA6", far: "#9AB1A8", lights: "#000000", stars: 0 },
-    dark:  { skyTop: "#050B19", skyMid: "#0E1D3B", haze: "#2A3556", glow: "#141A33", lit: "#9DB0D3", shade: "#3E5279",
-             deep: "#223153", rim: "#B9C6E0", ground: "#0F1A2E", far: "#16223A", lights: "#FFE2B8", stars: 1 },
+    light: { skyTop: "#86B6F6", skyMid: "#B4D4FF", haze: "#EEF5FF", glow: "#23272C", lit: "#FFFFFF", shade: "#A6CBFC",
+             deep: "#7A9BC6", rim: "#FFFFFF", ground: "#507889", far: "#97AFBA", lights: "#000000", stars: 0 },
+    dark:  { skyTop: "#010C17", skyMid: "#002135", haze: "#193D4D", glow: "#041824", lit: "#93B7CD", shade: "#305A75",
+             deep: "#123449", rim: "#B2CFE1", ground: "#041622", far: "#081F2D", lights: "#FFE2B8", stars: 1 },
   };
   const themeName = () => (document.documentElement.dataset.theme === "dark" ? "dark" : "light");
   const palette = (name) => Object.fromEntries(Object.entries(THEMES[name]).map(([k, v]) => [k, typeof v === "string" ? hex(v) : v]));

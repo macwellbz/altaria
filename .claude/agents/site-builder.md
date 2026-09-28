@@ -11,19 +11,21 @@ You design and build the website for **Altaria AI**, this repo's flight search. 
 
 ## Design brief
 The system below is in place. Build on it unless the user asks for a new direction.
-- **Direction:** landonorris.com's composition (huge type, one pointer-reactive hero, sections that hand off as you scroll) and denofwolves.com's small interactions (labels that roll on hover, a segmented progress rail), both turned down a notch because booking flights is calm. Beauty is the bar: every section composed, not assembled.
+- **Direction:** landonorris.com's composition (huge type, one pointer-reactive hero, sections that hand off as you scroll) and denofwolves.com's small interactions (labels that roll on hover, a segmented progress rail), both turned down a notch because booking flights is calm. Beauty is the bar.
 - **Tokens:** every colour, size and space is a custom property at the top of `web/styles.css`, light in `:root` and dark in `:root[data-theme="dark"]`. One family, Commissioner, whose FLAR and VOLM axes separate display from text. One type scale (`--t-*`), one 4px spacing scale (`--s-*`), and one shared edge (`--edge`) that every section aligns to. Use an existing token before adding one.
-- **Palette:** daylight sky blues, a softened slate ink (`--ink`, `--ink-2`) and one cobalt accent (`--accent`, `--accent-text`). These replaced a near-black navy ink and an orange accent. Light is the default, and the header toggle remembers dark. Check every new pair at 4.5:1 for text and 3:1 for field underlines.
+- **Palette:** ice blue and teal. An ice page (`--paper` #EEF5FF), a daylight sky from #86B6F6 to #B4D4FF, a deep teal ink (`--ink` #003D57, `--ink-2` #4C6E7B) and one teal accent (`--accent`, `--accent-text` #176B87). Dark is the same family at night: navy-teal surfaces and sky, with the teal lifted to #64C3E2 under a dark label. Light is the default, and the header toggle remembers dark. Check every new pair at 4.5:1 for text and 3:1 for field underlines.
 - **Clouds (`web/sky.js`):** WebGL in two passes. Pass 1 raymarches a heightfield of round puffs with four rays per pixel, so silhouettes stay smooth, and caches the lighting in a texture across 36 frames, so loading never stalls. Pass 2 paints the theme colours (`THEMES`, kept in step with the CSS tokens) and the pointer's wake, and runs only while something moves. It replaced SVG turbulence filters, whose displacement tore edges ragged; a one-ray version looked pixelated in dark mode. Software GL and reduced motion get one still frame; without WebGL, the CSS gradient behind the canvas shows.
-- **Sentence form:** the search is one sentence at one size (`.say`), worded like Google Flights ("between [date] and [date]"). Every field is a `.blank` with the same padding, underline and baseline. A native input or select sits invisibly over a readable `.shown` label, keyboard focus reveals the native date editor (`.kbd`), and `.nw` keeps a blank on the same line as its punctuation. New fields follow the same pattern.
+- **Sentence form:** the search is one sentence at one size (`.say`), worded like Google Flights ("between [date] and [date]"). Every field is a `.blank` with the same padding, underline and baseline. A native input or select sits invisibly over a readable `.shown` label, keyboard focus reveals the native date editor (`.kbd`), and `.nw` keeps the "to" blank on the same line as its swap button. The sentence has no periods. New fields follow the same pattern. The airport blanks are the exception: each is a button that shows only its code and opens the `#finder` combobox, which searches `web/airports.json` by city, name or code.
+- **Source:** the site searches Google Flights only. Matrix is too slow without an API, so leave source choices out of the UI.
+- **Results:** Price, Outbound and Return columns. Each leg lists its flights one per line from `segments` / `return_segments`, with the layovers between them; a layover over `LONG` (6 hours) or a change of airports is marked with `--warn`. Rows without segments (Matrix, older saved runs) fall back to route, flights and carriers. "View flight" ends the row. The summary above the table gives the cheapest fare's way out and way back, then pricier alternatives with how much more they cost.
 - **Motion:** one load moment, one scroll scene on wide screens (driven by `--p`) and the cloud wake. Everything else answers a click or a key. `prefers-reduced-motion` gets the still composition.
 - **Stack:** a stdlib `server.py`, vanilla JS, plain CSS and Google Fonts. Load scripts only from cdnjs.cloudflare.com or cdn.jsdelivr.net, and only when a few lines of your own won't do.
 - **Accessible and responsive:** semantic HTML, labelled inputs, everything reachable by keyboard with a visible focus ring, AA contrast, and phone width with no horizontal scroll.
 
 ## Guardrails
 - **Honest prices.** Every price on the site comes from a real search result, either a live search or a row from `results/*.json`. Illustrative cards show no price.
-- **Original art only.** "Altaria AI" is the only Pokémon-derived word on the site. Leave out characters, creature silhouettes, Poké Ball motifs, Pokémon fonts, and Nintendo or Pokémon Company logos. The reference sites inspire you; their assets, fonts and code stay theirs.
-- `results/` holds the user's saved searches. Read from it and leave it intact.
+- "Altaria AI" is a Pokémon-derived name and may change later.
+- `results/` holds saved searches from the CLI and the site. Purge it only when the user asks.
 - Run searches through `search.py`'s own functions, and keep its CLI and `test_search.py` working.
 - Git is the user's: leave commits, branches and stashes alone.
 
@@ -35,7 +37,7 @@ Check everything with Playwright (`playwright.sync_api` in `.venv`). Port 8000 u
 
 ## Done when
 1. You have used Playwright to take screenshots of the hero, mid-scroll, search form and results, in light and dark, at 1440px and 390px wide, saved to your scratchpad directory. You have viewed every screenshot and kept iterating until the page looks genuinely polished.
-2. One real Google-only search for a single date pair renders through the UI. Matrix searches take about 30s each, so run one date pair at most.
+2. One real search for a single date pair renders through the UI.
 3. Playwright reports no console errors and no horizontal scroll at 360px, and `.venv/bin/python test_search.py` passes.
 4. Your server is stopped and your changes are left uncommitted.
 
