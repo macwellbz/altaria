@@ -1,0 +1,28 @@
+/* Single-purpose classes, in the last layer so they win wherever they're applied. */
+
+/* Read by screen readers, never shown. */
+.vh {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Secondary text, and the optional parts of the search sentence. */
+.muted,
+.soft {
+  color: var(--ink-2);
+}
+
+/* Kept on one line: the "to" blank and its swap button, an "and" and its date, a date and its time. */
+.nw {
+  white-space: nowrap;
+}
+
+/* Every logo comes in colour and dark, and both are in the page (Logo.jsx): only the theme's own shows. */
+:root[data-theme="dark"] .light-only,
+:root:not([data-theme="dark"]) .dark-only {
+  display: none;
+}

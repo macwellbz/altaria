@@ -1,0 +1,181 @@
+/* The thread of searches (Search.jsx, SearchTurn.jsx): each one your sentence, echoed on the right, then what came
+   back across the column's full width: a status line, the progress rail, the date pairs, and the answer. */
+.thread {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-9);
+  margin-top: var(--s-7);
+}
+
+.turn {
+  display: grid;
+  gap: var(--s-5);
+}
+
+/* Focus lands on a new turn only to set the keyboard's place (SearchTurn.jsx); the turn isn't a control, so no ring. */
+.turn:focus {
+  outline: none;
+}
+
+.said {
+  justify-self: end;
+  max-width: min(36em, 92%);
+  padding: var(--s-3) var(--s-5);
+  font-size: var(--t-lg);
+  line-height: 1.5;
+  background: var(--user);
+  border-radius: 24px 24px 6px 24px;
+}
+
+.status-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-4);
+  min-height: 40px;
+}
+
+.status {
+  font-weight: 500;
+}
+
+/* One segment per search, as in a race's sector timing: pending, asking, done, failed, stopped. */
+.rail {
+  display: flex;
+  gap: 3px;
+  height: 6px;
+  margin-top: var(--s-3);
+}
+
+.rail i {
+  flex: 1;
+  min-width: 2px;
+  background: var(--line);
+  border-radius: 3px;
+  transition: background-color var(--dur-medium) var(--ease);
+}
+
+.rail i[data-s="searching"] {
+  background: color-mix(in oklab, var(--accent) 45%, var(--line));
+}
+
+.rail i[data-s="done"] {
+  background: var(--accent);
+}
+
+.rail i[data-s="failed"] {
+  background: var(--risk);
+}
+
+.rail i[data-s="stopped"] {
+  background: var(--line);
+  opacity: .5;
+}
+
+/* The date pairs, one pill each, as wide as its words. */
+.tasks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+  margin: var(--s-4) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tasks li {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 var(--s-3);
+  padding: 6px 14px;
+  font-size: var(--t-xs);
+  line-height: 1.5;
+  font-variant-numeric: tabular-nums;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+}
+
+.tasks li b {
+  font-weight: 500;
+}
+
+.tasks .s {
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+
+.tasks .s i {
+  font-style: normal;
+}
+
+.tasks .s[data-s="done"] i {
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.tasks .s[data-s="searching"] i {
+  font-weight: 500;
+  color: var(--accent-text);
+}
+
+.tasks .s[data-s="failed"] i {
+  font-weight: 500;
+  color: var(--risk);
+}
+
+.tasks .s[data-s="stopped"] {
+  opacity: .6;
+}
+
+.tasks li:has([data-s="searching"]) {
+  border-color: var(--accent);
+}
+
+.tasks li:has([data-s="failed"]) {
+  border-color: color-mix(in oklab, var(--risk) 50%, var(--line));
+}
+
+/* A search in flight breathes. The pulse eases in and out evenly, which the page's one curve doesn't. */
+@media (prefers-reduced-motion: no-preference) {
+  .rail i[data-s="searching"],
+  .tasks .s[data-s="searching"] i {
+    animation: breathe var(--dur-long) ease-in-out infinite;
+  }
+}
+
+@keyframes breathe {
+  50% {
+    opacity: .45;
+  }
+}
+
+.failures {
+  margin-top: var(--s-3);
+  font-size: var(--t-sm);
+  color: var(--ink-2);
+}
+
+.failures summary {
+  width: fit-content;
+  cursor: pointer;
+}
+
+.failures ul {
+  margin: var(--s-2) 0 0;
+  padding-left: 1.2em;
+}
+
+.answer {
+  margin-top: var(--s-6);
+}
+
+.answer:empty {
+  display: none;
+}
+
+@media (max-width: 600px) {
+  .said {
+    max-width: 100%;
+  }
+}

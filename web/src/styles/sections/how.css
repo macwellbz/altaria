@@ -1,0 +1,248 @@
+/* How it ranks (How.jsx, Board.jsx): the rule as one statement, the ranking board applying it to your last saved
+   search, and the three principles side by side. */
+.how {
+  padding: var(--s-9) 0 var(--s-10);
+}
+
+.statement {
+  max-width: 11.1em;   /* wide screens: three lines, breaking after "then" and "Nothing"; in em, so the font swap can't rewrap them */
+  font-family: var(--font-display);
+  font-size: var(--t-3xl);
+  font-weight: 300;
+  line-height: 1.06;
+  letter-spacing: -.03em;
+  text-wrap: balance;
+}
+
+/* The ranking board: a departure board for fares. The caption is its title bar, and each fare is one
+   timetable line in tabular figures, with the two things it is sorted by (its price, then its outbound flight's
+   length) in full ink and the rest in the second ink. The cheapest line is tinted, as in a search's own
+   timetable. Narrower than a line needs, each fare takes two lines. */
+.board {
+  container: board / inline-size;
+  margin-top: var(--s-8);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.board table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--t-lg);
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-2);
+}
+
+.board caption {
+  padding: var(--s-5) var(--s-6) var(--s-4);
+  text-align: start;
+  border-bottom: 1px solid var(--line);
+}
+
+.board-title,
+.board-trip {
+  display: inline-block;
+  margin-inline-end: var(--s-5);
+}
+
+.board-title {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.board-trip {
+  color: var(--ink-2);
+}
+
+.board .num {
+  text-align: end;
+}
+
+.board .price,
+.board .out {
+  color: var(--ink);
+}
+
+.board .price {
+  font-size: var(--t-xl);
+  font-weight: 500;
+  letter-spacing: -.01em;
+}
+
+.board .route {
+  letter-spacing: .02em;
+}
+
+.board .note {
+  font-size: var(--t-sm);
+  font-weight: 500;
+  color: var(--accent-text);
+  text-align: end;
+}
+
+.board tr.first td {
+  background: var(--wash);
+}
+
+/* One line a fare: the columns share the spare width in proportion, and the prices hug their column, so the
+   widest one starts on the caption's edge. */
+@container board (width >= 54rem) {
+  .board th {
+    padding: var(--s-3) var(--s-5) var(--s-2);
+    font-size: var(--t-xs);
+    font-weight: 500;
+    text-align: start;
+    white-space: nowrap;
+  }
+
+  .board th.num {
+    text-align: end;
+  }
+
+  .board td {
+    padding: var(--s-4) var(--s-5);
+    vertical-align: baseline;
+    white-space: nowrap;
+  }
+
+  .board :is(th, td):first-child {
+    width: 1%;
+    padding-inline-start: var(--s-6);
+  }
+
+  .board :is(th, td):last-child {
+    padding-inline-end: var(--s-6);
+  }
+
+  .board .carrier {
+    white-space: normal;
+  }
+}
+
+/* Two lines a fare: the price and its times, then its route and airline, with any remark under them. */
+@container board (width < 54rem) {
+  .board table,
+  .board tbody,
+  .board td {
+    display: block;
+  }
+
+  .board thead {
+    display: none;
+  }
+
+  .board caption {
+    display: block;
+    padding: var(--s-4) var(--s-5);
+  }
+
+  .board tr {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 2px var(--s-4);
+    padding: var(--s-3) var(--s-5);
+    border-top: 1px solid var(--line);
+  }
+
+  .board tbody tr:first-child {
+    border-top: 0;
+  }
+
+  .board td {
+    padding: 0;
+    border: 0;
+  }
+
+  /* the break between the two lines */
+  .board tr::after {
+    content: "";
+    flex-basis: 100%;
+    order: 1;
+  }
+
+  .board tr.first {
+    background: var(--wash);
+  }
+
+  .board tr.first td {
+    background: none;
+  }
+
+  .board td.price {
+    flex: 1;
+    text-align: start;
+  }
+
+  .board td[data-label]::after {
+    content: " " attr(data-label);
+    font-size: var(--t-xs);
+    color: var(--ink-2);
+  }
+
+  .board .route,
+  .board .carrier,
+  .board .note {
+    order: 2;
+  }
+
+  .board .carrier {
+    flex: 1 1 10em;
+  }
+
+  .board .note {
+    flex-basis: 100%;
+    text-align: start;
+  }
+
+  .board .note:empty {
+    display: none;
+  }
+}
+
+.principles {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--s-7);
+  margin: var(--s-9) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.principles li {
+  padding-top: var(--s-4);
+  border-top: 1px solid var(--rule);
+}
+
+.principles h3 {
+  font-size: var(--t-lg);
+  letter-spacing: -.005em;
+}
+
+/* The body at the size of the page's other running copy, the search's lede and a search's brief; the heading leads by
+   weight and ink rather than size. */
+.principles p {
+  max-width: var(--measure);
+  margin-top: var(--s-3);
+  font-size: var(--t-lg);
+  line-height: 1.55;
+  color: var(--ink-2);
+}
+
+@media (max-width: 899px) {
+  .how {
+    padding: var(--s-8) 0 var(--s-9);
+  }
+
+  .board {
+    margin-top: var(--s-7);
+  }
+
+  .principles {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--s-6);
+    margin-top: var(--s-8);
+  }
+}

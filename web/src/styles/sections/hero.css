@@ -1,0 +1,258 @@
+/* The hero (Hero.jsx): flying above the clouds. */
+.hero {
+  --p: 0;   /* the scroll scene's progress, 0 to 1, written by Hero.jsx */
+  /* The headline's size: as large as the scale allows, but the longer line, "sorted by price" (5.9em wide in
+     Spectral Light at this tracking), always fits the column, even with a large text setting; remeasure if the
+     words change. */
+  --h1: min(var(--t-hero), (100vw - 2 * var(--margin)) / 6);
+  --copy-top: calc(var(--header) + clamp(40px, 9vh, 120px));
+  --pass-w: clamp(320px, 30vw, 400px);
+  position: relative;
+}
+
+.stage {
+  position: relative;
+  min-height: 100svh;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.sky {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(var(--sky-top), var(--sky-mid) 48%, var(--horizon) 64%, var(--paper));
+}
+
+.clouds {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  transform-origin: 50% 100%;
+}
+
+/* The cloud deck from inside: the page's own colour, thick at the bottom and thinning upward. */
+.mist {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 160%;
+  background: linear-gradient(color-mix(in oklab, var(--paper) 0%, transparent), var(--paper) 37.5%);
+  opacity: 0;
+}
+
+.hero-copy {
+  position: relative;
+  padding: var(--copy-top) var(--edge) 0;
+}
+
+.hero h1 {
+  margin-left: -.04em;   /* takes back Spectral's side bearing, so the T's bar starts where the lede's A does */
+  font-family: var(--font-display);
+  font-size: var(--h1);
+  font-weight: 300;
+  line-height: 1.04;   /* Spectral's descender and ascender take .99em: any tighter, the y of "sky," meets the b of "by" */
+  letter-spacing: -.035em;
+  text-wrap: initial;
+}
+
+/* Each line is its own mask for the load moment's rise. The clip reaches past the line box, so ascenders and
+   the descenders of "sky," and "by" are never cut, and costs no layout. */
+.hero h1 .line {
+  display: block;
+  clip-path: inset(-.2em -.3em -.3em);
+}
+
+.hero h1 .line > span {
+  display: block;
+}
+
+/* The measure is in em rather than ch: ch is the width of a font's zero, which differs between Inter and
+   the fallback that stands in while it loads, so the lede would rewrap when Inter arrived. */
+.lede {
+  max-width: 20.5em;
+  margin-top: var(--s-6);
+  font-size: var(--t-lede);
+  line-height: 1.45;
+  text-wrap: balance;
+}
+
+.hero-copy .btn {
+  margin-top: var(--s-6);
+}
+
+/* Wide screens: the pass stands to the right, from beside the headline's second line down, and the lede
+   stops short of it. Its slot moves up on a short screen rather than running off the bottom (--pass-h is its
+   height, from Hero.jsx). */
+@media (min-width: 900px) {
+  .hero {
+    --pass-top: clamp(var(--copy-top) + 1.04 * var(--h1), 42vh, 100vh - var(--pass-h, 440px) - var(--s-5));
+  }
+
+  .lede {
+    max-width: min(20.5em, 100vw - 2 * var(--edge) - var(--pass-w) - var(--s-7));
+  }
+
+  .pass {
+    position: absolute;
+    right: var(--edge);
+    top: var(--pass-top);
+    width: var(--pass-w);
+    margin: 0;
+  }
+}
+
+/* The scroll scene on wide screens: descending through the cloud deck. The stage sticks while --p runs from 0
+   to 1. What was above the clouds lifts away first, gone well before it reaches the header; the cloud tops rise
+   and swell toward the window and soften as you enter them; and a fog thickens from below until it is the page
+   itself, out of which the statement rises. */
+@media (min-width: 900px) and (min-height: 560px) and (prefers-reduced-motion: no-preference) {
+  .hero {
+    --fog: clamp(0, (var(--p) - .1) / .8, 1);
+    height: 200vh;
+  }
+
+  .how {
+    position: relative;
+    z-index: 1;
+    margin-top: -60vh;
+  }
+
+  .stage {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    min-height: 0;
+  }
+
+  /* scaled about the stage's floor, so the deck's lower edge never lifts off it */
+  .clouds {
+    transform: scale(calc(1 + var(--p) * .9));
+    filter: blur(calc(max(0, var(--p) - .3) * 14px));
+    will-change: transform, filter;
+  }
+
+  .mist {
+    opacity: 1;
+    transform: translate3d(0, calc(100vh - var(--fog) * 160vh), 0);
+    will-change: transform;
+  }
+
+  .hero-copy {
+    transform: translate3d(0, calc(var(--p) * -20vh), 0);
+    opacity: calc(1 - var(--p) / .3);
+  }
+
+  .pass {
+    transform: translate3d(0, calc(var(--p) * -36vh), 0);
+    opacity: calc(1 - var(--p) / .36);
+  }
+}
+
+/* The same composition, still, for wide screens that ask for less motion. */
+@media (min-width: 900px) and (min-height: 560px) and (prefers-reduced-motion: reduce) {
+  .stage {
+    min-height: 100vh;
+  }
+}
+
+/* One screen of sky; the pass floats on the lower clouds, which dissolve into the page beneath it. */
+@media (max-width: 899px) {
+  .sky {
+    bottom: auto;
+    height: 100svh;
+  }
+
+  .mist {
+    top: auto;
+    bottom: 0;
+    height: 100%;
+    opacity: 1;
+    background: linear-gradient(to top, var(--paper), color-mix(in oklab, var(--paper) 0%, transparent) 16%);
+  }
+
+  .hero-copy {
+    min-height: 62svh;
+  }
+
+  .pass {
+    margin: 0 var(--edge) var(--s-9) auto;
+  }
+}
+
+@media (max-width: 600px) {
+  .hero-copy {
+    padding-top: calc(var(--header) + var(--s-7));
+  }
+
+  .lede {
+    margin-top: var(--s-5);
+  }
+
+  .pass {
+    margin: var(--s-7) var(--edge) var(--s-9);
+  }
+}
+
+/* The one load moment, about 1.4s end to end: the clouds come in (Vanta's fade over the gradient), the
+   headline's lines rise out of their masks one after the other, the lede and the button follow, the pass rises
+   once its fare is in, and its codes and price flip into place (FarePass.jsx). */
+@media (prefers-reduced-motion: no-preference) {
+  .clouds > canvas {
+    animation: appear var(--dur-long) var(--ease) both;
+  }
+
+  .hero h1 .line > span {
+    animation: surface var(--dur-long) var(--ease) both;
+  }
+
+  .hero h1 .line + .line > span {
+    animation-delay: .16s;
+  }
+
+  .hero-copy .lede {
+    animation: rise var(--dur-long) .32s var(--ease) both;
+  }
+
+  .hero-copy .btn {
+    animation: rise var(--dur-long) .4s var(--ease) both;
+  }
+
+  .pass {
+    visibility: hidden;
+  }
+
+  .pass.in {
+    visibility: visible;
+    animation: land var(--dur-long) var(--ease) both;
+  }
+}
+
+@keyframes appear {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes surface {
+  from {
+    translate: 0 1.3em;
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    translate: 0 24px;
+  }
+}
+
+@keyframes land {
+  from {
+    opacity: 0;
+    translate: 0 40px;
+  }
+}

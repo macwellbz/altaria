@@ -1,15 +1,15 @@
-// Altaria AI sky: the view from above a layer of clouds, drawn with WebGL.
+// Altaria's sky: the view from above a layer of clouds, drawn with WebGL.
 // Pass 1 (costly, once per size, spread over frames): march each pixel's ray through a layer of cumulus domes and store
 //   its lighting: R = sunlight, G = ambient depth, B = rim light, A = thickness.
 // Pass 2 (cheap, only while something moves): paint sky, ground haze and clouds from that texture,
 //   in the current theme's colours, carving the wake the pointer leaves.
 // Nothing renders while the scene is still. Without WebGL the CSS gradient behind the canvas stays.
-(() => {
-  const canvas = document.getElementById("clouds");
+// startSky(canvas) starts it (CloudSky.jsx) and returns a function that stops it.
+export default function startSky(canvas) {
   const opts = { antialias: false, depth: false, stencil: false, powerPreference: "low-power" };
-  let gl = canvas && canvas.getContext("webgl", { ...opts, failIfMajorPerformanceCaveat: true });
+  let gl = canvas.getContext("webgl", { ...opts, failIfMajorPerformanceCaveat: true });
   const flagged = !gl;
-  if (flagged) gl = canvas && canvas.getContext("webgl", opts);
+  if (flagged) gl = canvas.getContext("webgl", opts);
   if (!gl) return;
   // No GPU: WebGL runs on the CPU, so draw the clouds once, smaller, and keep them still. Not every
   // software renderer raises the caveat above, so its name is checked too.
@@ -321,24 +321,27 @@
     wake();
   }
   let resizing = 0;   // the lighting pass is the costly one: redo it once the size settles
-  new ResizeObserver(() => {
+  const resizer = new ResizeObserver(() => {
     clearTimeout(resizing);
     resizing = setTimeout(() => {
       if (!size()) return;
       while (todo) lightStrip();   // after a resize, all at once: better one pause than clouds going missing
       if (!frame) draw(performance.now());
     }, 160);
-  }).observe(canvas);
-  new MutationObserver(() => {
+  });
+  resizer.observe(canvas);
+  const themer = new MutationObserver(() => {
     const next = palette(themeName());
     from = still() ? next : colors;
     colors = to = next;
     blendStart = performance.now();
     wake();
-  }).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+  });
+  themer.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
 
   let last = null;
-  canvas.closest(".stage").addEventListener("pointermove", (e) => {
+  const stage = canvas.closest(".stage");
+  const move = (e) => {
     if (still()) return;
     const r = canvas.getBoundingClientRect();
     const x = e.clientX - r.left, y = e.clientY - r.top, now = performance.now();
@@ -348,9 +351,22 @@
     trail.push({ x: x * (css[0] / r.width), y: y * (css[1] / r.height), r: Math.min(160, 70 + speed * 55), s: 1, t: now });
     if (trail.length > TRAIL) trail.shift();
     wake();
-  }, { passive: true });
-  canvas.closest(".stage").addEventListener("pointerleave", () => (last = null));
-
-  canvas.addEventListener("webglcontextlost", (e) => { e.preventDefault(); cancelAnimationFrame(frame); canvas.hidden = true; });
+  };
+  const leave = () => (last = null);
+  const lost = (e) => { e.preventDefault(); cancelAnimationFrame(frame); canvas.hidden = true; };
+  stage.addEventListener("pointermove", move, { passive: true });
+  stage.addEventListener("pointerleave", leave);
+  canvas.addEventListener("webglcontextlost", lost);
   start();
-})();
+
+  return () => {
+    cancelAnimationFrame(frame);
+    clearTimeout(resizing);
+    resizer.disconnect();
+    themer.disconnect();
+    stage.removeEventListener("pointermove", move);
+    stage.removeEventListener("pointerleave", leave);
+    canvas.removeEventListener("webglcontextlost", lost);
+    canvas.width = canvas.height = 0;   // so a restart on this canvas (a hot reload) sizes and lights it afresh
+  };
+}

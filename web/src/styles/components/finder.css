@@ -1,0 +1,86 @@
+/* The airport finder (AirportBlank.jsx): a search box over a list of matches, dropping down from the blank
+   that opened it. It sits inside the sentence, so it sets its own type rather than the sentence's.
+   Corners nest: everything inside rounds to the finder's corner less the inset between them. */
+.finder {
+  --corner: 16px;
+  --inset: 6px;
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 20;
+  width: min(22em, 100vw - 2 * var(--s-4));
+  padding: var(--inset);
+  font-size: var(--t-sm);
+  font-weight: 400;
+  line-height: 1.35;
+  letter-spacing: 0;
+  color: var(--ink);
+  text-align: start;
+  white-space: normal;
+  cursor: default;
+  background: var(--raised);
+  border: 1px solid var(--line);
+  border-radius: var(--corner);
+  box-shadow: var(--shadow);
+}
+
+.finder input {
+  padding: 9px 12px;
+  color: var(--ink);
+  text-align: start;
+  background: var(--wash);
+  border: 1px solid var(--rule);
+  border-radius: calc(var(--corner) - var(--inset));
+}
+
+.finder input:focus {
+  border-color: var(--focus);
+  box-shadow: inset 0 0 0 1px var(--focus);
+}
+
+.finder-list {
+  display: block;
+  max-height: min(45vh, 340px);
+  margin-top: var(--inset);
+  overflow-y: auto;
+}
+
+.finder [role="option"] {
+  display: grid;
+  grid-template-columns: 3.1em minmax(0, 1fr);
+  gap: var(--s-2);
+  padding: 8px 10px;
+  border-radius: calc(var(--corner) - var(--inset));
+  cursor: pointer;
+}
+
+.finder [role="option"] b {
+  letter-spacing: .02em;
+}
+
+.finder small {
+  display: block;
+  font-size: var(--t-xs);
+  color: var(--ink-2);
+}
+
+.finder [role="option"]:hover {
+  background: var(--wash);
+}
+
+/* The active match: where Enter or Tab lands. */
+.finder [aria-selected="true"] {
+  background: var(--wash);
+  box-shadow: inset 0 0 0 2px var(--focus);
+}
+
+.finder-note {
+  display: block;
+  padding: 8px 10px 4px;
+  font-size: var(--t-sm);
+  color: var(--ink-2);
+}
+
+.finder-note:empty {
+  display: none;
+}

@@ -1,0 +1,35 @@
+/* Matrix's warnings on a fare (Badges.jsx), each a pill coloured by how much it matters. */
+.badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  font-size: var(--t-xs);
+  font-weight: 500;
+  line-height: 1.5;
+  white-space: nowrap;
+  color: var(--info);
+  background: var(--info-bg);
+  border-radius: 999px;
+}
+
+.badge.risk {
+  color: var(--risk);
+  background: var(--risk-bg);
+}
+
+.badge.warn {
+  color: var(--warn);
+  background: var(--warn-bg);
+}
+
+.badge svg {
+  width: 12px;
+  height: 12px;
+}

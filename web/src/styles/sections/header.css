@@ -1,0 +1,150 @@
+/* The fixed header (Header.jsx): bare over the sky, with a backing once page content can pass beneath it. */
+.nav {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-4);
+  height: var(--header);
+  padding: 0 var(--edge);
+}
+
+/* The backing is a translucent material: the page shows through it, blurred and tinted toward the paper, and
+   instead of stopping at a hairline it fades out over a soft edge below the bar, so content slips under rather
+   than being cut. (The masked-blur edge is the idea behind React Bits' GradualBlur, done here in one layer.) */
+.nav::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 calc(-1 * var(--s-5));
+  z-index: -1;
+  background: color-mix(in oklab, var(--paper) 74%, transparent);
+  -webkit-backdrop-filter: blur(16px) saturate(1.4);
+  backdrop-filter: blur(16px) saturate(1.4);
+  mask: linear-gradient(#000 calc(100% - var(--s-6)), rgb(0 0 0 / .6) calc(100% - var(--s-4)), rgb(0 0 0 / .18) calc(100% - var(--s-2)), #0000);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--dur-short) var(--ease);
+}
+
+.nav.solid::before {
+  opacity: 1;
+}
+
+/* Asked for less transparency or more contrast, or without backdrop blur: a solid bar and a clear edge. */
+@media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
+  .nav::before {
+    inset: 0;
+    background: var(--paper);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    mask: none;
+    box-shadow: 0 1px 0 var(--line);
+  }
+}
+
+@media (prefers-contrast: more) {
+  .nav::before {
+    box-shadow: 0 1px 0 var(--rule);
+  }
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .nav::before {
+    inset: 0;
+    background: var(--paper);
+    mask: none;
+    box-shadow: 0 1px 0 var(--line);
+  }
+}
+
+.brand {
+  flex: none;
+  border-radius: 8px;
+}
+
+/* The guide keeps R = .28 of the symbol's height clear on every side, 8px round the header's lockup. */
+.lockup {
+  display: block;
+  width: auto;
+  height: 28px;   /* 129px wide; the guide's least is 24px tall */
+}
+
+.nav nav {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+}
+
+.link {
+  padding: var(--s-2) var(--s-3);
+  font-size: var(--t-sm);
+  text-decoration: none;
+  border-radius: 999px;
+  transition: color var(--dur-short) var(--ease);
+}
+
+.link:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.link:active {
+  color: var(--accent-text);
+}
+
+.theme {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  color: var(--ink);
+  background: transparent;
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+  transition:
+    background-color var(--dur-short) var(--ease),
+    scale var(--dur-short) var(--ease);
+}
+
+.theme:hover {
+  background: color-mix(in oklab, var(--surface) 60%, transparent);
+}
+
+.theme:active {
+  scale: .92;
+  background: color-mix(in oklab, var(--surface) 85%, transparent);
+  transition-duration: 60ms;
+}
+
+.theme svg {
+  width: 20px;
+  height: 20px;
+}
+
+:root[data-theme="dark"] .theme .moon,
+:root:not([data-theme="dark"]) .theme .sun {
+  display: none;
+}
+
+/* Day to night: a plain crossfade, where the browser has view transitions (Header.jsx). */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: var(--dur-medium);
+  animation-timing-function: var(--ease);
+}
+
+@media (max-width: 899px) {
+  .link {
+    display: none;
+  }
+}
+
+@media (max-width: 600px) {
+  .lockup {
+    height: 24px;   /* 110px wide, the guide's least */
+  }
+}

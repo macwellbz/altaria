@@ -1,0 +1,76 @@
+/* Buttons. A filled pill for actions, its depth from the fill alone; a ghost pill for quieter ones. Both answer the
+   moment they're pressed: they settle a little and deepen, and spring back on release. */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 52px;
+  padding: 0 var(--s-5);
+  overflow: hidden;
+  font-size: var(--t-md);
+  font-weight: 600;
+  line-height: 1;
+  color: var(--on-accent);
+  text-decoration: none;
+  white-space: nowrap;
+  background: var(--accent);
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+  transition:
+    background-color var(--dur-short) var(--ease),
+    scale var(--dur-short) var(--ease);
+}
+
+/* In both themes the button deepens toward the palette's deep teal. */
+.btn:hover {
+  background: color-mix(in oklab, var(--accent) 86%, #003D57);
+}
+
+.btn:active:not(:disabled),
+.ghost:active {
+  scale: .97;
+  transition-duration: 60ms;
+}
+
+.btn:active:not(:disabled) {
+  background: color-mix(in oklab, var(--accent) 74%, #003D57);
+}
+
+.btn:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
+
+.btn-sm {
+  height: 40px;
+  padding: 0 var(--s-4);
+  font-size: var(--t-sm);
+}
+
+.ghost {
+  display: inline-flex;
+  align-items: center;
+  height: 40px;
+  padding: 0 var(--s-4);
+  font-size: var(--t-sm);
+  font-weight: 500;
+  line-height: 1;
+  color: var(--ink);
+  background: transparent;
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  cursor: pointer;
+  transition:
+    background-color var(--dur-short) var(--ease),
+    border-color var(--dur-short) var(--ease),
+    scale var(--dur-short) var(--ease);
+}
+
+.ghost:hover {
+  background: var(--wash);
+}
+
+.ghost:active {
+  background: var(--user);
+}

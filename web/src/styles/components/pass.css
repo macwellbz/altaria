@@ -1,0 +1,155 @@
+/* The fare pass (FarePass.jsx), a boarding pass: the itinerary on top, the price on a stub below a
+   perforation. Where it sits in the hero is up to hero.css. */
+.pass {
+  position: relative;
+  width: min(100% - 2 * var(--margin), 400px);
+  margin: var(--s-8) var(--edge) var(--s-9);
+  /* the page's small neutral shadow, drawn round the cut-out shape (box-shadow would ignore the notches) */
+  filter: drop-shadow(0 1px 1px rgb(0 0 0 / .06)) drop-shadow(0 6px 14px rgb(0 0 0 / .1));
+}
+
+/* At night the pass is a step up from the sky, edged with a hairline that follows its notches. */
+:root[data-theme="dark"] .pass {
+  --surface: var(--raised);
+  filter: drop-shadow(0 0 .5px color-mix(in oklab, var(--ink) 55%, transparent));
+}
+
+.pass-top,
+.pass-stub {
+  padding: var(--s-5);
+  background: var(--surface);
+}
+
+.pass-top {
+  border-radius: var(--radius) var(--radius) 0 0;
+  mask:
+    radial-gradient(circle 12px at 0 100%, #0000 11.5px, #000 12px) left / 51% 100% no-repeat,
+    radial-gradient(circle 12px at 100% 100%, #0000 11.5px, #000 12px) right / 51% 100% no-repeat;
+}
+
+/* The stub laps a pixel over the top half. Each half is masked on its own, so where they only met, their soft edges
+   left a hairline between them at fractional pixel positions, and the pass's shadow showed through it. */
+.pass-stub {
+  position: relative;
+  margin-top: -1px;
+  padding-top: calc(var(--s-5) + 1px);
+  border-radius: 0 0 var(--radius) var(--radius);
+  mask:
+    radial-gradient(circle 12px at 0 1px, #0000 11.5px, #000 12px) left / 51% 100% no-repeat,
+    radial-gradient(circle 12px at 100% 1px, #0000 11.5px, #000 12px) right / 51% 100% no-repeat;
+}
+
+/* the perforation */
+.pass-stub::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 20px;
+  right: 20px;
+  border-top: 2px dashed var(--line);
+}
+
+.pass h2 {
+  font-size: var(--t-sm);
+  font-weight: 500;
+  letter-spacing: 0;
+  color: var(--ink-2);
+}
+
+.pass .asked {
+  font-size: var(--t-sm);
+  color: var(--ink-2);
+}
+
+.legs {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  margin-top: var(--s-4);
+  font-size: 2.125rem;   /* 34px */
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: -.01em;
+}
+
+.legs .hop {
+  flex: 1;
+  position: relative;
+  height: 2px;
+  background: repeating-linear-gradient(90deg, var(--rule) 0 3px, transparent 3px 8px);
+}
+
+.legs .hop span {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  translate: -50% -50%;
+  padding: 2px var(--s-2);
+  font-size: var(--t-xs);
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: .02em;
+  white-space: nowrap;
+  color: var(--ink-2);
+  background: var(--surface);
+}
+
+.pass dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 2px var(--s-4);
+  margin: var(--s-4) 0 0;
+  font-size: var(--t-sm);
+}
+
+.pass dt {
+  color: var(--ink-2);
+}
+
+.pass dd {
+  margin: 0;
+}
+
+/* The price: Spectral's figures, tabular, flipping into place on load (bits/flap.css). */
+.fare-big {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 var(--s-2);
+  font-size: 3.625rem;   /* 58px */
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.fare-big .n {
+  font-family: var(--font-display);
+  font-weight: 300;
+  letter-spacing: -.02em;
+}
+
+.fare-big small {
+  font-size: var(--t-sm);
+  font-weight: 500;
+  color: var(--ink-2);
+}
+
+.pass .badges {
+  margin-top: var(--s-3);
+}
+
+.pass .fine {
+  margin-top: var(--s-4);
+  font-size: var(--t-sm);
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+
+@media (max-width: 600px) {
+  .legs {
+    font-size: 1.75rem;   /* 28px */
+  }
+
+  .fare-big {
+    font-size: 3rem;   /* 48px */
+  }
+}

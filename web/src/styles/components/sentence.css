@@ -1,0 +1,244 @@
+/* The search as one sentence at one size (SearchForm.jsx), a clause to a line at every width: where it goes,
+   when it departs and lands, when it returns, and in what currency. Every field is a blank: the same padding and
+   underline, on the text's baseline, as wide as the widest value it can show. The search button shares the last
+   clause's line where there's room (search.css). */
+.say {
+  container: say / inline-size;   /* the first clause regroups by how much of it fits (below), in em of the sentence */
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  column-gap: var(--s-7);
+  font-size: var(--t-say);
+  font-weight: 400;
+  line-height: 1.9;
+  letter-spacing: -.01em;
+}
+
+.clause {
+  grid-column: 1 / -1;
+}
+
+/* A breath before each new part of the trip: the outbound dates, the return, the currency. */
+.clause.leg {
+  margin-top: var(--s-3);
+}
+
+.clause.last {
+  grid-column: 1;
+}
+
+.blank {
+  position: relative;
+  display: inline-grid;
+  vertical-align: baseline;
+  padding: 0 .2em;   /* room for the focus ring, which sits inside the blank, clear of the words beside it */
+  line-height: 1.35;
+  color: var(--ink);
+  font-weight: 500;
+  text-align: center;   /* spare width splits evenly, so values sit centered in their blanks */
+  border-bottom: 1.5px solid var(--rule);
+  border-radius: .22em .22em 0 0;
+  transition:
+    background-color var(--dur-short) var(--ease),
+    border-color var(--dur-short) var(--ease);
+}
+
+.blank > * {
+  grid-area: 1 / 1;
+}
+
+/* An invisible sizer shares the value's grid cell, so filling in a blank never reflows the sentence. */
+.blank::after {
+  grid-area: 1 / 1;
+  height: 0;
+  overflow: hidden;
+  visibility: hidden;
+  white-space: pre;
+}
+
+.code::after {
+  content: "WWW";   /* three of Inter's widest capital */
+}
+
+.date::after {
+  content: "Wed May 30";   /* the widest date Inter sets, wider than "pick a date" */
+}
+
+.pick::after {
+  content: attr(data-fit);   /* every label the select can show, one per line (SearchForm.jsx) */
+}
+
+.blank:hover {
+  border-bottom-color: var(--ink);
+}
+
+/* A blank the trip box filled (SearchForm.jsx), until the person edits it or searches: tinted the colour of your
+   own words in the thread, the way a browser tints a field it has filled in for you. */
+.blank.from-trip {
+  background: color-mix(in oklab, var(--user) 60%, transparent);
+}
+
+.blank:focus-within {
+  background: var(--wash);
+  border-bottom-color: var(--accent-text);
+}
+
+/* The controls inside are unstyled, so the blank carries the ring. */
+.blank:has(:focus-visible) {
+  outline: 2px solid var(--focus);
+  outline-offset: -2px;
+}
+
+.blank input,
+.blank select {
+  min-width: 0;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  background: none;
+  border: 0;
+  border-radius: 0;
+  outline: none;
+}
+
+.blank input::placeholder {
+  color: var(--ink-2);
+  font-weight: 400;
+  opacity: 1;
+}
+
+/* Airports: the blank is a button that only ever shows the chosen code; the finder below it takes the
+   typing (AirportBlank.jsx). */
+.code > button {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  text-align: inherit;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  outline: none;
+}
+
+.code.empty > button {
+  color: var(--ink-2);
+  font-weight: 400;
+}
+
+/* Dates and choices: a readable label on show, and the native control over it, invisible, taking the
+   clicks. Keyboard users see the native date editor while it has focus (.kbd, set in SearchForm.jsx). */
+.shown {
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.date input,
+.pick select {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.date input::-webkit-calendar-picker-indicator {
+  position: absolute;
+  inset: 0;
+  width: auto;
+  height: auto;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.date.empty .shown {
+  color: var(--ink-2);
+  font-weight: 400;
+}
+
+.kbd .date:focus-within .shown {
+  visibility: hidden;
+}
+
+/* At this size the native editor and its calendar button fit the blank. */
+.kbd .date:focus-within input {
+  padding-inline-end: .2em;
+  font-size: .7em;
+  text-align: inherit;
+  opacity: 1;
+}
+
+.kbd .date:focus-within input::-webkit-calendar-picker-indicator {
+  position: static;
+  width: revert;
+  height: revert;
+  margin-inline-start: .3em;
+  opacity: .75;
+}
+
+/* Also while the calendar button inside a date has focus. */
+.kbd .blank:focus-within {
+  outline: 2px solid var(--focus);
+  outline-offset: -2px;
+}
+
+/* The select's own label is invisible but wider than the blank; clipped, it can't widen a phone's page. */
+.pick select {
+  appearance: none;
+  overflow: hidden;
+}
+
+.swap {
+  display: inline-grid;
+  place-items: center;
+  width: 1.3em;
+  height: 1.3em;
+  margin-left: .3em;
+  padding: 0;
+  vertical-align: -.22em;
+  color: var(--ink);
+  background: var(--wash);
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+  transition:
+    transform var(--dur-medium) var(--ease),
+    background-color var(--dur-short) var(--ease);
+}
+
+.swap:hover {
+  background: var(--user);
+}
+
+.swap:active {
+  transform: rotate(180deg);
+}
+
+.swap svg {
+  width: .72em;
+  height: .72em;
+}
+
+/* The first clause keeps its phrases whole. Where "with ... each way" fits on a line, it wraps as one; narrower, "each
+   way" still stays with its blank, and "with" ends the line above instead, beside "to VNO". In em of the sentence, so
+   a larger text setting regroups it sooner; narrower than both, it wraps where it must. */
+@container say (width >= 14.6em) {   /* "any number of stops each way" is 14.4em */
+  .tail {
+    white-space: nowrap;
+  }
+
+  .clause:first-child {
+    text-wrap: balance;
+  }
+}
+
+@container say (width >= 16.8em) {   /* with "with ", 16.6em */
+  .keep {
+    white-space: nowrap;
+  }
+}
+
+/* Narrower, the search button takes a line of its own below the sentence. */
+@media (max-width: 959px) {
+  .clause.last {
+    grid-column: 1 / -1;
+  }
+}

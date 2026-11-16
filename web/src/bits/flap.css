@@ -1,0 +1,70 @@
+/* Split-flap text (Flap.jsx; after React Bits' SplitFlapText, MIT + Commons Clause). The real text keeps its
+   place, unseen, while a layer of cells over it turns; each cell is one character, cut at the hinge into an upper
+   and a lower half, with a hairline split between them as on a real board. */
+.flap {
+  position: relative;
+}
+
+.flap[data-flipping] > .flap-text {
+  opacity: 0;
+}
+
+.flap-board {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+  user-select: none;
+}
+
+.flap-cell {
+  --split: max(1px, .035em);
+  position: absolute;
+  mask: linear-gradient(#000 calc(var(--hinge) - var(--split) / 2), #0000 0 calc(var(--hinge) + var(--split) / 2), #000 0);
+}
+
+.flap-half {
+  position: absolute;
+  left: 0;
+  right: 0;
+  overflow: hidden;
+}
+
+/* t: the new character's upper half, uncovered as the flap falls; f: the falling flap, the old upper half */
+.flap-half.t,
+.flap-half.f {
+  top: 0;
+  height: var(--hinge);
+}
+
+/* b: the old character's lower half, covered as the flap lands; k: the landing flap, the new lower half */
+.flap-half.b,
+.flap-half.k {
+  top: var(--hinge);
+  bottom: 0;
+}
+
+.flap-half.f {
+  transform-origin: 50% 100%;
+}
+
+.flap-half.k {
+  transform-origin: 50% 0;
+}
+
+/* Each half shows its part of a whole character, set on the same line box as the text beneath. */
+.flap-glyph {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: var(--h);
+  line-height: var(--h);
+  white-space: pre;
+}
+
+.flap-half.b > .flap-glyph,
+.flap-half.k > .flap-glyph {
+  top: calc(-1 * var(--hinge));
+}

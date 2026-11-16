@@ -1,0 +1,40 @@
+/* Altaria's stylesheet. main.jsx imports this file and nothing else.
+
+   The cascade runs in layers, each beating the one before it whatever the selectors, so a section never
+   has to out-specify a component to restyle it:
+     reset       the browser's defaults, evened out
+     tokens      every colour, size, space and duration, light and dark, and the font faces
+     base        the page itself: body text, headings, links, focus, the shared column
+     components  pieces used anywhere: buttons, the sentence's blanks, the finder, the pass, tables
+     sections    the page from top to bottom, including how each section rearranges on smaller screens
+     utilities   single-purpose classes that must win: hidden text, muted text, no wrapping
+
+   Inside a layer, the order below still counts between equal selectors: finder.css and select.css come
+   after sentence.css, whose `.blank input` and `.pick select` they restyle.
+
+   Vite inlines these imports into one file, which ships unminified (see vite.config.js). */
+@layer reset, tokens, base, components, sections, utilities;
+
+@import "./reset.css" layer(reset);
+@import "./tokens.css" layer(tokens);
+@import "./fonts.css" layer(tokens);
+@import "./base.css" layer(base);
+
+@import "./components/button.css" layer(components);
+@import "./components/sentence.css" layer(components);
+@import "./components/finder.css" layer(components);
+@import "./components/select.css" layer(components);
+@import "./components/pass.css" layer(components);
+@import "../bits/flap.css" layer(components);
+@import "./components/badge.css" layer(components);
+@import "./components/table.css" layer(components);
+
+@import "./sections/header.css" layer(sections);
+@import "./sections/hero.css" layer(sections);
+@import "./sections/how.css" layer(sections);
+@import "./sections/search.css" layer(sections);
+@import "./sections/thread.css" layer(sections);
+@import "./sections/results.css" layer(sections);
+@import "./sections/footer.css" layer(sections);
+
+@import "./utilities.css" layer(utilities);

@@ -1,0 +1,63 @@
+/* Tables sit in a rounded frame that scrolls sideways when they don't fit. Figures line up in columns. */
+.table-scroll {
+  margin-top: var(--s-4);
+  overflow-x: auto;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--t-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+th {
+  padding: var(--s-3) var(--s-4);
+  font-size: var(--t-xs);
+  font-weight: 500;
+  text-align: left;
+  color: var(--ink-2);
+  border-bottom: 1px solid var(--line);
+}
+
+td {
+  padding: var(--s-4);
+  vertical-align: top;
+  border-bottom: 1px solid var(--line);
+}
+
+tbody tr:last-child > * {
+  border-bottom: 0;
+}
+
+.num {
+  text-align: right;
+}
+
+/* Matrix against Google, date by date (Results.jsx): only when a run searched both. */
+.cmp td,
+.cmp th {
+  padding: var(--s-3) var(--s-4);
+}
+
+.cmp tbody th {
+  font-size: var(--t-sm);
+  font-weight: 500;
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+.cmp .win {
+  font-weight: 600;
+  color: var(--good);
+}
+
+@media (max-width: 600px) {
+  .cmp th,
+  .cmp td {
+    padding: 10px 12px;
+  }
+}

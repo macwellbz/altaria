@@ -1,0 +1,383 @@
+/* The answer to a search (Results.jsx, Brief.jsx, FareRow.jsx): the summary, then every fare. */
+.brief p {
+  max-width: var(--measure);
+  font-size: var(--t-lg);
+  line-height: 1.55;
+}
+
+/* The answer to the question asked, as the turn's display line. */
+.brief .lead {
+  max-width: none;
+  margin-bottom: var(--s-4);
+  font-family: var(--font-display);
+  font-size: var(--t-2xl);
+  font-weight: 300;
+  line-height: 1.1;
+  letter-spacing: -.025em;
+  font-variant-numeric: tabular-nums;
+}
+
+.brief p + p {
+  margin-top: var(--s-2);
+}
+
+/* The fares worth a look besides the cheapest: prices in a column, then why and who flies it. */
+.picks {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: var(--s-4) var(--s-5);
+  margin: var(--s-5) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.picks li {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: subgrid;
+  align-items: baseline;
+}
+
+.picks .pp {
+  justify-self: end;
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.picks b {
+  font-size: var(--t-lg);
+}
+
+.picks .pp small,
+.picks .why,
+.picks .who {
+  display: block;
+}
+
+.picks .pp small,
+.picks .who {
+  font-size: var(--t-sm);
+  color: var(--ink-2);
+}
+
+.brief .confirm {
+  margin-top: var(--s-5);
+  font-size: var(--t-md);
+}
+
+.again {
+  margin-top: var(--s-6);
+}
+
+.again a {
+  font-weight: 500;
+  text-underline-offset: 4px;
+}
+
+.block {
+  margin-top: var(--s-8);
+}
+
+.block h3 {
+  font-size: var(--t-xl);
+}
+
+.block > p {
+  max-width: var(--measure);
+  margin-top: var(--s-2);
+  font-size: var(--t-sm);
+}
+
+/* The legs size to their cells (their container query needs that), so the price and booking columns shrink to
+   their contents, warnings get a fixed width, and the two legs split the rest evenly. */
+.fares-table td.c-price,
+.fares-table td.c-go {
+  width: 1%;
+}
+
+.fares-table td.c-go {
+  text-align: end;
+}
+
+.fares-table td.c-warn {
+  width: 13.5em;
+}
+
+.fare .price {
+  font-size: 1.625rem;   /* 26px */
+  font-weight: 500;
+  line-height: 1.1;
+  letter-spacing: -.015em;
+  white-space: nowrap;
+}
+
+.fare .price small {
+  font-size: var(--t-xs);
+  font-weight: 500;
+  letter-spacing: 0;
+  color: var(--ink-2);
+}
+
+.fare .quoted {
+  font-size: var(--t-xs);
+  color: var(--ink-2);
+}
+
+.when .t {
+  font-weight: 600;
+}
+
+.sub {
+  font-size: var(--t-xs);
+  color: var(--ink-2);
+}
+
+/* A leg reads like a timetable: its dates and length, then one line per flight along a rail that is solid
+   while you fly and pale while you wait. A layover over six hours, or a change of airport, turns warm. */
+.leg {
+  container: leg / inline-size;
+  contain-intrinsic-inline-size: 10em;   /* equal stand-in widths, so both legs get equal columns */
+}
+
+.leg-h {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 var(--s-3);
+}
+
+.hops {
+  display: grid;
+  grid-template-columns: max-content minmax(0, max-content) max-content;
+  gap: 2px var(--s-4);
+  margin: var(--s-2) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.hops > li {
+  grid-column: 1 / -1;
+  position: relative;
+  padding-left: var(--s-4);
+}
+
+.hops > li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 1px;
+  bottom: 1px;
+  width: 3px;
+  background: var(--accent);
+  border-radius: 2px;
+}
+
+.fl {
+  display: grid;
+  grid-template-columns: subgrid;
+  align-items: baseline;
+}
+
+/* A flight's line keeps each airport with its time, and breaks after the arrow when the column is narrow. */
+.fl-r {
+  min-width: 0;
+}
+
+.fl .ap {
+  font-weight: 600;
+  letter-spacing: .02em;
+}
+
+.fl .to {
+  margin: 0 .4em;
+  color: var(--ink-2);
+}
+
+.fl .d {
+  font-size: var(--t-xs);
+  font-weight: 500;
+  color: var(--ink-2);
+}
+
+.fl .fn,
+.fl-d {
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+
+/* LO46, AC808: a letter O and a zero sit side by side in flight numbers, so here alone the zero is slashed. */
+.fl .fn {
+  font-variant-numeric: tabular-nums slashed-zero;
+}
+
+.fl-d {
+  text-align: right;
+}
+
+/* sized by the flights' columns, never widening them */
+.lay {
+  contain: inline-size;
+  font-size: var(--t-xs);
+  color: var(--ink-2);
+}
+
+.hops > .lay::before {
+  background: color-mix(in oklab, var(--rule) 45%, transparent);
+}
+
+.lay.warn {
+  font-weight: 500;
+  color: var(--warn);
+}
+
+.hops > .lay.warn::before {
+  background: var(--warn);
+}
+
+/* narrow: each flight takes two lines, the route over the airline */
+@container leg (width < 440px) {
+  .hops {
+    grid-template-columns: minmax(0, 1fr) max-content;
+  }
+
+  .fl-r {
+    grid-column: 1 / -1;
+  }
+}
+
+/* "View flight", the row's own action: a small outlined button in the accent. */
+.book {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  overflow: hidden;
+  font-weight: 600;
+  color: var(--accent-text);
+  text-decoration: none;
+  white-space: nowrap;
+  border-color: color-mix(in oklab, var(--accent-text) 55%, var(--line));
+}
+
+.book:hover {
+  border-color: var(--accent-text);
+}
+
+.book svg {
+  width: 14px;
+  height: 14px;
+  flex: none;
+}
+
+.row-top td {
+  background: var(--wash);
+}
+
+.more {
+  margin-top: var(--s-4);
+}
+
+/* Narrower than the table needs: each fare becomes a card, its legs labelled. */
+@media (max-width: 1000px) {
+  .fares-table thead {
+    display: none;
+  }
+
+  .fares-table,
+  .fares-table tbody,
+  .fares-table tr,
+  .fares-table td {
+    display: block;
+  }
+
+  .fares-table tr {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--s-3);
+    padding: var(--s-4);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .fares-table tbody tr:last-child {
+    border-bottom: 0;
+  }
+
+  .fares-table td,
+  .fares-table .row-top td {
+    padding: 0;
+    background: none;
+    border: 0;
+  }
+
+  .fares-table td.c-price,
+  .fares-table td.c-warn,
+  .fares-table td.c-go {
+    width: auto;
+  }
+
+  .fares-table td.c-go {
+    text-align: start;
+  }
+
+  .fares-table td.c-go:empty {
+    display: none;
+  }
+
+  .fares-table tr.row-top {
+    background: var(--wash);
+  }
+
+  .fares-table td.c-price {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 4px var(--s-3);
+  }
+
+  .fares-table td.c-warn:empty {
+    display: none;
+  }
+
+  .fares-table td[data-label]::before {
+    content: attr(data-label);
+    display: block;
+    font-size: var(--t-xs);
+    color: var(--ink-2);
+  }
+}
+
+/* The one entrance when results land: the brief, then the first rows, rise in a short stagger (Results.jsx). */
+@media (prefers-reduced-motion: no-preference) {
+  .brief > *,
+  .fares-table tr.enter {
+    animation: arrive var(--dur-medium) var(--ease) both;
+  }
+
+  .brief > :nth-child(2) {
+    animation-delay: 60ms;
+  }
+
+  .brief > :nth-child(3) {
+    animation-delay: 120ms;
+  }
+
+  .brief > :nth-child(4) {
+    animation-delay: 180ms;
+  }
+
+  .brief > :nth-child(n + 5) {
+    animation-delay: 240ms;
+  }
+
+  .fares-table tr.enter {
+    animation-delay: calc(var(--i) * 60ms);
+  }
+}
+
+@keyframes arrive {
+  from {
+    opacity: 0;
+    translate: 0 12px;
+  }
+}

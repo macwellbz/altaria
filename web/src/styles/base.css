@@ -1,0 +1,62 @@
+/* The page itself: body text, headings, links, the focus ring, the shared column and the skip link. */
+/* The page's one scroll offset: anchors, focus and scroll.js all stop this far down, clear of the fixed header.
+   Nothing else sets a scroll margin, so the stops never add up. */
+html {
+  scroll-padding-top: calc(var(--header) + var(--s-4));
+}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-text);
+  font-size: var(--t-md);
+  font-weight: 400;
+  line-height: 1.6;
+  text-wrap: pretty;   /* inherited, so no paragraph, list item or cell ends on a lone word */
+  overflow-x: clip;
+}
+
+/* Headings set in Inter by default; the display ones (h1, the statement, section headings) switch to
+   Spectral where they're styled. */
+h1,
+h2,
+h3 {
+  font-weight: 500;
+  letter-spacing: -.01em;
+  line-height: 1.05;
+  text-wrap: balance;
+}
+
+b,
+strong {
+  font-weight: 600;
+}
+
+a {
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+.wrap {
+  width: min(1280px, 100% - 2 * var(--margin));
+  margin-inline: auto;
+}
+
+.skip {
+  position: absolute;
+  left: var(--s-4);
+  top: -64px;
+  z-index: 50;
+  padding: var(--s-2) var(--s-4);
+  background: var(--surface);
+  border-radius: 10px;
+}
+
+.skip:focus {
+  top: var(--s-3);
+}

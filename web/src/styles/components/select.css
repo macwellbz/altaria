@@ -1,0 +1,49 @@
+/* The stops and currency lists. Where the browser allows it, the open list is drawn in the page in the
+   site's own type, its corners nested like the finder's; elsewhere it's the native list. */
+@supports (appearance: base-select) {
+  .pick select {
+    --corner: 16px;
+    --inset: 6px;
+  }
+
+  .pick select,
+  .pick ::picker(select) {
+    appearance: base-select;
+  }
+
+  .pick ::picker(select) {
+    max-height: min(50vh, 420px);
+    margin-top: 6px;
+    padding: var(--inset);
+    overflow-y: auto;
+    font-size: var(--t-sm);
+    font-weight: 400;
+    line-height: 1.3;
+    letter-spacing: 0;
+    color: var(--ink);
+    background: var(--raised);
+    border: 1px solid var(--line);
+    border-radius: var(--corner);
+    box-shadow: var(--shadow);
+  }
+
+  .pick option {
+    padding: 8px 12px;
+    font-weight: 400;
+    border-radius: calc(var(--corner) - var(--inset));
+  }
+
+  .pick option:hover,
+  .pick option:focus-visible {
+    background: var(--wash);
+    outline: none;
+  }
+
+  .pick option:checked {
+    font-weight: 600;
+  }
+
+  .pick option::checkmark {
+    color: var(--accent-text);
+  }
+}

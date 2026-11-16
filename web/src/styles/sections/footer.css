@@ -1,0 +1,55 @@
+/* The footer (Footer.jsx): the lockup with the page's links, the honest line, and the credits. */
+.foot {
+  padding: var(--s-8) 0;
+  font-size: var(--t-sm);
+  border-top: 1px solid var(--line);
+}
+
+.foot-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-4) var(--s-6);
+}
+
+.foot nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2) var(--s-5);
+}
+
+.foot nav a {
+  padding: var(--s-1) 0;
+  text-decoration: none;
+  border-radius: 4px;
+}
+
+.foot nav a:hover,
+.credits a:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.foot a:active {
+  color: var(--accent-text);
+}
+
+.honest {
+  max-width: var(--measure);
+  margin-top: var(--s-6);
+  font-size: var(--t-md);
+}
+
+.credits {
+  max-width: var(--measure);
+  margin-top: var(--s-3);
+  color: var(--ink-2);
+}
+
+/* each credit's name holds together: no "CC" at the end of one line and "BY-NC-SA 3.0" on the next */
+.credits a {
+  white-space: nowrap;
+  text-underline-offset: 3px;
+  text-decoration-color: color-mix(in oklab, currentColor 40%, transparent);
+}
