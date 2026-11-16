@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Altaria Logo Guide</title>
+<link rel="icon" href="icons/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400..600&family=Spectral:wght@300;400&display=swap">
+<style>
+:root {
+  --ice: #EEF5FF; --card: #FFFFFF; --ink: #003D57; --ink-2: #4C6E7B; --line: #D4E6FF;
+  --teal: #176B87; --night: #061925; --nink: #D7E5F1;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--ice); color: var(--ink); font: 400 15px/1.55 Inter, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+main { max-width: 1120px; margin: 0 auto; padding: 56px 24px 64px; }
+h1, h2 { font-family: Spectral, Georgia, serif; font-weight: 300; letter-spacing: -0.01em; margin: 0; }
+h1 { font-size: 56px; line-height: 1.05; }
+h2 { font-size: 30px; line-height: 1.15; margin-bottom: 14px; }
+p { margin: 0 0 8px; }
+ul { margin: 0; padding-left: 18px; }
+li { margin-bottom: 6px; }
+b { font-weight: 600; }
+code { font: 500 12.5px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--ink-2); white-space: nowrap; }
+.lab { font-size: 12.5px; font-weight: 600; color: var(--ink-2); margin: 0 0 8px; }
+.muted { color: var(--ink-2); }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 20px; padding: 24px; min-width: 0; }
+section { margin-top: 28px; }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+.top { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; align-items: end; }
+.kicker { font-size: 13px; color: var(--ink-2); margin-bottom: 14px; }
+.lede { font-family: Spectral, Georgia, serif; font-weight: 300; font-size: 24px; line-height: 1.3; color: #1C4E64; margin-top: 16px; }
+.hero { display: grid; place-items: center; padding: 56px 32px; }
+.hero img { width: 100%; max-width: 420px; height: auto; }
+
+.ways { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+.way { border-radius: 16px; overflow: hidden; border: 1px solid var(--line); background: var(--card); }
+.way .show { height: 150px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; }
+.way .show img.l { height: 34px; width: auto; }
+.way .show img.s { height: 40px; width: 40px; }
+.way .txt { padding: 14px 16px 16px; font-size: 14px; }
+.way .txt b { display: block; margin-bottom: 2px; }
+
+svg.dia { width: 100%; height: auto; display: block; margin: 6px 0 14px; }
+.sizes { display: flex; align-items: flex-end; gap: 18px; margin: 4px 0 16px; flex-wrap: wrap; }
+.sizes figure { margin: 0; display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 12px; color: var(--ink-2); }
+.sizes .cut { align-self: stretch; border-left: 1.5px dashed var(--teal); padding-left: 18px; display: flex; align-items: flex-end; gap: 18px; position: relative; }
+.sizes .cut::before { content: "small cut"; position: absolute; top: -2px; left: 10px; font-size: 12px; font-weight: 600; color: var(--teal); }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { text-align: left; padding: 7px 10px 7px 0; border-top: 1px solid var(--line); vertical-align: top; }
+th { font-weight: 600; color: var(--ink-2); font-size: 12.5px; border-top: 0; }
+
+.sw { display: grid; grid-template-columns: 30px 1fr; gap: 3px 12px; align-items: center; margin-bottom: 10px; font-size: 14px; }
+.sw i { width: 30px; height: 30px; border-radius: 8px; grid-row: span 2; border: 1px solid rgba(0, 61, 87, .14); }
+.sw span { font-size: 13px; color: var(--ink-2); }
+.cols { columns: 2; column-gap: 24px; }
+.cols .sw { break-inside: avoid; }
+
+.files li { margin-bottom: 4px; }
+</style>
+</head>
+<body>
+<main>
+  <div class="top">
+    <div>
+      <p class="kicker">Altaria · Logo kit · November 2026</p>
+      <h1>Altaria logo</h1>
+      <p class="lede">A square ticket whose tear is the horizon, with the sun rising on it.</p>
+      <p class="muted" style="margin-top:14px">Use the files in <code>brand/final/</code>. They are drawn and outlined once, so never redraw the mark or retype the name.</p>
+    </div>
+    <div class="card hero"><img src="lockup/altaria-lockup-color.svg" alt="Altaria"></div>
+  </div>
+
+  <section>
+    <h2>Colourways</h2>
+    <div class="ways">
+      <div class="way"><div class="show" style="background:#EEF5FF"><img class="l" src="lockup/altaria-lockup-color.svg" alt=""><img class="s" src="symbol/altaria-symbol-color.svg" alt=""></div>
+        <div class="txt"><b>Colour</b>The default, on ice or white: the site in light mode, documents, slides. <code>-color</code></div></div>
+      <div class="way"><div class="show" style="background:#061925"><img class="l" src="lockup/altaria-lockup-dark.svg" alt=""><img class="s" src="symbol/altaria-symbol-dark.svg" alt=""></div>
+        <div class="txt"><b>Dark</b>On night <code>#061925</code> and near-black surfaces: the site in dark mode. The stub turns teal. <code>-dark</code></div></div>
+      <div class="way"><div class="show" style="background:#FFFFFF"><img class="l" src="lockup/altaria-lockup-ink.svg" alt=""><img class="s" src="symbol/altaria-symbol-ink.svg" alt=""></div>
+        <div class="txt"><b>Ink</b>One colour, on light, when colour isn't available: one-colour print, stamps, embossing. The sun becomes a hole. <code>-ink</code></div></div>
+      <div class="way"><div class="show" style="background:#003D57"><img class="l" src="lockup/altaria-lockup-white.svg" alt=""><img class="s" src="symbol/altaria-symbol-white.svg" alt=""></div>
+        <div class="txt"><b>White</b>One colour, on ink, teal, photos and any dark or coloured surface the dark version doesn't suit. <code>-white</code></div></div>
+    </div>
+  </section>
+
+  <section class="two">
+    <div class="card">
+      <h2>Clear space</h2>
+      <svg class="dia" viewBox="-76 -76 1330 408" role="img" aria-label="Clear space of R around the lockup">
+        <rect x="-72" y="-72" width="1322" height="400" fill="#EEF5FF" stroke="#176B87" stroke-width="3" stroke-dasharray="14 10"/>
+        <rect x="0" y="0" width="1178" height="256" fill="#FFFFFF"/>
+        <image href="lockup/altaria-lockup-color.svg" x="0" y="0" width="1178" height="256"/>
+        <g fill="#D4E6FF"><rect x="-72" y="0" width="72" height="72"/><rect x="0" y="-72" width="72" height="72"/><rect x="1178" y="184" width="72" height="72"/><rect x="1106" y="256" width="72" height="72"/></g>
+        <g font-family="Inter, sans-serif" font-size="36" font-weight="600" fill="#176B87" text-anchor="middle">
+          <text x="-36" y="49">R</text><text x="36" y="-23">R</text><text x="1214" y="233">R</text><text x="1142" y="305">R</text>
+        </g>
+      </svg>
+      <div style="display:grid;grid-template-columns:150px 1fr;gap:20px;align-items:center">
+        <svg class="dia" style="margin:0" viewBox="-76 -76 408 408" role="img" aria-label="Clear space of R around the symbol, where R is the sun's radius">
+          <rect x="-72" y="-72" width="400" height="400" fill="#EEF5FF" stroke="#176B87" stroke-width="5" stroke-dasharray="20 14"/>
+          <rect x="0" y="0" width="256" height="256" fill="#FFFFFF"/>
+          <image href="symbol/altaria-symbol-color.svg" x="0" y="0" width="256" height="256"/>
+          <path d="M128 148.33V76.33" stroke="#FFFFFF" stroke-width="5"/>
+          <rect x="-72" y="-72" width="72" height="72" fill="#D4E6FF"/>
+          <g font-family="Inter, sans-serif" font-weight="600" text-anchor="middle"><text x="-36" y="-21" font-size="48" fill="#176B87">R</text><text x="152" y="128" font-size="40" fill="#FFFFFF">R</text></g>
+        </svg>
+        <p style="margin:0">Keep <b>R</b> clear on every side of the lockup and of the symbol. <b>R</b> is the sun's radius, 0.28 × the symbol's height: about 9 px round a 32 px lockup.</p>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Size</h2>
+      <div class="sizes">
+        <figure><img src="symbol/altaria-symbol-color.svg" width="64" height="64" alt="">64</figure>
+        <figure><img src="symbol/altaria-symbol-color.svg" width="48" height="48" alt="">48</figure>
+        <figure><img src="symbol/altaria-symbol-color.svg" width="40" height="40" alt="">40</figure>
+        <div class="cut">
+          <figure><img src="symbol/altaria-symbol-small-color.svg" width="32" height="32" alt="">32</figure>
+          <figure><img src="symbol/altaria-symbol-small-color.svg" width="24" height="24" alt="">24</figure>
+          <figure><img src="symbol/altaria-symbol-small-color.svg" width="16" height="16" alt="">16</figure>
+        </div>
+      </div>
+      <table>
+        <tr><th>File</th><th>Screen</th><th>Print</th></tr>
+        <tr><td>Lockup</td><td>24 px tall (110 px wide) or more</td><td>6 mm tall or more</td></tr>
+        <tr><td>Symbol</td><td>above 32 px</td><td>above 9 mm</td></tr>
+        <tr><td>Small cut</td><td>16 to 32 px; sharpest at exactly 16 or 32</td><td>5 to 9 mm</td></tr>
+      </table>
+      <p class="muted" style="margin-top:12px;font-size:14px">At 32 px and below, switch to <code>altaria-symbol-small-*</code>. It is drawn on a 16 px grid with bigger notches, so the tear lands on whole pixels and the 16 px icon still reads as a ticket. Never use either symbol below 16 px.</p>
+    </div>
+  </section>
+
+  <section class="two">
+    <div class="card">
+      <h2>Colour</h2>
+      <div class="cols">
+        <div class="sw"><i style="background:#86B6F6"></i><b>Sky <code>#86B6F6</code></b><span>RGB 134 182 246 · the sky, in colour and dark</span></div>
+        <div class="sw"><i style="background:#F08A6C"></i><b>Dawn coral <code>#F08A6C</code></b><span>RGB 240 138 108 · the sun only, never text</span></div>
+        <div class="sw"><i style="background:#003D57"></i><b>Deep teal ink <code>#003D57</code></b><span>RGB 0 61 87 · stub, wordmark, one colour</span></div>
+        <div class="sw"><i style="background:#176B87"></i><b>Teal <code>#176B87</code></b><span>RGB 23 107 135 · the stub on night</span></div>
+        <div class="sw"><i style="background:#D7E5F1"></i><b>Night ink <code>#D7E5F1</code></b><span>RGB 215 229 241 · the wordmark on night</span></div>
+        <div class="sw"><i style="background:#EEF5FF"></i><b>Ice <code>#EEF5FF</code></b><span>RGB 238 245 255 · light surface, icon tiles</span></div>
+        <div class="sw"><i style="background:#061925"></i><b>Night surface <code>#061925</code></b><span>RGB 6 25 37 · dark surface</span></div>
+        <div class="sw"><i style="background:#64C3E2"></i><b>Lifted teal <code>#64C3E2</code></b><span>RGB 100 195 226 · site accent on night, not in the logo</span></div>
+      </div>
+      <p class="muted" style="font-size:14px;margin-top:6px">Every version uses three colours at most, all flat. The wordmark is 10.6:1 on ice and 13.9:1 on night. For print, match the colours from a proof rather than converting them automatically.</p>
+    </div>
+    <div class="card">
+      <h2>Wordmark</h2>
+      <svg class="dia" viewBox="-20 -16 1420 370" role="img" aria-label="Lockup proportions">
+        <image href="lockup/altaria-lockup-color.svg" x="0" y="0" width="1178" height="256"/>
+        <g stroke="#176B87" stroke-width="3" fill="none">
+          <path d="M-12 37.86H1210M-12 218.14H1210" stroke-dasharray="10 8"/>
+          <path d="M256 290H348.16M256 274V306M348.16 274V306"/>
+        </g>
+        <g font-family="Inter, sans-serif" font-size="34" font-weight="600" fill="#176B87">
+          <text x="1224" y="49">cap height</text>
+          <text x="1224" y="230">baseline</text>
+          <text x="302" y="340" text-anchor="middle">0.36 × symbol</text>
+        </g>
+      </svg>
+      <ul>
+        <li><b>Altaria</b> in <b>Spectral Regular (400)</b>, sentence case, with the font's own kerning and tracking of -0.005 em, outlined to paths in every file.</li>
+        <li>The symbol is <b>1.42 × the cap height</b> and centred on it. The gap to the wordmark's origin is <b>0.36 × the symbol's height</b>.</li>
+        <li>Ink on light, night ink on night, or one colour. Spectral is by Production Type, under the SIL Open Font License.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="two">
+    <div class="card">
+      <h2>Don't</h2>
+      <ul>
+        <li>Retype the name, or set it in another font, weight or case. Use the lockup file.</li>
+        <li>Recolour any part, or use coral for anything but the sun.</li>
+        <li>Stretch, rotate, outline, or add shadows, glows or gradients.</li>
+        <li>Put the colour or dark version on photos, mid-tones or sky blue. Use white, or an ice tile with R of padding.</li>
+        <li>Move the symbol and wordmark, change the gap, or add words such as "ai".</li>
+        <li>Use the full symbol at 32 px or below, or the small cut above 32 px.</li>
+      </ul>
+    </div>
+    <div class="card files">
+      <h2>Files</h2>
+      <ul>
+        <li><code>symbol/altaria-symbol-{color,dark,ink,white}.svg</code> above 32 px</li>
+        <li><code>symbol/altaria-symbol-small-{…}.svg</code> 16 to 32 px</li>
+        <li><code>lockup/altaria-lockup-{…}.svg</code></li>
+        <li><code>png/</code> the same on transparent: symbols 256 and 512 px (<code>@2x</code>), lockups 128 and 256 px tall</li>
+        <li><code>icons/</code> <code>favicon.svg</code> (its stub turns teal in dark browser UI), <code>favicon.ico</code> (16, 32, 48), PNG favicons, <code>apple-touch-icon.png</code>, app icons for <code>site.webmanifest</code>, and <code>head-snippet.html</code></li>
+      </ul>
+      <p class="muted" style="margin-top:10px;font-size:14px">On the site: the header takes <code>altaria-lockup-color.svg</code> and <code>-dark.svg</code>; copy <code>icons/</code> to the site root and paste <code>head-snippet.html</code> into <code>&lt;head&gt;</code>.</p>
+    </div>
+  </section>
+</main>
+</body>
+</html>

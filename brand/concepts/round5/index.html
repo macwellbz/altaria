@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Altaria Preview Round</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Commissioner:FLAR,VOLM,wght@0..100,0..100,300..700&display=swap">
+<style>
+:root { --paper:#EEF5FF; --surface:#FFFFFF; --ink:#003D57; --ink-2:#4C6E7B; --accent:#176B87; --line:#D4E6FF; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --paper:#061925; --surface:#092435; --ink:#D7E5F1; --ink-2:#86A3B3; --accent:#73CCEA; --line:#1B3647; } }
+:root[data-theme="dark"] { --paper:#061925; --surface:#092435; --ink:#D7E5F1; --ink-2:#86A3B3; --accent:#73CCEA; --line:#1B3647; }
+* { box-sizing:border-box; }
+body { margin:0; background:var(--paper); color:var(--ink); font:400 15px/1.5 "Commissioner", system-ui, sans-serif; }
+main { max-width:1320px; margin:0 auto; padding:44px clamp(16px,3vw,40px) 56px; }
+a { color:var(--accent); }
+h1 { font-size:clamp(32px,3.6vw,52px); line-height:1.04; font-weight:500; letter-spacing:-.02em; margin:0 0 12px; font-variation-settings:"FLAR" 60; }
+h2 { font-size:clamp(22px,2.2vw,30px); font-weight:520; margin:44px 0 6px; display:flex; gap:12px; align-items:center; }
+.num { display:inline-grid; place-items:center; width:36px; height:36px; border-radius:50%; background:var(--ink); color:var(--surface); font-size:16px; font-weight:600; flex:none; }
+.lede { color:var(--ink-2); font-size:17px; max-width:70ch; margin:0 0 16px; }
+.notes-in { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin:0; padding:0; list-style:none; }
+.notes-in li { background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:12px 14px; font-size:14px; }
+.notes-in b { display:block; font-weight:600; margin-bottom:2px; } .notes-in i { color:var(--ink-2); }
+.intro { color:var(--ink-2); max-width:78ch; margin:0 0 16px; }
+.grid { display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:16px; }
+.card { display:grid; grid-template-rows:subgrid; grid-row:span 5; gap:0; background:var(--surface); border:1px solid var(--line); border-radius:22px; padding:16px; min-width:0; }
+.card > * { margin:0; min-width:0; }
+.card.is-rec, .wcard.is-rec { outline:2px solid var(--accent); outline-offset:-1px; }
+.head { display:flex; gap:10px; align-items:center; padding-bottom:12px; flex-wrap:wrap; }
+.letter { display:grid; place-items:center; min-width:40px; height:34px; padding:0 10px; border-radius:999px; background:var(--ink); color:var(--surface); font-weight:600; font-size:14px; }
+h3 { font-size:19px; font-weight:560; margin:0; }
+.rec { margin-left:auto; font-size:12px; font-weight:600; color:var(--accent); border:1px solid currentColor; border-radius:999px; padding:2px 10px; }
+.rec.cur { color:var(--ink-2); }
+.hero { background:#EEF5FF; border-radius:16px; padding:14px 8px 8px; display:grid; place-items:center; }
+.ruler { width:100%; max-width:360px; height:auto; display:block; }
+.rl line { stroke:#4C6E7B; stroke-width:1.4; }
+.rt { font:600 13px "Commissioner", sans-serif; fill:#4C6E7B; }
+.facts { margin:12px 0 0; display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.facts div { background:var(--paper); border-radius:12px; padding:8px 10px; }
+.facts dt { font-size:12px; color:var(--ink-2); } .facts dd { margin:0; font-weight:600; font-size:15px; }
+.why { font-size:14px; margin-top:12px !important; }
+.label { font-size:12px; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-2); margin:12px 0 6px; }
+.tests { border-top:1px solid var(--line); margin-top:14px !important; }
+.t16, .mono { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; }
+.mono { grid-template-columns:1fr 1fr; }
+figure { margin:0; }
+.tests figure { border-radius:12px; display:flex; flex-direction:column; align-items:center; gap:6px; padding:10px 4px 6px; }
+figure.ice { background:#EEF5FF; } figure.paper { background:#FFFFFF; box-shadow: inset 0 0 0 1px var(--line); } figure.night { background:#061925; }
+figure.night figcaption { color:#86A3B3; }
+figcaption { font-size:11px; color:#4C6E7B; }
+.x1 { width:16px; height:16px; }
+.zoom { width:48px; height:48px; image-rendering:pixelated; }
+.mono figure { flex-direction:row; justify-content:center; gap:12px; padding:12px 6px; }
+.mono img { width:64px; height:64px; } .mono .s32, .darkrow .s32 { width:32px; height:32px; }
+.darkrow { background:#061925; border-radius:12px; padding:12px; display:flex; gap:14px; align-items:center; justify-content:center; }
+.darkrow img { width:72px; height:72px; } .darkrow .s48 { width:48px; height:48px; }
+/* widths */
+.widths { display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:16px; }
+.wbox { background:var(--surface); border:1px solid var(--line); border-radius:22px; padding:14px; display:flex; flex-direction:column; gap:10px; min-width:0; }
+.crop { position:relative; overflow:hidden; border-radius:14px; aspect-ratio: 7 / 5; background:#EEF5FF; }
+.crop.dark { background:#061925; }
+.crop img { position:absolute; width:261.2%; left:-142.9%; top:-146.7%; max-width:none; }
+.crop.r4 img { top:-131.8%; }
+.wbox p { margin:0; font-size:14px; } .wbox b { font-weight:600; }
+.px { display:flex; gap:12px; align-items:flex-end; }
+.px figure { display:flex; flex-direction:column; gap:4px; align-items:center; }
+.px img { width:96px; height:96px; image-rendering:pixelated; border-radius:6px; background:#EEF5FF; }
+/* words */
+.wgrid { display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:16px; align-items:start; }
+.wcard { background:var(--surface); border:1px solid var(--line); border-radius:22px; padding:16px; display:flex; flex-direction:column; gap:8px; min-width:0; }
+.wcard .head { padding-bottom:4px; }
+.wl { border-radius:14px; height:88px; display:grid; place-items:center; padding:0 14px; }
+.wl img { max-width:100%; height:48px; }
+.wl.light { background:#EEF5FF; } .wl.dark { background:#061925; }
+.wl.paper { background:#FFFFFF; box-shadow: inset 0 0 0 1px var(--line); } .wl.night { background:#061925; }
+.wcard .why { margin:4px 0 0 !important; }
+.decide { margin-top:14px; background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:12px 16px; font-size:14px; }
+.notes { margin-top:40px; display:grid; grid-template-columns:repeat(3,1fr); gap:24px; font-size:14px; color:var(--ink-2); }
+.notes h3 { font-size:16px; color:var(--ink); font-weight:600; margin:0 0 6px; } .notes p { margin:0 0 8px; }
+@media (max-width:1100px) { .grid, .widths { grid-template-columns:repeat(2,minmax(0,1fr)); } .wgrid { grid-template-columns:repeat(2,minmax(0,1fr)); } .notes, .notes-in { grid-template-columns:1fr; } }
+@media (max-width:640px) { .grid, .widths, .wgrid { grid-template-columns:minmax(0,1fr); } }
+</style></head>
+<body><main>
+<h1>T2·A with ‘ai’: a preview before the final kit</h1>
+<p class="lede">Three notes on the chosen symbol and wordmark, answered below. The final redraw will carry all three: clean arcs, equal ring and tear widths, the tear on the golden section, and the chosen wordmark.
+<a href="../round4/index.html">Round 4</a> and earlier are unchanged.</p>
+<ul class="notes-in">
+  <li><b>1. ‘ai’ after the wordmark</b><i>“can we see what it looks like with ai following it?”</i></li>
+  <li><b>2. Equal lines</b><i>“the tear and outline should be the same size.”</i></li>
+  <li><b>3. A principled tear</b><i>“the tear location should follow logo design principles so it looks placed correctly.”</i></li>
+</ul>
+
+<h2><span class="num">3</span>Where the tear goes</h2>
+<p class="intro">All three use the new equal lines (ring 12, tear 12) and the same coral sun (radius 56), so only the tear moves. Sky and stub are measured as the visible areas either side of the cut.</p>
+<section class="grid">
+<article class="card">
+  <header class="head"><span class="letter">56%</span><div><h3>Current, placed by eye</h3></div></header>
+  <div class="hero"><svg class="ruler" viewBox="0 0 330 256" role="img" aria-label="Sky and stub proportions">
+  <image href="svg/tear-current-symbol-color.svg" x="0" y="0" width="256" height="256"/>
+  <g class="rl">
+    <line x1="244" y1="26" x2="244" y2="134.2"/><line x1="239" y1="26" x2="249" y2="26"/>
+    <line x1="239" y1="134.2" x2="249" y2="134.2"/>
+    <line x1="244" y1="146.2" x2="244" y2="230"/><line x1="239" y1="146.2" x2="249" y2="146.2"/>
+    <line x1="239" y1="230" x2="249" y2="230"/>
+  </g>
+  <text x="256" y="76.1" class="rt">sky</text><text x="256" y="94.1" class="rt">108</text>
+  <text x="256" y="184.1" class="rt">stub</text><text x="256" y="202.1" class="rt">84</text>
+</svg></div>
+  <dl class="facts">
+    <div><dt>Tear centre</dt><dd>56.0% down</dd></div>
+    <div><dt>Sky : stub</dt><dd>1.29 : 1</dd></div>
+    <div><dt>Empty sky above the ring</dt><dd>20% of the height</dd></div>
+    <div><dt>Ring and tear</dt><dd>12 and 12 units</dd></div>
+  </dl>
+  <p class="why">Round 4's position. Sky and stub are close to even (1.29 : 1), so the dark stub, the heaviest part, takes almost half the mark.</p>
+  <div class="tests">
+    <p class="label">16 px check</p>
+    <div class="t16">
+      <figure class="ice"><img class="x1" src="svg/tear-current-symbol-color.svg" width="16" height="16" alt=""><img class="zoom" src="png16/tear-current-symbol-color.png" alt=""><figcaption>colour</figcaption></figure>
+      <figure class="paper"><img class="x1" src="svg/tear-current-symbol-ink.svg" width="16" height="16" alt=""><img class="zoom" src="png16/tear-current-symbol-ink.png" alt=""><figcaption>one colour</figcaption></figure>
+      <figure class="night"><img class="x1" src="svg/tear-current-symbol-white.svg" width="16" height="16" alt=""><img class="zoom" src="png16/tear-current-symbol-white.png" alt=""><figcaption>reversed</figcaption></figure>
+    </div>
+    <p class="label">One colour and reversed, 64 and 32 px</p>
+    <div class="mono">
+      <figure class="paper"><img src="svg/tear-current-symbol-ink.svg" alt=""><img class="s32" src="svg/tear-current-symbol-ink.svg" alt=""></figure>
+      <figure class="night"><img src="svg/tear-current-symbol-white.svg" alt=""><img class="s32" src="svg/tear-current-symbol-white.svg" alt=""></figure>
+    </div>
+    <p class="label">Dark mode</p>
+    <div class="darkrow"><img src="svg/tear-current-symbol-dark.svg" alt=""><img class="s48" src="svg/tear-current-symbol-dark.svg" alt=""><img class="s32" src="svg/tear-current-symbol-dark.svg" alt=""></div>
+  </div>
+</article>
+<article class="card is-rec">
+  <header class="head"><span class="letter">61.1%</span><div><h3>Golden section</h3></div><span class="rec">Recommended</span></header>
+  <div class="hero"><svg class="ruler" viewBox="0 0 330 256" role="img" aria-label="Sky and stub proportions">
+  <image href="svg/tear-golden-symbol-color.svg" x="0" y="0" width="256" height="256"/>
+  <g class="rl">
+    <line x1="244" y1="26" x2="244" y2="144.7"/><line x1="239" y1="26" x2="249" y2="26"/>
+    <line x1="239" y1="144.7" x2="249" y2="144.7"/>
+    <line x1="244" y1="156.7" x2="244" y2="230"/><line x1="239" y1="156.7" x2="249" y2="156.7"/>
+    <line x1="239" y1="230" x2="249" y2="230"/>
+  </g>
+  <text x="256" y="81.3" class="rt">sky</text><text x="256" y="99.3" class="rt">119</text>
+  <text x="256" y="189.3" class="rt">stub</text><text x="256" y="207.3" class="rt">73</text>
+</svg></div>
+  <dl class="facts">
+    <div><dt>Tear centre</dt><dd>61.1% down</dd></div>
+    <div><dt>Sky : stub</dt><dd>1.62 : 1</dd></div>
+    <div><dt>Empty sky above the ring</dt><dd>25% of the height</dd></div>
+    <div><dt>Ring and tear</dt><dd>12 and 12 units</dd></div>
+  </dl>
+  <p class="why">The cut divides the ticket so sky : stub = 1.618 : 1, measured on the visible areas either side of the cut. The dark stub looks heavier per unit of area than the light sky, so it should be the smaller part. The golden section is the classic unequal split that still feels balanced. Cross-check: putting the sun's visual centre on the optical centre (5% above the middle) lands the tear at 59.6%, within 3 units of this line.</p>
+  <div class="tests">
+    <p class="label">16 px check</p>
+    <div class="t16">
+      <figure class="ice"><img class="x1" src="svg/tear-golden-symbol-color.svg" width="16" height="16" alt=""><img class="zoom" src="png16/tear-golden-symbol-color.png" alt=""><figcaption>colour</figcaption></figure>
+      <figure class="paper"><img class="x1" src="svg/tear-golden-symbol-ink.svg" width="16" height="16" alt=""><img class="zoom" src="png16/tear-golden-symbol-ink.png" alt=""><figcaption>one colour</figcaption></figure>
+      <figure class="night"><img class="x1" src="svg/tear-golden-symbol-white.svg" width="16" height="16" alt=""><img class="zoom" src="png16/tear-golden-symbol-white.png" alt=""><figcaption>reversed</figcaption></figure>
+    </div>
+    <p class="label">One colour and reversed, 64 and 32 px</p>
+    <div class="mono">
+      <figure class="paper"><img src="svg/tear-golden-symbol-ink.svg" alt=""><img class="s32" src="svg/tear-golden-symbol-ink.svg" alt=""></figure>
+      <figure class="night"><img src="svg/tear-golden-symbol-white.svg" alt=""><img class="s32" src="svg/tear-golden-symbol-white.svg" alt=""></figure>
+    </div>
+    <p class="label">Dark mode</p>
+    <div class="darkrow"><img src="svg/tear-golden-symbol-dark.svg" alt=""><img class="s48" src="svg/tear-golden-symbol-dark.svg" alt=""><img class="s32" src="svg/tear-golden-symbol-dark.svg" alt=""></div>
+  </div>
+</article>
+<article class="card">
+  <header class="head"><span class="letter">65.7%</span><div><h3>Rule of thirds</h3></div></header>
+  <div class="hero"><svg class="ruler" viewBox="0 0 330 256" role="img" aria-label="Sky and stub proportions">
+  <image href="svg/tear-thirds-symbol-color.svg" x="0" y="0" width="256" height="256"/>
+  <g class="rl">
+    <line x1="244" y1="26" x2="244" y2="154.0"/><line x1="239" y1="26" x2="249" y2="26"/>
+    <line x1="239" y1="154.0" x2="249" y2="154.0"/>
+    <line x1="244" y1="166.0" x2="244" y2="230"/><line x1="239" y1="166.0" x2="249" y2="166.0"/>
+    <line x1="239" y1="230" x2="249" y2="230"/>
+  </g>
+  <text x="256" y="86.0" class="rt">sky</text><text x="256" y="104.0" class="rt">128</text>
+  <text x="256" y="194.0" class="rt">stub</text><text x="256" y="212.0" class="rt">64</text>
+</svg></div>
+  <dl class="facts">
+    <div><dt>Tear centre</dt><dd>65.7% down</dd></div>
+    <div><dt>Sky : stub</dt><dd>2.00 : 1</dd></div>
+    <div><dt>Empty sky above the ring</dt><dd>29% of the height</dd></div>
+    <div><dt>Ring and tear</dt><dd>12 and 12 units</dd></div>
+  </dl>
+  <p class="why">The horizon-on-the-third rule from landscape composition (sky : stub = 2 : 1). Also principled, but it brings back the empty sky above the sun (29% of the height) that the first note on B1 was about.</p>
+  <div class="tests">
+    <p class="label">16 px check</p>
+    <div class="t16">
+      <figure class="ice"><img class="x1" src="svg/tear-thirds-symbol-color.svg" width="16" height="16" alt=""><img class="zoom" src="png16/tear-thirds-symbol-color.png" alt=""><figcaption>colour</figcaption></figure>
+      <figure class="paper"><img class="x1" src="svg/tear-thirds-symbol-ink.svg" width="16" height="16" alt=""><img class="zoom" src="png16/tear-thirds-symbol-ink.png" alt=""><figcaption>one colour</figcaption></figure>
+      <figure class="night"><img class="x1" src="svg/tear-thirds-symbol-white.svg" width="16" height="16" alt=""><img class="zoom" src="png16/tear-thirds-symbol-white.png" alt=""><figcaption>reversed</figcaption></figure>
+    </div>
+    <p class="label">One colour and reversed, 64 and 32 px</p>
+    <div class="mono">
+      <figure class="paper"><img src="svg/tear-thirds-symbol-ink.svg" alt=""><img class="s32" src="svg/tear-thirds-symbol-ink.svg" alt=""></figure>
+      <figure class="night"><img src="svg/tear-thirds-symbol-white.svg" alt=""><img class="s32" src="svg/tear-thirds-symbol-white.svg" alt=""></figure>
+    </div>
+    <p class="label">Dark mode</p>
+    <div class="darkrow"><img src="svg/tear-thirds-symbol-dark.svg" alt=""><img class="s48" src="svg/tear-thirds-symbol-dark.svg" alt=""><img class="s32" src="svg/tear-thirds-symbol-dark.svg" alt=""></div>
+  </div>
+</article></section>
+
+<h2><span class="num">2</span>Ring and tear, the same width</h2>
+<p class="intro">The ring around the sun comes up from 10 to 12 units to match the tear, so both are 12 units: 5.9% of the ticket's width. Close up they meet as one light line. At 64 and 32 px they stay the same weight, so no optical correction was needed.</p>
+<section class="widths">
+  <div class="wbox"><div class="crop r4"><img src="svg/r4-t2a-symbol-color.svg" alt="Round 4 detail"></div><p><b>Round 4:</b> ring 10, tear 12. The ring reads thinner.</p></div>
+  <div class="wbox"><div class="crop"><img src="svg/tear-golden-symbol-color.svg" alt="Round 5 detail"></div><p><b>Now:</b> ring 12, tear 12, one continuous line.</p></div>
+  <div class="wbox"><div class="px"><figure><img src="png16/tear-golden-symbol-color-64.png" alt=""><figcaption>64 px</figcaption></figure><figure><img src="png16/tear-golden-symbol-color-32.png" alt=""><figcaption>32 px</figcaption></figure></div>
+  <p><b>Small sizes, real pixels, enlarged:</b> the ring and the tear render at the same weight.</p></div>
+</section>
+
+<h2><span class="num">1</span>‘altaria ai’</h2>
+<p class="intro">Each lockup uses the golden-section symbol. The ‘i’ in ‘ai’ keeps its own dot in its own colour, so the coral sun stays unique to ‘altaria’: one sun per logo.
+The word space is Commissioner's own, and both words sit on one baseline.</p>
+<section class="wgrid">
+<article class="wcard">
+  <header class="head"><span class="letter">Ref</span><div><h3>‘altaria’ alone</h3></div><span class="rec cur">as chosen</span></header>
+  <div class="wl light"><img src="svg/lockup-altaria-color.svg" alt="‘altaria’ alone on light"></div>
+  <div class="wl dark"><img src="svg/lockup-altaria-dark.svg" alt="‘altaria’ alone on dark"></div>
+  <div class="wl paper"><img src="svg/lockup-altaria-ink.svg" alt="one colour"></div>
+    <div class="wl night"><img src="svg/lockup-altaria-white.svg" alt="reversed"></div>
+  <p class="why">The wordmark you picked, for reference.</p>
+</article>
+<article class="wcard">
+  <header class="head"><span class="letter">A</span><div><h3>Teal ‘ai’</h3></div></header>
+  <div class="wl light"><img src="svg/lockup-ai-teal-color.svg" alt="Teal ‘ai’ on light"></div>
+  <div class="wl dark"><img src="svg/lockup-ai-teal-dark.svg" alt="Teal ‘ai’ on dark"></div>
+  
+  <p class="why">The direct answer: ‘altaria ai’ with ‘ai’ in the teal accent (#176B87, lifted to #64C3E2 on dark), like round 1's ‘Altaria AI’. ‘ai’ reads as part of the name.</p>
+</article>
+<article class="wcard is-rec">
+  <header class="head"><span class="letter">B</span><div><h3>Teal ‘ai’, light</h3></div><span class="rec">Recommended</span></header>
+  <div class="wl light"><img src="svg/lockup-ai-light-color.svg" alt="Teal ‘ai’, light on light"></div>
+  <div class="wl dark"><img src="svg/lockup-ai-light-dark.svg" alt="Teal ‘ai’, light on dark"></div>
+  
+  <p class="why">The same teal at a lighter weight (340 against 540). ‘altaria’ stays the name, ‘ai’ becomes a quiet descriptor, and it doesn't compete with the coral sun.</p>
+</article>
+<article class="wcard">
+  <header class="head"><span class="letter">C</span><div><h3>Light ‘ai’, no colour</h3></div></header>
+  <div class="wl light"><img src="svg/lockup-ai-ink-color.svg" alt="Light ‘ai’, no colour on light"></div>
+  <div class="wl dark"><img src="svg/lockup-ai-ink-dark.svg" alt="Light ‘ai’, no colour on dark"></div>
+  <div class="wl paper"><img src="svg/lockup-ai-ink-ink.svg" alt="one colour"></div>
+    <div class="wl night"><img src="svg/lockup-ai-ink-white.svg" alt="reversed"></div>
+  <p class="why">Weight alone carries the difference, so it also works in one colour. It's how B would print in one colour or be engraved; A, in one colour, would lose the difference.</p>
+</article></section>
+
+<section class="notes">
+  <div><h3>Recommended</h3><p><b>Tear on the golden section (61.1% down, sky : stub = 1.618 : 1)</b>, with the ring and tear both 12 units. For the wordmark, <b>B: ‘altaria ai’ with ‘ai’ in teal at a light weight</b>. C is its one-colour form.</p></div>
+  <div><h3>Why the golden section</h3><p>The dark stub carries the most visual weight, so it should be the smaller part. φ is the classic unequal split that still reads as balanced. An independent check, the sun's visual centre on the optical centre, lands within 3 units, and thirds would bring the empty sky back.</p></div>
+  <div><h3>Into the final kit</h3><p>After approval, the symbol is rebuilt with true arcs (these previews use sampled curves) at these exact proportions. The kit then adds the lockups, favicon, app icons, one-colour versions and a usage guide in brand/final/.</p></div>
+</section>
+</main></body></html>

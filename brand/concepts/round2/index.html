@@ -1,0 +1,423 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Altaria Logo Round 2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Commissioner:FLAR,VOLM,wght@0..100,0..100,300..700&display=swap">
+<style>
+:root {
+  --paper:#EEF5FF; --surface:#FFFFFF; --ink:#003D57; --ink-2:#4C6E7B; --accent:#176B87; --line:#D4E6FF; --coral:#F08A6C;
+  --good:#1D7A4C; --part:#7A5A00;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --paper:#061925; --surface:#092435; --ink:#D7E5F1; --ink-2:#86A3B3; --accent:#73CCEA; --line:#1B3647; --good:#72D9A5; --part:#F2CD6B; } }
+:root[data-theme="dark"] { --paper:#061925; --surface:#092435; --ink:#D7E5F1; --ink-2:#86A3B3; --accent:#73CCEA; --line:#1B3647; --good:#72D9A5; --part:#F2CD6B; }
+* { box-sizing:border-box; }
+body { margin:0; background:var(--paper); color:var(--ink); font:400 15px/1.5 "Commissioner", system-ui, sans-serif; }
+main { max-width:1360px; margin:0 auto; padding:48px clamp(16px,3vw,40px) 64px; }
+a { color:var(--accent); }
+.top { display:grid; grid-template-columns:1.25fr 1fr; gap:40px; align-items:end; margin-bottom:28px; }
+h1 { font-size:clamp(34px,4vw,58px); line-height:1.02; font-weight:500; letter-spacing:-.02em; margin:0 0 14px; font-variation-settings:"FLAR" 60; }
+.lede { color:var(--ink-2); font-size:17px; max-width:62ch; margin:0; }
+.brief { display:grid; grid-template-columns:auto 1fr; gap:4px 16px; font-size:14px; margin:0; }
+.brief dt { color:var(--ink-2); } .brief dd { margin:0; }
+.palette { display:flex; flex-wrap:wrap; gap:8px; margin:0 0 40px; padding:0; list-style:none; }
+.palette li { display:flex; align-items:center; gap:8px; padding:6px 12px 6px 6px; background:var(--surface); border:1px solid var(--line); border-radius:999px; font-size:13px; }
+.palette i { width:22px; height:22px; border-radius:50%; display:block; border:1px solid rgba(0,0,0,.08); }
+.palette .new { color:var(--accent); font-weight:600; }
+h2 { font-size:clamp(24px,2.4vw,34px); font-weight:520; letter-spacing:-.01em; margin:0 0 8px; line-height:1.15; display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+.gk { display:inline-grid; place-items:center; width:40px; height:40px; border-radius:50%; background:var(--ink); color:var(--surface); font-size:18px; font-weight:600; }
+.section-intro { color:var(--ink-2); max-width:70ch; margin:0 0 18px; }
+/* swatches */
+.swatches { margin-bottom:56px; }
+.swgrid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:16px; }
+.sw { background:var(--surface); border:1px solid var(--line); border-radius:22px; padding:16px; display:flex; flex-direction:column; gap:12px; }
+.sw.picked { outline:2px solid var(--accent); outline-offset:-1px; }
+.sw header { min-height:66px; }
+.sw header { display:flex; gap:12px; align-items:center; }
+.sw header i { width:40px; height:40px; border-radius:50%; flex:none; border:1px solid rgba(0,0,0,.08); }
+.sw h3 { margin:0; font-size:17px; font-weight:560; } .sw header p { margin:0; font-size:13px; color:var(--ink-2); }
+.tag { margin-left:auto; font-size:12px; font-weight:600; border:1px solid currentColor; border-radius:999px; padding:2px 10px; color:var(--ink-2); }
+.tag.tag-picked { color:var(--accent); }
+.sw-demo { display:grid; grid-template-columns:1fr 1fr; gap:6px; }
+.sw-l, .sw-d { border-radius:14px; padding:12px 8px; display:flex; flex-direction:column; align-items:center; gap:10px; }
+.sw-l { background:#EEF5FF; } .sw-d { background:#061925; }
+.sw-demo img { width:64px; } .sw-demo .sw-wm { width:92%; height:auto; }
+.sw table { width:100%; border-collapse:collapse; font-size:13px; }
+.sw td { padding:3px 0; border-top:1px solid var(--line); } .sw td:last-child { text-align:right; font-variant-numeric:tabular-nums; }
+.sw > p { margin:0; font-size:14px; color:var(--ink-2); }
+/* groups */
+.group { margin-bottom:56px; }
+.ghead { display:grid; grid-template-columns:auto 1fr; gap:24px; align-items:start; margin-bottom:18px; }
+.was { width:112px; background:var(--surface); border:1px dashed var(--line); border-radius:18px; padding:12px; display:flex; flex-direction:column; align-items:center; gap:6px; }
+.was img { width:72px; } .was span { font-size:12px; color:var(--ink-2); }
+blockquote { margin:0 0 6px; font-size:16px; font-style:italic; color:var(--ink); }
+.diag { margin:0; color:var(--ink-2); max-width:78ch; }
+.wm { display:grid; grid-template-columns:1fr 1fr 1.2fr; gap:12px; align-items:center; margin-bottom:16px; }
+.wm-l, .wm-d { border-radius:18px; height:120px; display:grid; place-items:center; }
+.wm-l { background:#EEF5FF; border:1px solid var(--line); } .wm-d { background:#061925; }
+.wm img { height:64px; } .wm-note { margin:0; color:var(--ink-2); font-size:14px; }
+.grid { display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:16px; }
+.card { display:grid; grid-template-rows:subgrid; grid-row:span 10; gap:0; background:var(--surface); border:1px solid var(--line); border-radius:22px; padding:18px; }
+.card > * { margin:0; }
+.card.is-rec { outline:2px solid var(--accent); outline-offset:-1px; }
+.head { display:flex; gap:12px; align-items:flex-start; padding-bottom:14px; flex-wrap:wrap; }
+.letter { display:grid; place-items:center; min-width:40px; height:34px; padding:0 8px; border-radius:999px; background:var(--ink); color:var(--surface); font-weight:600; flex:none; font-size:14px; }
+h3 { font-size:20px; font-weight:560; margin:0; line-height:1.2; }
+.type { margin:2px 0 0; color:var(--ink-2); font-size:13px; }
+.rec { margin-left:auto; font-size:12px; font-weight:600; color:var(--accent); border:1px solid currentColor; border-radius:999px; padding:2px 10px; }
+.hero { background:#EEF5FF; border-radius:16px; display:grid; place-items:center; aspect-ratio:4/3; }
+.hero { min-width:0; }
+.hero img { width:56%; height:auto; }
+.lock { border-radius:14px; display:grid; place-items:center; height:84px; margin-top:8px !important; padding:0 14px; }
+.lock img { max-width:100%; }
+.lock.light { background:#EEF5FF; } .lock.dark { background:#061925; }
+.idea { padding:14px 0 6px; font-size:15px; }
+.fixbox { padding:6px 0 4px; }
+.label { font-size:12px; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-2); margin:6px 0; }
+.why { padding:0 0 0 18px; margin:0; font-size:14px; } .why li { margin:2px 0; }
+.tests { border-top:1px solid var(--line); padding-top:10px; margin-top:8px !important; }
+.t16, .mono { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; }
+.mono { grid-template-columns:1fr 1fr; }
+figure { margin:0; border-radius:12px; display:flex; flex-direction:column; align-items:center; gap:6px; padding:10px 4px 6px; }
+figure.ice { background:#EEF5FF; } figure.paper { background:#FFFFFF; box-shadow: inset 0 0 0 1px var(--line); } figure.night { background:#061925; }
+figure.night figcaption { color:#86A3B3; }
+figcaption { font-size:11px; color:#4C6E7B; }
+.x1 { width:16px; height:16px; }
+.zoom { width:48px; height:48px; image-rendering:pixelated; }
+.mono figure { flex-direction:row; justify-content:center; gap:14px; padding:12px; }
+.mono img { width:64px; height:64px; } .mono .s32 { width:32px; height:32px; }
+.risk { font-size:14px; color:var(--ink-2); padding-top:12px; } .risk b { color:var(--ink); font-weight:600; }
+.rename { font-size:13px; padding-top:10px; color:var(--ink-2); }
+.rename .yes { color:var(--good); } .rename .part { color:var(--part); }
+.notes { margin-top:8px; display:grid; grid-template-columns:repeat(3,1fr); gap:24px; font-size:14px; color:var(--ink-2); }
+.notes h3 { font-size:16px; color:var(--ink); font-weight:600; margin:0 0 6px; }
+.notes p { margin:0 0 8px; }
+@media (max-width:1100px) {
+  .top { grid-template-columns:1fr; }
+  .swgrid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .wm { grid-template-columns:1fr 1fr; } .wm-note { grid-column:1 / -1; }
+  .notes { grid-template-columns:1fr; }
+}
+@media (max-width:640px) {
+  .swgrid, .grid { grid-template-columns:minmax(0,1fr); }
+  .ghead { grid-template-columns:1fr; }
+  .wm { grid-template-columns:1fr; }
+}
+</style></head>
+<body><main>
+<section class="top">
+  <div>
+    <h1>Altaria AI: logo round 2</h1>
+    <p class="lede">A and C are dropped. B gets three fixes for its tear, D leans into the mountain and loses the chevron, and E keeps its wordmark with a new icon.
+    The orange is replaced. Every variant has a lockup on light and dark, a true 16 px check, and one-colour and reversed versions. <a href="../index.html">Round 1 is kept here for reference.</a></p>
+  </div>
+  <dl class="brief">
+    <dt>Brief</dt><dd>Self-run flight search. Real round-trip fares, no ranking bias, no paid placement.</dd>
+    <dt>Feel</dt><dd>Calm, trustworthy, unhurried; the destination is the adventure.</dd>
+    <dt>Avoided</dt><dd>Birds, fluffy cloud-wings and anything Pokémon; planes, globes, swooshes; and now a letter with an orange accent.</dd>
+    <dt>Type</dt><dd>Commissioner, outlined to paths. Lockups: weight 560, FLAR 50. Wordmark: weight 540, FLAR 100.</dd>
+  </dl>
+</section>
+<ul class="palette" aria-label="Palette">
+  <li><i style="background:#003D57"></i>Deep teal ink #003D57</li>
+  <li><i style="background:#176B87"></i>Teal accent #176B87</li>
+  <li><i style="background:linear-gradient(#86B6F6,#B4D4FF)"></i>Sky #86B6F6 → #B4D4FF</li>
+  <li><i style="background:#EEF5FF"></i>Ice #EEF5FF</li>
+  <li><i style="background:#061925"></i>Night #061925</li>
+  <li><i style="background:#64C3E2"></i>Night accent #64C3E2</li>
+  <li><i style="background:#F08A6C"></i><span class="new">New:</span>&nbsp;Dawn coral #F08A6C (graphics only, never text)</li>
+</ul>
+
+<section class="swatches" id="accent">
+  <h2>A new warm accent</h2>
+  <p class="section-intro">You asked for a different orange. Here are three candidates next to round 1's, each shown on the B1 ticket and as the wordmark's i-dot, on light and on dark.
+  The numbers are contrast ratios. None of them reaches text contrast on light backgrounds, so the rule stays: the warm accent is for suns and dots, never text.</p>
+  <div class="swgrid">
+<article class="sw sw-was">
+  <header><i style="background:#F2A65A"></i><div><h3>Round 1 Daybreak</h3><p>#F2A65A &middot; OKLCH hue 64°</p></div><span class="tag tag-was">was</span></header>
+  <div class="sw-demo">
+    <div class="sw-l"><img src="svg/swatch-round1-ticket-color.svg" alt=""><img class="sw-wm" src="svg/swatch-round1-wordmark-color.svg" alt=""></div>
+    <div class="sw-d"><img src="svg/swatch-round1-ticket-dark.svg" alt=""><img class="sw-wm" src="svg/swatch-round1-wordmark-dark.svg" alt=""></div>
+  </div>
+  <table><tr><td>on ice #EEF5FF</td><td>1.8:1</td></tr><tr><td>on sky #86B6F6</td><td>1.0:1</td></tr><tr><td>on night #061925</td><td>8.8:1</td></tr></table>
+  <p>Sits at the same hue as Amazon's orange (#FF9900, 65°), which is part of why the ‘a’ icon read as Amazon. Heavy against the pastel sky.</p>
+</article>
+<article class="sw">
+  <header><i style="background:#F7B58A"></i><div><h3>Soft apricot</h3><p>#F7B58A &middot; OKLCH hue 54°</p></div></header>
+  <div class="sw-demo">
+    <div class="sw-l"><img src="svg/swatch-apricot-ticket-color.svg" alt=""><img class="sw-wm" src="svg/swatch-apricot-wordmark-color.svg" alt=""></div>
+    <div class="sw-d"><img src="svg/swatch-apricot-ticket-dark.svg" alt=""><img class="sw-wm" src="svg/swatch-apricot-wordmark-dark.svg" alt=""></div>
+  </div>
+  <table><tr><td>on ice #EEF5FF</td><td>1.6:1</td></tr><tr><td>on sky #86B6F6</td><td>1.2:1</td></tr><tr><td>on night #061925</td><td>10.2:1</td></tr></table>
+  <p>The calmest, and lovely on the night page. But it nearly disappears on ice and on the light end of the sky, so the i-dot and small suns wash out.</p>
+</article>
+<article class="sw picked">
+  <header><i style="background:#F08A6C"></i><div><h3>Dawn coral</h3><p>#F08A6C &middot; OKLCH hue 37°</p></div><span class="tag tag-picked">picked</span></header>
+  <div class="sw-demo">
+    <div class="sw-l"><img src="svg/swatch-coral-ticket-color.svg" alt=""><img class="sw-wm" src="svg/swatch-coral-wordmark-color.svg" alt=""></div>
+    <div class="sw-d"><img src="svg/swatch-coral-ticket-dark.svg" alt=""><img class="sw-wm" src="svg/swatch-coral-wordmark-dark.svg" alt=""></div>
+  </div>
+  <table><tr><td>on ice #EEF5FF</td><td>2.2:1</td></tr><tr><td>on sky #86B6F6</td><td>1.2:1</td></tr><tr><td>on night #061925</td><td>7.3:1</td></tr></table>
+  <p>Picked. Its hue sits close to opposite the teal accent (226°), so the two read as a designed pair, and it is far from Amazon's orange. It's the most visible of the three on ice and still soft on night: the colour of low morning light.</p>
+</article>
+<article class="sw">
+  <header><i style="background:#F2B84B"></i><div><h3>Golden sunrise</h3><p>#F2B84B &middot; OKLCH hue 80°</p></div></header>
+  <div class="sw-demo">
+    <div class="sw-l"><img src="svg/swatch-gold-ticket-color.svg" alt=""><img class="sw-wm" src="svg/swatch-gold-wordmark-color.svg" alt=""></div>
+    <div class="sw-d"><img src="svg/swatch-gold-ticket-dark.svg" alt=""><img class="sw-wm" src="svg/swatch-gold-wordmark-dark.svg" alt=""></div>
+  </div>
+  <table><tr><td>on ice #EEF5FF</td><td>1.6:1</td></tr><tr><td>on sky #86B6F6</td><td>1.2:1</td></tr><tr><td>on night #061925</td><td>10.0:1</td></tr></table>
+  <p>Sunny and bright on night. But it fades on ice and on the sky, and yellow on blue is Ryanair and Lufthansa territory, which is confusing on a flight search.</p>
+</article></div>
+</section>
+
+
+<section class="group" id="B">
+  <div class="ghead">
+    <div class="was"><img src="../svg/b-ticket-symbol-color.svg" alt="Round 1 version"><span>Round 1</span></div>
+    <div><h2><span class="gk">B</span>Horizon Ticket: the tear, fixed</h2>
+    <blockquote>“the best and should be kept for a redesign but the tear in the ticket looks placed wrong so it looks off.”</blockquote>
+    <p class="diag">In round 1 the tear was a plain gap in the colour at an arbitrary 60 %, and the sun sat in that gap. It read as a crack, not a tear. Each variant below fixes the tear a different way.</p></div>
+  </div>
+  
+  <div class="grid">
+<article class="card is-rec">
+  <header class="head"><span class="letter">B1</span><div><h3>Perforated Horizon</h3><p class="type">Ticket symbol</p></div><span class="rec">Recommended</span></header>
+  <div class="hero"><img src="svg/b1-perforated-symbol-color.svg" alt="Perforated Horizon symbol in colour"></div>
+  <div class="lock light"><img style="height:46px" src="svg/b1-perforated-lockup-color.svg" alt="Perforated Horizon lockup"></div>
+  <div class="lock dark"><img style="height:46px" src="svg/b1-perforated-lockup-dark.svg" alt="Perforated Horizon lockup, dark mode"></div>
+  <p class="idea">The ticket you liked, with a real tear: punched holes run notch to notch, and the sun rises from them. The tear and the horizon are one deliberate line.</p>
+  <div class="fixbox"><p class="label">How it answers the note</p><ul class="why"><li>The tear is a perforation you could tear along, not a colour edge.</li><li>It sits at exactly two-thirds (a 2:1 ticket-to-stub split), with the notches centred on it.</li><li>The sun is centred on the perforation, and the holes run straight through its base, so it's plainly placed there on purpose.</li></ul></div>
+  <div class="tests">
+    <p class="label">16 px check</p>
+    <div class="t16">
+      <figure class="ice"><img class="x1" src="svg/b1-perforated-symbol-color.svg" width="16" height="16" alt=""><img class="zoom" src="png16/b1-perforated-symbol-color.png" alt=""><figcaption>colour</figcaption></figure>
+      <figure class="paper"><img class="x1" src="svg/b1-perforated-symbol-ink.svg" width="16" height="16" alt=""><img class="zoom" src="png16/b1-perforated-symbol-ink.png" alt=""><figcaption>one colour</figcaption></figure>
+      <figure class="night"><img class="x1" src="svg/b1-perforated-symbol-white.svg" width="16" height="16" alt=""><img class="zoom" src="png16/b1-perforated-symbol-white.png" alt=""><figcaption>reversed</figcaption></figure>
+    </div>
+    <p class="label">One colour and reversed</p>
+    <div class="mono">
+      <figure class="paper"><img src="svg/b1-perforated-symbol-ink.svg" alt=""><img class="s32" src="svg/b1-perforated-symbol-ink.svg" alt=""></figure>
+      <figure class="night"><img src="svg/b1-perforated-symbol-white.svg" alt=""><img class="s32" src="svg/b1-perforated-symbol-white.svg" alt=""></figure>
+    </div>
+  </div>
+  <p class="risk"><b>Risk:</b> At 16 px the holes and notches vanish and it reads as a sunrise tile. The perforation starts to show at 32 px and is clear from 48 px.</p>
+  <p class="rename">Survives a rename: <b class="yes">Yes</b></p>
+</article>
+<article class="card">
+  <header class="head"><span class="letter">B2</span><div><h3>Boarding Pass</h3><p class="type">Ticket symbol, landscape</p></div></header>
+  <div class="hero"><img src="svg/b2-boarding-pass-symbol-color.svg" alt="Boarding Pass symbol in colour"></div>
+  <div class="lock light"><img style="height:46px" src="svg/b2-boarding-pass-lockup-color.svg" alt="Boarding Pass lockup"></div>
+  <div class="lock dark"><img style="height:46px" src="svg/b2-boarding-pass-lockup-dark.svg" alt="Boarding Pass lockup, dark mode"></div>
+  <p class="idea">A real boarding pass: the stub sits behind a vertical perforation on the right, and the sunrise happens on the main part.</p>
+  <div class="fixbox"><p class="label">How it answers the note</p><ul class="why"><li>The tear runs top to bottom, as on a printed boarding pass, so its place reads as standard, not arbitrary.</li><li>The stub is 30 % of the width, notched where the perforation starts and ends.</li><li>The horizon runs the other way, so the sun and the tear never touch.</li></ul></div>
+  <div class="tests">
+    <p class="label">16 px check</p>
+    <div class="t16">
+      <figure class="ice"><img class="x1" src="svg/b2-boarding-pass-symbol-color.svg" width="16" height="16" alt=""><img class="zoom" src="png16/b2-boarding-pass-symbol-color.png" alt=""><figcaption>colour</figcaption></figure>
+      <figure class="paper"><img class="x1" src="svg/b2-boarding-pass-symbol-ink.svg" width="16" height="16" alt=""><img class="zoom" src="png16/b2-boarding-pass-symbol-ink.png" alt=""><figcaption>one colour</figcaption></figure>
+      <figure class="night"><img class="x1" src="svg/b2-boarding-pass-symbol-white.svg" width="16" height="16" alt=""><img class="zoom" src="png16/b2-boarding-pass-symbol-white.png" alt=""><figcaption>reversed</figcaption></figure>
+    </div>
+    <p class="label">One colour and reversed</p>
+    <div class="mono">
+      <figure class="paper"><img src="svg/b2-boarding-pass-symbol-ink.svg" alt=""><img class="s32" src="svg/b2-boarding-pass-symbol-ink.svg" alt=""></figure>
+      <figure class="night"><img src="svg/b2-boarding-pass-symbol-white.svg" alt=""><img class="s32" src="svg/b2-boarding-pass-symbol-white.svg" alt=""></figure>
+    </div>
+  </div>
+  <p class="risk"><b>Risk:</b> Wide (3:2), so it is small inside a square favicon or app tile.</p>
+  <p class="rename">Survives a rename: <b class="yes">Yes</b></p>
+</article>
+<article class="card">
+  <header class="head"><span class="letter">B3</span><div><h3>Lifted Sun</h3><p class="type">Ticket symbol</p></div></header>
+  <div class="hero"><img src="svg/b3-lifted-sun-symbol-color.svg" alt="Lifted Sun symbol in colour"></div>
+  <div class="lock light"><img style="height:46px" src="svg/b3-lifted-sun-lockup-color.svg" alt="Lifted Sun lockup"></div>
+  <div class="lock dark"><img style="height:46px" src="svg/b3-lifted-sun-lockup-dark.svg" alt="Lifted Sun lockup, dark mode"></div>
+  <p class="idea">The quietest fix: the sun lifts into the sky as a full disc, and a dashed tear sets off a short stub at the bottom.</p>
+  <div class="fixbox"><p class="label">How it answers the note</p><ul class="why"><li>A dashed cut line between the notches, the way tickets mark where to tear.</li><li>The tear drops to three-quarters: a 3:1 split with a clearly short stub.</li><li>Nothing crosses the tear; the sun has clear sky all round.</li></ul></div>
+  <div class="tests">
+    <p class="label">16 px check</p>
+    <div class="t16">
+      <figure class="ice"><img class="x1" src="svg/b3-lifted-sun-symbol-color.svg" width="16" height="16" alt=""><img class="zoom" src="png16/b3-lifted-sun-symbol-color.png" alt=""><figcaption>colour</figcaption></figure>
+      <figure class="paper"><img class="x1" src="svg/b3-lifted-sun-symbol-ink.svg" width="16" height="16" alt=""><img class="zoom" src="png16/b3-lifted-sun-symbol-ink.png" alt=""><figcaption>one colour</figcaption></figure>
+      <figure class="night"><img class="x1" src="svg/b3-lifted-sun-symbol-white.svg" width="16" height="16" alt=""><img class="zoom" src="png16/b3-lifted-sun-symbol-white.png" alt=""><figcaption>reversed</figcaption></figure>
+    </div>
+    <p class="label">One colour and reversed</p>
+    <div class="mono">
+      <figure class="paper"><img src="svg/b3-lifted-sun-symbol-ink.svg" alt=""><img class="s32" src="svg/b3-lifted-sun-symbol-ink.svg" alt=""></figure>
+      <figure class="night"><img src="svg/b3-lifted-sun-symbol-white.svg" alt=""><img class="s32" src="svg/b3-lifted-sun-symbol-white.svg" alt=""></figure>
+    </div>
+  </div>
+  <p class="risk"><b>Risk:</b> Drops the ‘tear is the horizon’ idea. In one colour the sun becomes a round hole, which can read as a lock or a camera.</p>
+  <p class="rename">Survives a rename: <b class="yes">Yes</b></p>
+</article></div>
+</section>
+<section class="group" id="D">
+  <div class="ghead">
+    <div class="was"><img src="../svg/d-summit-symbol-color.svg" alt="Round 1 version"><span>Round 1</span></div>
+    <div><h2><span class="gk">D</span>Summit: more mountain, less insignia</h2>
+    <blockquote>“I like the colors but it looks like a logo for a defense company… highlight more of the mountain idea.”</blockquote>
+    <p class="diag">A solid 60° chevron with a hard cut reads as a badge or rank insignia. Round 2 keeps the teals and uses rounded summits, slopes that flatten towards the base, layers and water.</p></div>
+  </div>
+  
+  <div class="grid">
+<article class="card">
+  <header class="head"><span class="letter">D1</span><div><h3>Ridgelines</h3><p class="type">Layered symbol</p></div></header>
+  <div class="hero"><img src="svg/d1-ridgelines-symbol-color.svg" alt="Ridgelines symbol in colour"></div>
+  <div class="lock light"><img style="height:46px" src="svg/d1-ridgelines-lockup-color.svg" alt="Ridgelines lockup"></div>
+  <div class="lock dark"><img style="height:46px" src="svg/d1-ridgelines-lockup-dark.svg" alt="Ridgelines lockup, dark mode"></div>
+  <p class="idea">Three soft ridges receding into haze, darkest in front: the long view from a window seat, with the next adventure behind it.</p>
+  <div class="fixbox"><p class="label">How it answers the note</p><ul class="why"><li>Rounded summits and slopes that flatten out, instead of a straight chevron.</li><li>Depth from atmospheric perspective: ink, teal, then sky blue, the colours you liked.</li><li>Asymmetric, like real terrain, with no hard symmetry to read as a badge.</li></ul></div>
+  <div class="tests">
+    <p class="label">16 px check</p>
+    <div class="t16">
+      <figure class="ice"><img class="x1" src="svg/d1-ridgelines-symbol-color.svg" width="16" height="16" alt=""><img class="zoom" src="png16/d1-ridgelines-symbol-color.png" alt=""><figcaption>colour</figcaption></figure>
+      <figure class="paper"><img class="x1" src="svg/d1-ridgelines-symbol-ink.svg" width="16" height="16" alt=""><img class="zoom" src="png16/d1-ridgelines-symbol-ink.png" alt=""><figcaption>one colour</figcaption></figure>
+      <figure class="night"><img class="x1" src="svg/d1-ridgelines-symbol-white.svg" width="16" height="16" alt=""><img class="zoom" src="png16/d1-ridgelines-symbol-white.png" alt=""><figcaption>reversed</figcaption></figure>
+    </div>
+    <p class="label">One colour and reversed</p>
+    <div class="mono">
+      <figure class="paper"><img src="svg/d1-ridgelines-symbol-ink.svg" alt=""><img class="s32" src="svg/d1-ridgelines-symbol-ink.svg" alt=""></figure>
+      <figure class="night"><img src="svg/d1-ridgelines-symbol-white.svg" alt=""><img class="s32" src="svg/d1-ridgelines-symbol-white.svg" alt=""></figure>
+    </div>
+  </div>
+  <p class="risk"><b>Risk:</b> Wide and low (about 2:1), so it's small in a square favicon; the layers merge into one silhouette below 24 px.</p>
+  <p class="rename">Survives a rename: <b class="yes">Yes</b></p>
+</article>
+<article class="card">
+  <header class="head"><span class="letter">D2</span><div><h3>Still Water</h3><p class="type">Symbol</p></div><span class="rec">Best of D</span></header>
+  <div class="hero"><img src="svg/d2-still-water-symbol-color.svg" alt="Still Water symbol in colour"></div>
+  <div class="lock light"><img style="height:46px" src="svg/d2-still-water-lockup-color.svg" alt="Still Water lockup"></div>
+  <div class="lock dark"><img style="height:46px" src="svg/d2-still-water-lockup-dark.svg" alt="Still Water lockup, dark mode"></div>
+  <p class="idea">A summit and its reflection in still water, drawn as calm ripples. What you see is what's there, with no distortion: a quiet nod to ‘no ranking bias’.</p>
+  <div class="fixbox"><p class="label">How it answers the note</p><ul class="why"><li>One soft, asymmetric summit with a shoulder, not a chevron.</li><li>The level waterline and ripples bring the calm the brief asks for.</li><li>A small coral sun ties it to the rest of the palette.</li></ul></div>
+  <div class="tests">
+    <p class="label">16 px check</p>
+    <div class="t16">
+      <figure class="ice"><img class="x1" src="svg/d2-still-water-symbol-color.svg" width="16" height="16" alt=""><img class="zoom" src="png16/d2-still-water-symbol-color.png" alt=""><figcaption>colour</figcaption></figure>
+      <figure class="paper"><img class="x1" src="svg/d2-still-water-symbol-ink.svg" width="16" height="16" alt=""><img class="zoom" src="png16/d2-still-water-symbol-ink.png" alt=""><figcaption>one colour</figcaption></figure>
+      <figure class="night"><img class="x1" src="svg/d2-still-water-symbol-white.svg" width="16" height="16" alt=""><img class="zoom" src="png16/d2-still-water-symbol-white.png" alt=""><figcaption>reversed</figcaption></figure>
+    </div>
+    <p class="label">One colour and reversed</p>
+    <div class="mono">
+      <figure class="paper"><img src="svg/d2-still-water-symbol-ink.svg" alt=""><img class="s32" src="svg/d2-still-water-symbol-ink.svg" alt=""></figure>
+      <figure class="night"><img src="svg/d2-still-water-symbol-white.svg" alt=""><img class="s32" src="svg/d2-still-water-symbol-white.svg" alt=""></figure>
+    </div>
+  </div>
+  <p class="risk"><b>Risk:</b> Mountain over a lake is a familiar outdoor motif. The ripples fuse into one bar at 16 px.</p>
+  <p class="rename">Survives a rename: <b class="yes">Yes</b></p>
+</article>
+<article class="card">
+  <header class="head"><span class="letter">D3</span><div><h3>Sunrise Saddle</h3><p class="type">App tile</p></div></header>
+  <div class="hero"><img src="svg/d3-sunrise-saddle-symbol-color.svg" alt="Sunrise Saddle symbol in colour"></div>
+  <div class="lock light"><img style="height:46px" src="svg/d3-sunrise-saddle-lockup-color.svg" alt="Sunrise Saddle lockup"></div>
+  <div class="lock dark"><img style="height:46px" src="svg/d3-sunrise-saddle-lockup-dark.svg" alt="Sunrise Saddle lockup, dark mode"></div>
+  <p class="idea">Two soft peaks under the site's sky, with the sun rising in the saddle between them.</p>
+  <div class="fixbox"><p class="label">How it answers the note</p><ul class="why"><li>Built as an app tile in the site's sky gradient, so it lives in the same world.</li><li>Overlapping peaks with a thin line of sky between them, not one hard point.</li><li>The peak meets a sunrise: the sun sits low in the saddle.</li></ul></div>
+  <div class="tests">
+    <p class="label">16 px check</p>
+    <div class="t16">
+      <figure class="ice"><img class="x1" src="svg/d3-sunrise-saddle-symbol-color.svg" width="16" height="16" alt=""><img class="zoom" src="png16/d3-sunrise-saddle-symbol-color.png" alt=""><figcaption>colour</figcaption></figure>
+      <figure class="paper"><img class="x1" src="svg/d3-sunrise-saddle-symbol-ink.svg" width="16" height="16" alt=""><img class="zoom" src="png16/d3-sunrise-saddle-symbol-ink.png" alt=""><figcaption>one colour</figcaption></figure>
+      <figure class="night"><img class="x1" src="svg/d3-sunrise-saddle-symbol-white.svg" width="16" height="16" alt=""><img class="zoom" src="png16/d3-sunrise-saddle-symbol-white.png" alt=""><figcaption>reversed</figcaption></figure>
+    </div>
+    <p class="label">One colour and reversed</p>
+    <div class="mono">
+      <figure class="paper"><img src="svg/d3-sunrise-saddle-symbol-ink.svg" alt=""><img class="s32" src="svg/d3-sunrise-saddle-symbol-ink.svg" alt=""></figure>
+      <figure class="night"><img src="svg/d3-sunrise-saddle-symbol-white.svg" alt=""><img class="s32" src="svg/d3-sunrise-saddle-symbol-white.svg" alt=""></figure>
+    </div>
+  </div>
+  <p class="risk"><b>Risk:</b> Mountain-and-sun tiles are common among outdoor and photo apps. It is most distinct in colour and weakest in one colour.</p>
+  <p class="rename">Survives a rename: <b class="yes">Yes</b></p>
+</article></div>
+</section>
+<section class="group" id="E">
+  <div class="ghead">
+    <div class="was"><img src="../svg/e-wordmark-symbol-color.svg" alt="Round 1 version"><span>Round 1</span></div>
+    <div><h2><span class="gk">E</span>Daybreak wordmark: a new icon</h2>
+    <blockquote>“has a good full logo with the text but the icon is terrible and looks like the amazon logo a bit.”</blockquote>
+    <p class="diag">The wordmark stays: lowercase ‘altaria’ in Commissioner with the i-dot as the sun, now in Dawn coral. A lowercase a with an orange accent is Amazon's territory, so the new icons use only the sun, the horizon and the i.</p></div>
+  </div>
+  <div class="wm"><div class="wm-l"><img src="svg/e-wordmark-color.svg" alt="altaria wordmark"></div>
+        <div class="wm-d"><img src="svg/e-wordmark-dark.svg" alt="altaria wordmark, dark mode"></div>
+        <p class="wm-note">The wordmark, kept from round 1: Commissioner at weight 540 with full flare (FLAR 100), outlined, the i-dot in Dawn coral.</p></div>
+  <div class="grid">
+<article class="card">
+  <header class="head"><span class="letter">E1</span><div><h3>Reflection i</h3><p class="type">App tile</p></div></header>
+  <div class="hero"><img src="svg/e1-reflection-tile-symbol-color.svg" alt="Reflection i symbol in colour"></div>
+  <div class="lock light"><img style="height:50px" src="svg/e1-reflection-tile-lockup-color.svg" alt="Reflection i lockup"></div>
+  <div class="lock dark"><img style="height:50px" src="svg/e1-reflection-tile-lockup-dark.svg" alt="Reflection i lockup, dark mode"></div>
+  <p class="idea">The wordmark's i remade as a sunrise at sea: the dot is the sun, the stem is its reflection, and the horizon sits where the x-height would.</p>
+  <div class="fixbox"><p class="label">How it answers the note</p><ul class="why"><li>No letter a and nothing Amazon-like: the i is made of the sun and its reflection, not a typeset letter with a coloured mark.</li><li>Comes straight from the wordmark: same sun, same i.</li><li>The sky tile matches the site.</li></ul></div>
+  <div class="tests">
+    <p class="label">16 px check</p>
+    <div class="t16">
+      <figure class="ice"><img class="x1" src="svg/e1-reflection-tile-symbol-color.svg" width="16" height="16" alt=""><img class="zoom" src="png16/e1-reflection-tile-symbol-color.png" alt=""><figcaption>colour</figcaption></figure>
+      <figure class="paper"><img class="x1" src="svg/e1-reflection-tile-symbol-ink.svg" width="16" height="16" alt=""><img class="zoom" src="png16/e1-reflection-tile-symbol-ink.png" alt=""><figcaption>one colour</figcaption></figure>
+      <figure class="night"><img class="x1" src="svg/e1-reflection-tile-symbol-white.svg" width="16" height="16" alt=""><img class="zoom" src="png16/e1-reflection-tile-symbol-white.png" alt=""><figcaption>reversed</figcaption></figure>
+    </div>
+    <p class="label">One colour and reversed</p>
+    <div class="mono">
+      <figure class="paper"><img src="svg/e1-reflection-tile-symbol-ink.svg" alt=""><img class="s32" src="svg/e1-reflection-tile-symbol-ink.svg" alt=""></figure>
+      <figure class="night"><img src="svg/e1-reflection-tile-symbol-white.svg" alt=""><img class="s32" src="svg/e1-reflection-tile-symbol-white.svg" alt=""></figure>
+    </div>
+  </div>
+  <p class="risk"><b>Risk:</b> In one colour it reduces to an i in a rounded square, which can read as an info icon.</p>
+  <p class="rename">Survives a rename: <b class="part">Icon yes, wordmark no</b></p>
+</article>
+<article class="card">
+  <header class="head"><span class="letter">E2</span><div><h3>Calm Water</h3><p class="type">Open icon</p></div></header>
+  <div class="hero"><img src="svg/e2-calm-water-symbol-color.svg" alt="Calm Water symbol in colour"></div>
+  <div class="lock light"><img style="height:50px" src="svg/e2-calm-water-lockup-color.svg" alt="Calm Water lockup"></div>
+  <div class="lock dark"><img style="height:50px" src="svg/e2-calm-water-lockup-dark.svg" alt="Calm Water lockup, dark mode"></div>
+  <p class="idea">The i-dot sun over a level horizon, its reflection a column of glints: the wordmark's idea with no container.</p>
+  <div class="fixbox"><p class="label">How it answers the note</p><ul class="why"><li>No letterform at all.</li><li>Works on any background without a tile.</li><li>The same sun-and-horizon language as the wordmark.</li></ul></div>
+  <div class="tests">
+    <p class="label">16 px check</p>
+    <div class="t16">
+      <figure class="ice"><img class="x1" src="svg/e2-calm-water-symbol-color.svg" width="16" height="16" alt=""><img class="zoom" src="png16/e2-calm-water-symbol-color.png" alt=""><figcaption>colour</figcaption></figure>
+      <figure class="paper"><img class="x1" src="svg/e2-calm-water-symbol-ink.svg" width="16" height="16" alt=""><img class="zoom" src="png16/e2-calm-water-symbol-ink.png" alt=""><figcaption>one colour</figcaption></figure>
+      <figure class="night"><img class="x1" src="svg/e2-calm-water-symbol-white.svg" width="16" height="16" alt=""><img class="zoom" src="png16/e2-calm-water-symbol-white.png" alt=""><figcaption>reversed</figcaption></figure>
+    </div>
+    <p class="label">One colour and reversed</p>
+    <div class="mono">
+      <figure class="paper"><img src="svg/e2-calm-water-symbol-ink.svg" alt=""><img class="s32" src="svg/e2-calm-water-symbol-ink.svg" alt=""></figure>
+      <figure class="night"><img src="svg/e2-calm-water-symbol-white.svg" alt=""><img class="s32" src="svg/e2-calm-water-symbol-white.svg" alt=""></figure>
+    </div>
+  </div>
+  <p class="risk"><b>Risk:</b> Sun over water is a familiar travel picture. At 16 px the sun, horizon and glints can read as a small figure.</p>
+  <p class="rename">Survives a rename: <b class="part">Icon yes, wordmark no</b></p>
+</article>
+<article class="card">
+  <header class="head"><span class="letter">E3</span><div><h3>Glint Tile</h3><p class="type">App tile</p></div><span class="rec">Best of E</span></header>
+  <div class="hero"><img src="svg/e3-glint-tile-symbol-color.svg" alt="Glint Tile symbol in colour"></div>
+  <div class="lock light"><img style="height:50px" src="svg/e3-glint-tile-lockup-color.svg" alt="Glint Tile lockup"></div>
+  <div class="lock dark"><img style="height:50px" src="svg/e3-glint-tile-lockup-dark.svg" alt="Glint Tile lockup, dark mode"></div>
+  <p class="idea">The same sunrise in an app tile: sky above, deep teal sea below, the sun's reflection in three glints.</p>
+  <div class="fixbox"><p class="label">How it answers the note</p><ul class="why"><li>The most app-ready of the three; in colour at 16 px it still reads as sun over sea.</li><li>More scene than letter, so the info-icon reading is weaker than E1's.</li><li>The sky gradient links it to the site.</li></ul></div>
+  <div class="tests">
+    <p class="label">16 px check</p>
+    <div class="t16">
+      <figure class="ice"><img class="x1" src="svg/e3-glint-tile-symbol-color.svg" width="16" height="16" alt=""><img class="zoom" src="png16/e3-glint-tile-symbol-color.png" alt=""><figcaption>colour</figcaption></figure>
+      <figure class="paper"><img class="x1" src="svg/e3-glint-tile-symbol-ink.svg" width="16" height="16" alt=""><img class="zoom" src="png16/e3-glint-tile-symbol-ink.png" alt=""><figcaption>one colour</figcaption></figure>
+      <figure class="night"><img class="x1" src="svg/e3-glint-tile-symbol-white.svg" width="16" height="16" alt=""><img class="zoom" src="png16/e3-glint-tile-symbol-white.png" alt=""><figcaption>reversed</figcaption></figure>
+    </div>
+    <p class="label">One colour and reversed</p>
+    <div class="mono">
+      <figure class="paper"><img src="svg/e3-glint-tile-symbol-ink.svg" alt=""><img class="s32" src="svg/e3-glint-tile-symbol-ink.svg" alt=""></figure>
+      <figure class="night"><img src="svg/e3-glint-tile-symbol-white.svg" alt=""><img class="s32" src="svg/e3-glint-tile-symbol-white.svg" alt=""></figure>
+    </div>
+  </div>
+  <p class="risk"><b>Risk:</b> Close to E1, and close in mood to B's ticket. In one colour at 16 px the sun and glints can still pass for an i.</p>
+  <p class="rename">Survives a rename: <b class="part">Icon yes, wordmark no</b></p>
+</article></div>
+</section>
+
+<section class="notes">
+  <div><h3>Recommendation: B1, Perforated Horizon</h3>
+  <p>It keeps the ticket you already picked as the best, fixes the tear in the most direct way, and makes the strongest square app icon. If you'd like the most literal ticket, B2 is the safe alternative.</p>
+  <p>If you'd rather go with the mountain, take D2 Still Water forward. For the wordmark route, use E3 Glint Tile as its icon.</p></div>
+  <div><h3>What these are</h3><p>Second-round concepts, built as SVG paths with no live text. The curves are finely sampled for now. The chosen direction gets rebuilt with clean arcs, optical tuning, a flat (no-gradient) master and a small-size cut in the final kit.</p></div>
+  <div><h3>Before launch</h3><p>No logo can be cleared here. Run a trademark search and a reverse image search on the chosen mark and name. Commissioner is under the SIL Open Font License, which allows logo use.</p></div>
+</section>
+</main></body></html>

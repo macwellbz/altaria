@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Altaria Ticket Balance</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Commissioner:FLAR,VOLM,wght@0..100,0..100,300..700&display=swap">
+<style>
+:root { --paper:#EEF5FF; --surface:#FFFFFF; --ink:#003D57; --ink-2:#4C6E7B; --accent:#176B87; --line:#D4E6FF; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --paper:#061925; --surface:#092435; --ink:#D7E5F1; --ink-2:#86A3B3; --accent:#73CCEA; --line:#1B3647; } }
+:root[data-theme="dark"] { --paper:#061925; --surface:#092435; --ink:#D7E5F1; --ink-2:#86A3B3; --accent:#73CCEA; --line:#1B3647; }
+* { box-sizing:border-box; }
+body { margin:0; background:var(--paper); color:var(--ink); font:400 15px/1.5 "Commissioner", system-ui, sans-serif; }
+main { max-width:1400px; margin:0 auto; padding:44px clamp(16px,3vw,40px) 56px; }
+a { color:var(--accent); }
+.top { display:grid; grid-template-columns:1.2fr 1fr; gap:40px; align-items:end; margin-bottom:28px; }
+h1 { font-size:clamp(32px,3.6vw,52px); line-height:1.04; font-weight:500; letter-spacing:-.02em; margin:0 0 12px; font-variation-settings:"FLAR" 60; }
+.lede { color:var(--ink-2); font-size:17px; max-width:62ch; margin:0; }
+blockquote { margin:0; padding:16px 20px; background:var(--surface); border:1px solid var(--line); border-radius:18px; font-size:16px; }
+blockquote p { margin:0 0 6px; font-style:italic; } blockquote footer { font-size:13px; color:var(--ink-2); }
+.glance { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:16px; margin:0 0 20px; }
+.glance figure { margin:0; background:#EEF5FF; border:1px solid var(--line); border-radius:18px; padding:14px 10px 10px; display:flex; flex-direction:column; align-items:center; gap:8px; }
+.glance img { width:min(150px, 70%); } .glance figcaption { font-size:13px; color:#4C6E7B; }
+.grid { display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:16px; }
+.card { display:grid; grid-template-rows:subgrid; grid-row:span 7; gap:0; background:var(--surface); border:1px solid var(--line); border-radius:22px; padding:16px; min-width:0; }
+.card > * { margin:0; min-width:0; }
+.card.is-rec { outline:2px solid var(--accent); outline-offset:-1px; }
+.head { display:flex; gap:10px; align-items:center; padding-bottom:12px; flex-wrap:wrap; }
+.letter { display:grid; place-items:center; min-width:40px; height:34px; padding:0 8px; border-radius:999px; background:var(--ink); color:var(--surface); font-weight:600; font-size:14px; }
+h3 { font-size:20px; font-weight:560; margin:0; }
+.rec { margin-left:auto; font-size:12px; font-weight:600; color:var(--accent); border:1px solid currentColor; border-radius:999px; padding:2px 10px; }
+.rec.cur { color:var(--ink-2); }
+.hero { background:#EEF5FF; border-radius:16px; display:grid; place-items:center; aspect-ratio:1/1; min-width:0; }
+.hero img { width:74%; height:auto; }
+.facts { margin:12px 0 0; display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.facts div { background:var(--paper); border-radius:12px; padding:8px 10px; }
+.facts dt { font-size:12px; color:var(--ink-2); } .facts dd { margin:0; font-weight:600; font-size:15px; }
+.label { font-size:12px; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-2); margin:12px 0 6px; }
+.why { padding:0 0 0 18px; margin:0; font-size:14px; } .why li { margin:2px 0; }
+.lock { border-radius:14px; display:grid; place-items:center; height:76px; margin-top:6px; padding:0 12px; }
+.lock img { max-width:100%; height:46px; }
+.lock.light { background:#EEF5FF; } .lock.dark { background:#061925; }
+.tests { border-top:1px solid var(--line); margin-top:14px !important; }
+.t16, .mono { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; }
+.mono { grid-template-columns:1fr 1fr; }
+figure { margin:0; }
+.tests figure { border-radius:12px; display:flex; flex-direction:column; align-items:center; gap:6px; padding:10px 4px 6px; }
+figure.ice { background:#EEF5FF; } figure.paper { background:#FFFFFF; box-shadow: inset 0 0 0 1px var(--line); } figure.night { background:#061925; }
+figure.night figcaption { color:#86A3B3; }
+figcaption { font-size:11px; color:#4C6E7B; }
+.x1 { width:16px; height:16px; }
+.zoom { width:48px; height:48px; image-rendering:pixelated; }
+.mono figure { flex-direction:row; justify-content:center; gap:12px; padding:12px 6px; }
+.mono img { width:64px; height:64px; } .mono .s32 { width:32px; height:32px; }
+.verdict { margin-top:14px !important; padding-top:12px; border-top:1px solid var(--line); font-size:14px; }
+.notes { margin-top:28px; display:grid; grid-template-columns:repeat(3,1fr); gap:24px; font-size:14px; color:var(--ink-2); }
+.notes h3 { font-size:16px; color:var(--ink); font-weight:600; margin:0 0 6px; } .notes p { margin:0 0 8px; }
+@media (max-width:1100px) { .top { grid-template-columns:1fr; } .grid, .glance { grid-template-columns:repeat(2,minmax(0,1fr)); } .notes { grid-template-columns:1fr; } }
+@media (max-width:600px) { .grid { grid-template-columns:minmax(0,1fr); } }
+</style></head>
+<body><main>
+<section class="top">
+  <div>
+    <h1>B1 Perforated Horizon: balancing the ticket</h1>
+    <p class="lede">The current B1 next to three tweaks. Each keeps the punched-hole tear running notch to notch, the sun centred on it, Dawn coral and the sky gradient.
+    Every version is shown with ‘Altaria AI’, with the lowercase ‘altaria’ wordmark, at a true 16 px, and in one colour and reversed.
+    <a href="../round2/index.html">Round 2</a> and <a href="../index.html">round 1</a> are unchanged.</p>
+  </div>
+  <blockquote><p>“the top of the ticket currently takes up most of the logo and there's a lot of dead space there, so it looks off.”</p>
+  <footer>The note on B1. The fix: less empty sky above the sun, by raising the tear, enlarging the sun and shortening the ticket.</footer></blockquote>
+</section>
+<section class="glance" aria-label="All four at the same size">
+  <figure><img src="svg/b1-current-symbol-color.svg" alt=""><figcaption>B1 current</figcaption></figure>
+  <figure><img src="svg/t1-raised-tear-symbol-color.svg" alt=""><figcaption>T1 Raised Tear</figcaption></figure>
+  <figure><img src="svg/t2-square-symbol-color.svg" alt=""><figcaption>T2 Square Ticket (recommended)</figcaption></figure>
+  <figure><img src="svg/t3-wide-symbol-color.svg" alt=""><figcaption>T3 Wide Ticket</figcaption></figure>
+</section>
+<section class="grid">
+<article class="card">
+  <header class="head"><span class="letter">B1</span><div><h3>Current</h3></div><span class="rec cur">as picked</span></header>
+  <div class="hero"><img src="svg/b1-current-symbol-color.svg" alt="Current symbol in colour"></div>
+  <dl class="facts"><div><dt>Sky / stub</dt><dd>67 / 33</dd></div><div><dt>Empty sky above the sun</dt><dd>46% of the height</dd></div><div><dt>Sun width</dt><dd>50% of the ticket</dd></div><div><dt>Footprint</dt><dd>0.81:1 portrait</dd></div></dl>
+  <div class="whatbox"><p class="label">What it is</p><ul class="why"><li>The tear sits at two-thirds, so the sky is two-thirds of the ticket.</li><li>The sun is half the ticket's width and sits on the tear, leaving a tall empty band of sky above it.</li></ul></div>
+  <div class="locks">
+    <p class="label">With ‘Altaria AI’</p>
+    <div class="lock light"><img src="svg/b1-current-lockup-color.svg" alt="Current with Altaria AI"></div>
+    <div class="lock dark"><img src="svg/b1-current-lockup-dark.svg" alt="Current with Altaria AI, dark mode"></div>
+    <p class="label">With the ‘altaria’ wordmark</p>
+    <div class="lock light"><img src="svg/b1-current-pair-color.svg" alt="Current with the altaria wordmark"></div>
+    <div class="lock dark"><img src="svg/b1-current-pair-dark.svg" alt="Current with the altaria wordmark, dark mode"></div>
+  </div>
+  <div class="tests">
+    <p class="label">16 px check</p>
+    <div class="t16">
+      <figure class="ice"><img class="x1" src="svg/b1-current-symbol-color.svg" width="16" height="16" alt=""><img class="zoom" src="png16/b1-current-symbol-color.png" alt=""><figcaption>colour</figcaption></figure>
+      <figure class="paper"><img class="x1" src="svg/b1-current-symbol-ink.svg" width="16" height="16" alt=""><img class="zoom" src="png16/b1-current-symbol-ink.png" alt=""><figcaption>one colour</figcaption></figure>
+      <figure class="night"><img class="x1" src="svg/b1-current-symbol-white.svg" width="16" height="16" alt=""><img class="zoom" src="png16/b1-current-symbol-white.png" alt=""><figcaption>reversed</figcaption></figure>
+    </div>
+    <p class="label">One colour and reversed, 64 and 32 px</p>
+    <div class="mono">
+      <figure class="paper"><img src="svg/b1-current-symbol-ink.svg" alt=""><img class="s32" src="svg/b1-current-symbol-ink.svg" alt=""></figure>
+      <figure class="night"><img src="svg/b1-current-symbol-white.svg" alt=""><img class="s32" src="svg/b1-current-symbol-white.svg" alt=""></figure>
+    </div>
+  </div>
+  <p class="verdict">The note in a picture: the empty sky above the sun is almost half the mark.</p>
+</article>
+<article class="card">
+  <header class="head"><span class="letter">T1</span><div><h3>Raised Tear</h3></div></header>
+  <div class="hero"><img src="svg/t1-raised-tear-symbol-color.svg" alt="Raised Tear symbol in colour"></div>
+  <dl class="facts"><div><dt>Sky / stub</dt><dd>56 / 44</dd></div><div><dt>Empty sky above the sun</dt><dd>30% of the height</dd></div><div><dt>Sun width</dt><dd>64% of the ticket</dd></div><div><dt>Footprint</dt><dd>0.81:1 portrait</dd></div></dl>
+  <div class="whatbox"><p class="label">What changes</p><ul class="why"><li>The same portrait ticket, with the tear raised from 67% to 56% of the height.</li><li>The sun grows from 88 to 112 units wide, so it fills more of the smaller sky.</li><li>The notches and punched holes move up with the tear.</li></ul></div>
+  <div class="locks">
+    <p class="label">With ‘Altaria AI’</p>
+    <div class="lock light"><img src="svg/t1-raised-tear-lockup-color.svg" alt="Raised Tear with Altaria AI"></div>
+    <div class="lock dark"><img src="svg/t1-raised-tear-lockup-dark.svg" alt="Raised Tear with Altaria AI, dark mode"></div>
+    <p class="label">With the ‘altaria’ wordmark</p>
+    <div class="lock light"><img src="svg/t1-raised-tear-pair-color.svg" alt="Raised Tear with the altaria wordmark"></div>
+    <div class="lock dark"><img src="svg/t1-raised-tear-pair-dark.svg" alt="Raised Tear with the altaria wordmark, dark mode"></div>
+  </div>
+  <div class="tests">
+    <p class="label">16 px check</p>
+    <div class="t16">
+      <figure class="ice"><img class="x1" src="svg/t1-raised-tear-symbol-color.svg" width="16" height="16" alt=""><img class="zoom" src="png16/t1-raised-tear-symbol-color.png" alt=""><figcaption>colour</figcaption></figure>
+      <figure class="paper"><img class="x1" src="svg/t1-raised-tear-symbol-ink.svg" width="16" height="16" alt=""><img class="zoom" src="png16/t1-raised-tear-symbol-ink.png" alt=""><figcaption>one colour</figcaption></figure>
+      <figure class="night"><img class="x1" src="svg/t1-raised-tear-symbol-white.svg" width="16" height="16" alt=""><img class="zoom" src="png16/t1-raised-tear-symbol-white.png" alt=""><figcaption>reversed</figcaption></figure>
+    </div>
+    <p class="label">One colour and reversed, 64 and 32 px</p>
+    <div class="mono">
+      <figure class="paper"><img src="svg/t1-raised-tear-symbol-ink.svg" alt=""><img class="s32" src="svg/t1-raised-tear-symbol-ink.svg" alt=""></figure>
+      <figure class="night"><img src="svg/t1-raised-tear-symbol-white.svg" alt=""><img class="s32" src="svg/t1-raised-tear-symbol-white.svg" alt=""></figure>
+    </div>
+  </div>
+  <p class="verdict">The smallest change. The sky is balanced, but the portrait shape still isn't square, and the stub is now a heavy dark half.</p>
+</article>
+<article class="card is-rec">
+  <header class="head"><span class="letter">T2</span><div><h3>Square Ticket</h3></div><span class="rec">Recommended</span></header>
+  <div class="hero"><img src="svg/t2-square-symbol-color.svg" alt="Square Ticket symbol in colour"></div>
+  <dl class="facts"><div><dt>Sky / stub</dt><dd>56 / 44</dd></div><div><dt>Empty sky above the sun</dt><dd>25% of the height</dd></div><div><dt>Sun width</dt><dd>62% of the ticket</dd></div><div><dt>Footprint</dt><dd>1:1 square</dd></div></dl>
+  <div class="whatbox"><p class="label">What changes</p><ul class="why"><li>The ticket becomes a 204 × 204 square with a slightly softer corner, so its outline is already an app icon.</li><li>The tear is at 56%, and the sun is 62% of the ticket's width.</li><li>Eleven holes run notch to notch; one shows either side of the sun and the rest punch through its base, as before.</li></ul></div>
+  <div class="locks">
+    <p class="label">With ‘Altaria AI’</p>
+    <div class="lock light"><img src="svg/t2-square-lockup-color.svg" alt="Square Ticket with Altaria AI"></div>
+    <div class="lock dark"><img src="svg/t2-square-lockup-dark.svg" alt="Square Ticket with Altaria AI, dark mode"></div>
+    <p class="label">With the ‘altaria’ wordmark</p>
+    <div class="lock light"><img src="svg/t2-square-pair-color.svg" alt="Square Ticket with the altaria wordmark"></div>
+    <div class="lock dark"><img src="svg/t2-square-pair-dark.svg" alt="Square Ticket with the altaria wordmark, dark mode"></div>
+  </div>
+  <div class="tests">
+    <p class="label">16 px check</p>
+    <div class="t16">
+      <figure class="ice"><img class="x1" src="svg/t2-square-symbol-color.svg" width="16" height="16" alt=""><img class="zoom" src="png16/t2-square-symbol-color.png" alt=""><figcaption>colour</figcaption></figure>
+      <figure class="paper"><img class="x1" src="svg/t2-square-symbol-ink.svg" width="16" height="16" alt=""><img class="zoom" src="png16/t2-square-symbol-ink.png" alt=""><figcaption>one colour</figcaption></figure>
+      <figure class="night"><img class="x1" src="svg/t2-square-symbol-white.svg" width="16" height="16" alt=""><img class="zoom" src="png16/t2-square-symbol-white.png" alt=""><figcaption>reversed</figcaption></figure>
+    </div>
+    <p class="label">One colour and reversed, 64 and 32 px</p>
+    <div class="mono">
+      <figure class="paper"><img src="svg/t2-square-symbol-ink.svg" alt=""><img class="s32" src="svg/t2-square-symbol-ink.svg" alt=""></figure>
+      <figure class="night"><img src="svg/t2-square-symbol-white.svg" alt=""><img class="s32" src="svg/t2-square-symbol-white.svg" alt=""></figure>
+    </div>
+  </div>
+  <p class="verdict">Empty sky drops from 46% to 25% of the height. The sun is clear even at 16 px, and the square outline makes the strongest app icon and favicon.</p>
+</article>
+<article class="card">
+  <header class="head"><span class="letter">T3</span><div><h3>Wide Ticket</h3></div></header>
+  <div class="hero"><img src="svg/t3-wide-symbol-color.svg" alt="Wide Ticket symbol in colour"></div>
+  <dl class="facts"><div><dt>Sky / stub</dt><dd>60 / 40</dd></div><div><dt>Empty sky above the sun</dt><dd>23% of the height</dd></div><div><dt>Sun width</dt><dd>65% of the ticket</dd></div><div><dt>Footprint</dt><dd>1.15:1 landscape</dd></div></dl>
+  <div class="whatbox"><p class="label">What changes</p><ul class="why"><li>The ticket is shorter and slightly landscape (220 × 192).</li><li>The tear is at 60%, and the biggest sun of the set (65% of the width) rises from it.</li><li>The pitch tightens to 13 holes, so the perforation still runs notch to notch.</li></ul></div>
+  <div class="locks">
+    <p class="label">With ‘Altaria AI’</p>
+    <div class="lock light"><img src="svg/t3-wide-lockup-color.svg" alt="Wide Ticket with Altaria AI"></div>
+    <div class="lock dark"><img src="svg/t3-wide-lockup-dark.svg" alt="Wide Ticket with Altaria AI, dark mode"></div>
+    <p class="label">With the ‘altaria’ wordmark</p>
+    <div class="lock light"><img src="svg/t3-wide-pair-color.svg" alt="Wide Ticket with the altaria wordmark"></div>
+    <div class="lock dark"><img src="svg/t3-wide-pair-dark.svg" alt="Wide Ticket with the altaria wordmark, dark mode"></div>
+  </div>
+  <div class="tests">
+    <p class="label">16 px check</p>
+    <div class="t16">
+      <figure class="ice"><img class="x1" src="svg/t3-wide-symbol-color.svg" width="16" height="16" alt=""><img class="zoom" src="png16/t3-wide-symbol-color.png" alt=""><figcaption>colour</figcaption></figure>
+      <figure class="paper"><img class="x1" src="svg/t3-wide-symbol-ink.svg" width="16" height="16" alt=""><img class="zoom" src="png16/t3-wide-symbol-ink.png" alt=""><figcaption>one colour</figcaption></figure>
+      <figure class="night"><img class="x1" src="svg/t3-wide-symbol-white.svg" width="16" height="16" alt=""><img class="zoom" src="png16/t3-wide-symbol-white.png" alt=""><figcaption>reversed</figcaption></figure>
+    </div>
+    <p class="label">One colour and reversed, 64 and 32 px</p>
+    <div class="mono">
+      <figure class="paper"><img src="svg/t3-wide-symbol-ink.svg" alt=""><img class="s32" src="svg/t3-wide-symbol-ink.svg" alt=""></figure>
+      <figure class="night"><img src="svg/t3-wide-symbol-white.svg" alt=""><img class="s32" src="svg/t3-wide-symbol-white.svg" alt=""></figure>
+    </div>
+  </div>
+  <p class="verdict">The boldest sunrise, with the least empty sky (23%). It isn't square, and the sun nearly fills the sky from notch to notch, so it feels busier and less calm.</p>
+</article></section>
+<section class="notes">
+  <div><h3>Recommendation: T2, Square Ticket</h3><p>It fixes the note at the root. The empty sky above the sun drops from 46% to 25% of the height, and the sun becomes the clear subject, readable even at 16 px. The square outline doubles as the app icon and favicon, and it sits evenly beside both ‘Altaria AI’ and ‘altaria’.</p></div>
+  <div><h3>One more change in dark mode</h3><p>With a taller stub, round 2's pale dark-mode stub (#D7E5F1) became a bright slab. The tweaks use teal #176B87 for the stub on the night page, keeping sky over a darker base, as in light mode. B1 current is shown unchanged.</p></div>
+  <div><h3>Next</h3><p>Once a version is picked, the final kit rebuilds it with clean arcs (these concept files use finely sampled curves), a flat no-gradient master, a small-size cut and the icon sets.</p></div>
+</section>
+</main></body></html>
