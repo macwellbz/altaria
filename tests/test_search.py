@@ -1,9 +1,12 @@
-"""Run: python test_search.py. Fixtures are real Google and ITA Matrix responses (YYZ-VNO, 2026-12-29/2027-01-12)."""
+"""Run: python tests/test_search.py. Fixtures are real Google and ITA Matrix responses (YYZ-VNO, 2026-12-29/2027-01-12)."""
 import json
+import sys
+from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))   # the repo root, for search, ai and server
 from search import arrival_window, arrives_within, date_range, norm_google, norm_matrix
 
-fx = json.load(open("test_fixtures.json"))
+fx = json.load(open(Path(__file__).parent / "test_fixtures.json"))
 
 g = fx["google_payload_stub"]
 rows = norm_google([None, None, g["2"], g["3"]], "CAD")

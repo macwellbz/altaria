@@ -81,13 +81,14 @@ Unset, it tries Ollama and then `claude` on PATH. With neither, the trip box is 
 ## Tests
 
 ```
-.venv/bin/python test_search.py     parsers and filters, on real saved responses
-.venv/bin/python test_ai.py         field checks, both providers against stand-ins, the endpoints and their rejections
-cd web && npm test && cd ..         29 unit tests on the page's plain modules, with Node's own runner
-.venv/bin/python test_site.py       the built site in headless Chromium, with a replayed run and a stand-in model
+.venv/bin/python tests/test_search.py     parsers and filters, on real saved responses
+.venv/bin/python tests/test_ai.py         field checks, both providers against stand-ins, the endpoints and their rejections
+cd web && npm test && cd ..               33 unit tests on the page's plain modules, with Node's own runner
+.venv/bin/python tests/test_site.py       the built site in headless Chromium, with a replayed run and a stand-in model
+cd worker && npm test && cd ..            the Cloudflare version's search and trip reader, checked against the Python
 ```
 
-`test_site.py` covers the hero's fare, the board's order, a full search, the airport finder, the trip box, the theme toggle, reduced motion, keyboard reach and a 360px window. Build the site first.
+`tests/test_site.py` covers the hero's fare, the board's order, a full search, the airport finder, the trip box, the theme toggle, reduced motion, keyboard reach and a 360px window. Build the site first.
 
 ## Known limits
 

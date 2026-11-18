@@ -2,22 +2,13 @@ import { useEffect, useRef, useState } from "react";
 import AirportBlank from "./AirportBlank.jsx";
 import TripBox from "./TripBox.jsx";
 import Flap from "./bits/Flap.jsx";
+import { CURRENCIES } from "./currencies.js";
 import { STOPS, day, localDay } from "./helpers.js";
 import { focusOn } from "./scroll.js";
 import { EMPTY, arrive, check, echo, estimate, query } from "./sentence.js";
 import { FIELDS, FILLED, ask, merge, outcome } from "./trip.js";
 
 const STOP_CHOICES = [["", "Any number of stops"], ["0", "Nonstop only"], ["1", "At most 1 stop"], ["2", "At most 2 stops"]];
-const CURRENCIES = [   // the 30 that api.frankfurter.dev converts; ai.py reads this list too, so it stays the only one
-  ["AUD", "Australian Dollar"], ["BRL", "Brazilian Real"], ["CAD", "Canadian Dollar"], ["CHF", "Swiss Franc"],
-  ["CNY", "Chinese Renminbi Yuan"], ["CZK", "Czech Koruna"], ["DKK", "Danish Krone"], ["EUR", "Euro"],
-  ["GBP", "British Pound"], ["HKD", "Hong Kong Dollar"], ["HUF", "Hungarian Forint"], ["IDR", "Indonesian Rupiah"],
-  ["ILS", "Israeli New Shekel"], ["INR", "Indian Rupee"], ["ISK", "Icelandic Króna"], ["JPY", "Japanese Yen"],
-  ["KRW", "South Korean Won"], ["MXN", "Mexican Peso"], ["MYR", "Malaysian Ringgit"], ["NOK", "Norwegian Krone"],
-  ["NZD", "New Zealand Dollar"], ["PHP", "Philippine Peso"], ["PLN", "Polish Złoty"], ["RON", "Romanian Leu"],
-  ["SEK", "Swedish Krona"], ["SGD", "Singapore Dollar"], ["THB", "Thai Baht"], ["TRY", "Turkish Lira"],
-  ["USD", "United States Dollar"], ["ZAR", "South African Rand"],
-].map(([c, name]) => [c, `${c} · ${name}`]);
 
 /* The composer, one sheet: the trip box, when there's a model to read with, then the search as one sentence at one
    size, with no periods, a clause to a line, and Search where the sentence ends. Every field is a blank on the text's

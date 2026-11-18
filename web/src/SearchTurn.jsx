@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import Results from "./Results.jsx";
+import { drive } from "./drive.js";
 import { day } from "./helpers.js";
 import { scrollToElement } from "./scroll.js";
 
@@ -23,11 +24,13 @@ export function streamSearch(q, update) {
     rows: null,            // what came back
   }));
   const es = new EventSource(`/api/search?${q}`);
+  const run = new AbortController();   // a search the page drives itself (drive.js)
   let ended = false;
   const end = () => { ended = true; es.close(); };
   const stop = (why) => {
     if (ended) return;
     end();
+    run.abort();
     update((t) => ({
       running: false,
       status: why,
@@ -36,42 +39,49 @@ export function streamSearch(q, update) {
   };
   const mark = (k, task) => update((t) => (t.tasks[k] ? { tasks: { ...t.tasks, [k]: task } } : {}));
 
-  es.addEventListener("wait", () => update(() => ({ status: "Waiting for the previous search to stop…" })));
+  // What the server streams, by event. On the public site the plan says drive, and the page runs it (drive.js),
+  // which reports through these same handlers.
+  const on = {
+    wait: () => update(() => ({ status: "Waiting for the previous search to stop…" })),
 
-  es.addEventListener("plan", (e) => {
-    const meta = JSON.parse(e.data);
-    const keys = meta.pairs.flatMap(([o, r]) => meta.sources.map((s) => `${s}|${o}|${r}`));
-    update(() => ({ meta, tasks: Object.fromEntries(keys.map((k) => [k, { s: "pending", text: "waiting" }])) }));
-  });
+    plan: (meta) => {
+      const keys = meta.pairs.flatMap(([o, r]) => meta.sources.map((s) => `${s}|${o}|${r}`));
+      update(() => ({ meta, tasks: Object.fromEntries(keys.map((k) => [k, { s: "pending", text: "waiting" }])) }));
+      if (meta.drive) {
+        es.onerror = null;
+        es.close();
+        drive(q, meta, on, run.signal);
+      }
+    },
 
-  es.addEventListener("progress", (e) => {
-    const p = JSON.parse(e.data);
-    const k = `${p.src}|${p.out}|${p.ret}`;
-    if (p.status === "searching") mark(k, { s: "searching", text: "asking…" });
-    else if (p.status === "failed") mark(k, { s: "failed", text: "failed", error: p.error });
-    else mark(k, { s: "done", text: `${p.count} ${p.count === 1 ? "fare" : "fares"}` });
-  });
+    progress: (p) => {
+      const k = `${p.src}|${p.out}|${p.ret}`;
+      if (p.status === "searching") mark(k, { s: "searching", text: "asking…" });
+      else if (p.status === "failed") mark(k, { s: "failed", text: "failed", error: p.error });
+      else mark(k, { s: "done", text: `${p.count} ${p.count === 1 ? "fare" : "fares"}` });
+    },
 
-  es.addEventListener("result", (e) => {
-    const { rows } = JSON.parse(e.data);
-    end();
-    const took = clock(Date.now() - started);
-    update((t) => {
-      const total = Object.keys(t.tasks).length;
-      const failed = Object.values(t.tasks).filter((x) => x.s === "failed").length;
-      return {
-        running: false,
-        rows,
-        status: `Done in ${took}. ` + (total === 1 ? (failed ? "The search failed." : "The search came back.")
-          : `${total - failed} of ${total} searches came back` + (failed ? `; ${failed} failed.` : ".")),
-      };
-    });
-  });
+    result: ({ rows }) => {
+      end();
+      const took = clock(Date.now() - started);
+      update((t) => {
+        const total = Object.keys(t.tasks).length;
+        const failed = Object.values(t.tasks).filter((x) => x.s === "failed").length;
+        return {
+          running: false,
+          rows,
+          status: `Done in ${took}. ` + (total === 1 ? (failed ? "The search failed." : "The search came back.")
+            : `${total - failed} of ${total} searches came back` + (failed ? `; ${failed} failed.` : ".")),
+        };
+      });
+    },
 
-  es.addEventListener("fail", (e) => {
-    stop(JSON.parse(e.data).message);
-    update(() => ({ listed: false }));
-  });
+    fail: ({ message }) => {
+      stop(message);
+      update(() => ({ listed: false }));
+    },
+  };
+  for (const [name, handle] of Object.entries(on)) es.addEventListener(name, (e) => handle(JSON.parse(e.data)));
 
   es.onerror = () => stop("The connection to the local server dropped. Check that server.py is still running, then search again.");
   return { stop };

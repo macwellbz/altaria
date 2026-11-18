@@ -1,9 +1,10 @@
-"""Run: python test_site.py, after npm run build in web/. It drives the built site in headless Chromium against
+"""Run: python tests/test_site.py, after npm run build in web/. It drives the built site in headless Chromium against
 server.py in-process. Searches replay test_site_run.json (the first rows of a real saved run) and the trip box's model
 is a stand-in, so nothing searches live, no model is called, and nothing is written to results/."""
 import json
 import re
 import shutil
+import sys
 import tempfile
 import threading
 from datetime import datetime
@@ -12,6 +13,7 @@ from pathlib import Path
 
 from playwright.sync_api import sync_playwright
 
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))   # the repo root, for search, ai and server
 import ai
 import server
 

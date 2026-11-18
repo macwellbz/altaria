@@ -13,10 +13,11 @@ access requires a registered business; the code is in the git history.
 ```
 python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
 .venv/bin/python -m playwright install chromium
-.venv/bin/python test_search.py
-.venv/bin/python test_ai.py
+.venv/bin/python tests/test_search.py
+.venv/bin/python tests/test_ai.py
 cd web && npm install && npm run build && npm test && cd ..
-.venv/bin/python test_site.py
+.venv/bin/python tests/test_site.py
+cd worker && npm test && cd ..   # parity with search.py and ai.py runs when .venv exists, or set PYTHON=
 ```
 
 ## Web app (Altaria)
@@ -30,8 +31,9 @@ Run `.venv/bin/python server.py`, then open http://localhost:8000. It listens on
 - **AI settings:** `ALTARIA_AI` is `ollama` (a local server on port 11434), `claude` (the Claude Code CLI on the user's own subscription, with no tools, in an empty temp folder) or `off`. Unset tries Ollama, then `claude` on PATH. `ALTARIA_AI_MODEL` names the model for either. Restart the server after changing them.
 - **Reloading:** after editing `web/src/`, run `npm run build` in `web/` and reload (files are sent with `Cache-Control: no-cache`). Or run `npm run dev` in `web/` for live reloads at http://localhost:5173, which passes `/api` to the server on 8000. Changes to `search.py` or `server.py` need a server restart.
 - **Currencies:** only the 30 that api.frankfurter.dev converts will work. Matrix quotes in CAD here, so any other code makes a CLI Matrix run fail mid-search. The page's currency dropdown lists exactly those 30.
-- **Tests:** `npm test` in `web/` runs the unit tests in `web/test/` (Node's own runner, no dependencies) on the page's plain modules. `.venv/bin/python test_site.py` drives the built site in headless Chromium against `server.py` in-process: searches replay `test_site_run.json` (the first rows of a real run), the model is a stand-in, and nothing is written to `results/`. Build first.
+- **Tests:** `npm test` in `web/` runs the unit tests in `web/test/` (Node's own runner, no dependencies) on the page's plain modules. `.venv/bin/python tests/test_site.py` drives the built site in headless Chromium against `server.py` in-process: searches replay `tests/test_site_run.json` (the first rows of a real run), the model is a stand-in, and nothing is written to `results/`. Build first.
 - **Checking the site:** run `npm run build`, then serve in-process on a free port with `ThreadingHTTPServer(("127.0.0.1", 0), server.Handler)` and drive it with Playwright. Port 8000 is usually the user's own server, and OrbStack holds 8001.
+- **Public site (`worker/`):** a Cloudflare Worker for the free plan, not deployed yet. It serves `web/dist/` and the same API in JavaScript, Google only: `web/src/flights.js` ports search.py's Google side and `worker/ai.js` ports ai.py's checks with Gemini reading (`GEMINI_API_KEY` secret). The free plan allows 10ms of CPU and 50 subrequests a request, so its `/api/search` only checks the query and answers a plan with `drive: true`, and the page runs it (`web/src/drive.js`) through `/api/google`, one Google request per call. A Durable Object (`Caps`) counts Google requests and Gemini readings per UTC day. A search never shows saved fares in place of its own: once the day's Google requests are used up, it says so. `/api/example` serves the newest run in `worker/runs/`, never a visitor's search. Build `web/` first, then `cd worker && npx wrangler@4 dev` (http://localhost:8787).
 - **Design work:** send it to the `site-builder` agent, whose brief is in `.claude/agents/site-builder.md`. It only loads when Claude is started from this folder. Run one agent on `web/` at a time, since two agents editing the same files overwrite each other.
 
 ## Claude's job here
@@ -57,7 +59,7 @@ reports what comes back.
   protobuf field fast-flights doesn't model) and takes the cheapest, then shortest, return: one extra
   request per row, five at a time. If that lookup fails, the return fields stay `null`.
 - `norm_google` reads Google's private JSON by position, so it will break when Google changes that
-  format. `test_search.py` uses a real saved payload.
+  format. `tests/test_search.py` uses a real saved payload.
 - Matrix has no API. `matrix()` drives the real page in headless Chromium, because each search needs a
   Google BotGuard token. It rewrites the outgoing `/v1/search` request, takes about 30s per date pair,
   and will break if the page's form labels change.

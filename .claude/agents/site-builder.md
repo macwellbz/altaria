@@ -34,7 +34,7 @@ The system below is in place. Build on it unless the user asks for a new directi
 - **Honest prices.** Every price on the site comes from a real search result, either a live search or a row from `results/*.json`. Illustrative cards show no price.
 - "Altaria" is a Pokémon-derived name. The user chose to keep it, without the "AI".
 - `results/` holds saved searches from the CLI and the site. Purge it only when the user asks.
-- Run searches through `search.py`'s own functions, and keep its CLI and `test_search.py` working.
+- Run searches through `search.py`'s own functions, and keep its CLI and `tests/test_search.py` working.
 - Git is the user's: leave commits, branches and stashes alone.
 
 ## Checking your work
@@ -42,14 +42,14 @@ Check everything with Playwright (`playwright.sync_api` in `.venv`). Port 8000 u
 - **Dev mode:** React's development warnings (list keys and the like) only show there, so check its console too. Start Vite with `createServer` from `web/node_modules/vite`, passing `server.proxy` for `/api` to your in-process server, because the config's own target is the user's port 8000. It listens on `localhost`, which resolves to IPv6 here, so open `localhost`, not 127.0.0.1.
 - **npm:** if `npm install` fails with EACCES in `~/.npm` (root-owned cache folders), pass `--cache` a folder in your scratchpad rather than touching `~/.npm`.
 - **Screenshot the sky on the GPU:** `chromium.launch(channel="chromium", args=["--use-angle=metal", "--enable-gpu", "--ignore-gpu-blocklist"])`. The default headless shell runs WebGL on SwiftShader, which `vantaSky.js` treats as software GL and draws as one still frame, small. Judge cloud edges on crops taken at `device_scale_factor=2`.
-- **Tests:** `npm test` in `web/` runs `web/test/*.test.js` on the plain modules with Node's own runner (`setup.js` answers the airport list from `public/airports.json`). `.venv/bin/python test_site.py` drives the built site end to end against an in-process server.py: searches replay `test_site_run.json` (the first rows of a real run), a stand-in replaces the model behind `ai.read_trip`, and the page's clock is fixed so the run's dates stay ahead. Keep both passing, and add to them as the site grows.
+- **Tests:** `npm test` in `web/` runs `web/test/*.test.js` on the plain modules with Node's own runner (`setup.js` answers the airport list from `public/airports.json`). `.venv/bin/python tests/test_site.py` drives the built site end to end against an in-process server.py: searches replay `tests/test_site_run.json` (the first rows of a real run), a stand-in replaces the model behind `ai.read_trip`, and the page's clock is fixed so the run's dates stay ahead. Keep both passing, and add to them as the site grows.
 - **Show results without live searches:** route `**/api/search*` and fulfil it with a saved `results/*.json` run replayed as SSE: `plan`, then a `progress` pair per search, then `result`. A fulfilled body arrives all at once, so to hold the in-progress state, reroute to a handler that streams slowly and stops before `result`. Rows saved before links existed need `link` added from `search.google_query(...).url()`. Route `**/api/ai` and `**/api/ai/trip` the same way to show the trip box's states. A live reading spends the user's quota: if you start `server.py` for one, strip `CLAUDE_*` and `ANTHROPIC_*` from its environment.
 - **Time it:** record `requestAnimationFrame` gaps while scrolling and moving the pointer. To time a GL pass, follow the draw with a one-pixel `readPixels`, because `gl.finish()` returns early in Chrome.
 
 ## Done when
 1. You have used Playwright to take screenshots of the hero, mid-scroll, search form and results, in light and dark, at 1440px and 390px wide, saved to your scratchpad directory. You have viewed every screenshot and kept iterating until the page looks genuinely polished.
 2. One real search for a single date pair renders through the UI.
-3. Playwright reports no console errors and no horizontal scroll at 360px, and `npm test` in `web/`, `test_site.py`, `test_ai.py` and `test_search.py` pass.
+3. Playwright reports no console errors and no horizontal scroll at 360px, and `npm test` in `web/`, `tests/test_site.py`, `tests/test_ai.py` and `tests/test_search.py` pass.
 4. Your server is stopped and your changes are left uncommitted.
 
 Report the files you changed, the before and after screenshot paths, what you verified, and any known issues.

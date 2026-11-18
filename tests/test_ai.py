@@ -1,4 +1,4 @@
-"""Run: python test_ai.py. No live model calls: Ollama is a stub HTTP server, and claude is a fake script on a PATH
+"""Run: python tests/test_ai.py. No live model calls: Ollama is a stub HTTP server, and claude is a fake script on a PATH
 that holds nothing else."""
 import http.client
 import json
@@ -12,6 +12,7 @@ import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))   # the repo root, for search, ai and server
 import ai
 import server
 
@@ -251,7 +252,7 @@ assert json.loads(argv[argv.index("--json-schema") + 1]) == ai.schema()
 assert argv[argv.index("--system-prompt") + 1] == ai.instructions(TODAY)
 assert call["stdin"] == f"The trip:\n{TRIP}" and not any("Vilnius" in a for a in argv), "the trip goes in on stdin"
 assert call["files"] == [] and not Path(call["cwd"]).exists(), "it runs in an empty folder that is removed afterwards"
-assert Path(call["cwd"]).resolve() != Path(__file__).resolve().parent
+assert Path(call["cwd"]).resolve() != Path(__file__).resolve().parent.parent
 
 fake_claude("ok")
 ai.read_trip(use("claude", "sonnet")[0], TRIP, TODAY)

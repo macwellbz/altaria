@@ -1,0 +1,18 @@
+# Altaria's public site. Build the page first (cd web && npm run build), then from this folder:
+#   npx wrangler@4 dev       local, on http://localhost:8787
+# The trip reader needs GEMINI_API_KEY: in .dev.vars here for wrangler dev, as a secret once deployed.
+name = "altaria"
+main = "index.js"
+compatibility_date = "2026-10-01"
+
+[assets]
+directory = "../web/dist"
+binding = "ASSETS"
+
+[[durable_objects.bindings]]
+name = "CAPS"
+class_name = "Caps"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["Caps"]
