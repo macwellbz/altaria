@@ -2,6 +2,7 @@
 // says drive, and the page runs it here, the way search.py's run_search does. For each date pair, ask /api/google for
 // the outbound flights, then for each outbound's cheapest return, five at a time. Then rank everything.
 // It reports through on, with the same events server.py streams: progress for each pair, then result or fail.
+import { keep } from "./example.js";
 import { arrivalWindow, rank } from "./flights.js";
 
 const AT_ONCE = 5;   // return lookups in flight at once, as search.py's thread pool
@@ -49,7 +50,9 @@ export async function drive(q, meta, on, signal) {
     }
     if (capped && failed === meta.pairs.length) return on.fail({ message: capped });
     const ranked = await rank(rows, meta.currency, arrive.replaceAll(",", "") ? arrivalWindow(arrive) : null);
-    if (!signal.aborted) on.result({ rows: ranked });
+    if (signal.aborted) return;
+    keep(q, ranked);
+    on.result({ rows: ranked });
   } catch (e) {
     if (!signal.aborted) on.fail({ message: `The search stopped: ${e.message}` });
   }

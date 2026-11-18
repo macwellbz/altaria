@@ -25,11 +25,11 @@ export async function ask(text, today = localDay()) {
   try {
     r = await fetch("/api/ai/trip", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text, today }) });
   } catch {
-    return { error: "The connection to the local server dropped. Check that server.py is still running, then try again." };
+    return { error: "The connection to the server dropped. Try again, and if you run Altaria yourself, check that server.py is still running." };
   }
   const body = await r.json().catch(() => null);
   if (r.ok && body?.fields) return { answer: body };
-  return { error: body?.error || `The server answered ${r.status} without a reason. Check that server.py is up to date and running, then try again.` };
+  return { error: body?.error || `The server answered ${r.status} without a reason. Try again, and if you run Altaria yourself, check that server.py is up to date and running.` };
 }
 
 // The sentence once an answer is in. A blank the answer settles takes its value; every other keeps what the person

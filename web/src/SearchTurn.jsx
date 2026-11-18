@@ -83,7 +83,7 @@ export function streamSearch(q, update) {
   };
   for (const [name, handle] of Object.entries(on)) es.addEventListener(name, (e) => handle(JSON.parse(e.data)));
 
-  es.onerror = () => stop("The connection to the local server dropped. Check that server.py is still running, then search again.");
+  es.onerror = () => stop("The connection to the server dropped. Search again, and if you run Altaria yourself, check that server.py is still running.");
   return { stop };
 }
 

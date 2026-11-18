@@ -97,7 +97,7 @@ test("ask shows the server's sentence for each refusal as it is, and never rejec
   const bare = await withFetch(() => new Response("<h1>Bad gateway</h1>", { status: 502 }), () => ask("x"));
   assert.match(bare.error, /^The server answered 502 without a reason\. /);
   const gone = await withFetch(() => { throw new TypeError("fetch failed"); }, () => ask("x"));
-  assert.match(gone.error, /^The connection to the local server dropped\. /);
+  assert.match(gone.error, /^The connection to the server dropped\. /);
 });
 
 test("reader is the model's status when one can read, and null otherwise", async () => {

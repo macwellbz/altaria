@@ -6,14 +6,11 @@ import { DurableObject } from "cloudflare:workers";
 import { CURRENCIES } from "../web/src/currencies.js";
 import { arrivalWindow, cheapestReturn, dateRange, googleQuery, isDate, parseGoogle } from "../web/src/flights.js";
 import { Gemini, ProviderError, readTrip } from "./ai.js";
-import sample from "./runs/20261116-135644-YYZ-VNO.json";
 
 const GOOGLE_PER_DAY = 2000;   // Google requests a day, for everyone: a date pair takes about 12
 const GEMINI_PER_DAY = 400;    // trip readings a day; the free tier allows 500, and resets at midnight Pacific
 const MAX_PAIRS = 30;          // date pairs in one search
 const MODEL = "gemini-3.5-flash-lite";
-// Real saved searches (search.py's {args, rows}, named by when they ran): the hero and the board show the newest.
-const RUNS = [{ file: "20261116-135644-YYZ-VNO.json", ...sample }];
 const CODE = /^[A-Z]{3}$/;
 const HEADERS = {   // a Chrome 145 on macOS, as fast-flights presents itself
   "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36",
@@ -160,7 +157,6 @@ async function trip(request, env, caps) {
   }
 }
 
-const newest = (runs) => [...runs].sort((a, b) => (a.file < b.file ? 1 : -1))[0];
 
 export default {
   async fetch(request, env) {
@@ -181,10 +177,8 @@ export default {
         }
       case "GET /api/google":
         return searchOne(q, caps);
-      case "GET /api/example": {
-        const run = newest(RUNS);
-        return json({ file: run.file, args: run.args, row: run.rows[0], rows: run.rows.slice(0, 5) });
-      }
+      case "GET /api/example":   // no shared searches here: the page shows its visitor's own (example.js)
+        return json(null);
       case "GET /api/ai":
         return json(await aiStatus(env, caps));
       case "POST /api/ai/trip":
