@@ -1,5 +1,6 @@
-/* The fixed header (Header.jsx): bare over the sky, with a backing once page content can pass beneath it. */
+/* The fixed header (Header.jsx): bare over the sky, with a backing that comes in with the scroll. */
 .nav {
+  --backing: 0;   /* how far the backing has come in, 0 to 1: Hero.jsx decides it from the scroll, App.jsx writes it */
   position: fixed;
   inset: 0 0 auto;
   z-index: 30;
@@ -11,31 +12,44 @@
   padding: 0 var(--edge);
 }
 
-/* The backing is a translucent material: the page shows through it, blurred and tinted toward the paper, and
-   instead of stopping at a hairline it fades out over a soft edge below the bar, so content slips under rather
-   than being cut. (The masked-blur edge is the idea behind React Bits' GradualBlur, done here in one layer.) */
+/* The backing is one sheet of frosted material: the page behind it, blurred until no word or shape survives, under a
+   paper tint about as thick as the one apple.com's bars wear. What passes beneath shows only as soft colour.
+   The sheet is whole for the bar's full height. Below the bar it has no edge: a single mask takes the blur and the
+   tint out together along a smoothstep, over 24px, so the page crosses to the material in one fade with no steps in
+   it. A quarter of it is left at the page's scroll stop (base.css) and none 8px on. The sheet runs on a further 56px
+   unseen, because a backdrop blur sees only what is behind its own box (joshwcomeau.com/css/backdrop-filter): that
+   way what is about to pass under the bar already colours it. */
 .nav::before {
   content: "";
   position: absolute;
-  inset: 0 0 calc(-1 * var(--s-5));
+  inset: 0 0 auto;
   z-index: -1;
-  background: color-mix(in oklab, var(--paper) 74%, transparent);
-  -webkit-backdrop-filter: blur(16px) saturate(1.4);
-  backdrop-filter: blur(16px) saturate(1.4);
-  mask: linear-gradient(#000 calc(100% - var(--s-6)), rgb(0 0 0 / .6) calc(100% - var(--s-4)), rgb(0 0 0 / .18) calc(100% - var(--s-2)), #0000);
-  opacity: 0;
+  height: calc(var(--header) + 80px);
+  background: color-mix(in oklab, var(--paper) 82%, transparent);
+  -webkit-backdrop-filter: blur(40px) saturate(1.5);
+  backdrop-filter: blur(40px) saturate(1.5);
+  mask: linear-gradient(
+    #000 var(--header),
+    rgb(0 0 0 / .98) calc(var(--header) + 2px),
+    rgb(0 0 0 / .926) calc(var(--header) + 4px),
+    rgb(0 0 0 / .844) calc(var(--header) + 6px),
+    rgb(0 0 0 / .741) calc(var(--header) + 8px),
+    rgb(0 0 0 / .624) calc(var(--header) + 10px),
+    rgb(0 0 0 / .5) calc(var(--header) + 12px),
+    rgb(0 0 0 / .376) calc(var(--header) + 14px),
+    rgb(0 0 0 / .259) calc(var(--header) + 16px),
+    rgb(0 0 0 / .156) calc(var(--header) + 18px),
+    rgb(0 0 0 / .074) calc(var(--header) + 20px),
+    rgb(0 0 0 / .02) calc(var(--header) + 22px),
+    #0000 calc(var(--header) + 24px));
+  opacity: var(--backing);
   pointer-events: none;
-  transition: opacity var(--dur-short) var(--ease);
-}
-
-.nav.solid::before {
-  opacity: 1;
 }
 
 /* Asked for less transparency or more contrast, or without backdrop blur: a solid bar and a clear edge. */
 @media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
   .nav::before {
-    inset: 0;
+    height: var(--header);
     background: var(--paper);
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
@@ -52,7 +66,7 @@
 
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   .nav::before {
-    inset: 0;
+    height: var(--header);
     background: var(--paper);
     mask: none;
     box-shadow: 0 1px 0 var(--line);
@@ -60,8 +74,25 @@
 }
 
 .brand {
+  display: grid;
   flex: none;
+  isolation: isolate;
   border-radius: 8px;
+}
+
+/* By day the ink lockup over the sky hands over to the colour one as the backing comes in. The two are stacked and
+   cross with plus-lighter, so the wordmark they share never dims part-way. At night the dark lockup stays. */
+.brand > img {
+  grid-area: 1 / 1;
+  mix-blend-mode: plus-lighter;
+}
+
+.brand .light-only {
+  opacity: var(--backing);
+}
+
+.brand .on-sky {
+  opacity: calc(1 - var(--backing));
 }
 
 /* The guide keeps R = .28 of the symbol's height clear on every side, 8px round the header's lockup. */
@@ -128,13 +159,6 @@
 :root[data-theme="dark"] .theme .moon,
 :root:not([data-theme="dark"]) .theme .sun {
   display: none;
-}
-
-/* Day to night: a plain crossfade, where the browser has view transitions (Header.jsx). */
-::view-transition-old(root),
-::view-transition-new(root) {
-  animation-duration: var(--dur-medium);
-  animation-timing-function: var(--ease);
 }
 
 @media (max-width: 899px) {

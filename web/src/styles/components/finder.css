@@ -1,4 +1,4 @@
-/* The airport finder (AirportBlank.jsx): a search box over a list of matches, dropping down from the blank
+/* The airport finder (AirportBlank.jsx): a line to type on over a list of matches, dropping down from the blank
    that opened it. It sits inside the sentence, so it sets its own type rather than the sentence's.
    Corners nest: everything inside rounds to the finder's corner less the inset between them. */
 .finder {
@@ -24,18 +24,22 @@
   box-shadow: var(--shadow);
 }
 
+/* Ruled like every field on the sheet, and in the accent, since it's written on for as long as it's open. Its
+   words start on the codes' edge. */
 .finder input {
-  padding: 9px 12px;
+  width: 100%;
+  padding: 8px 10px 7px;
   color: var(--ink);
   text-align: start;
-  background: var(--wash);
-  border: 1px solid var(--rule);
-  border-radius: calc(var(--corner) - var(--inset));
+  background: none;
+  border: 0;
+  border-bottom: 1.5px solid var(--accent-text);
+  border-radius: 0;
 }
 
-.finder input:focus {
-  border-color: var(--focus);
-  box-shadow: inset 0 0 0 1px var(--focus);
+.finder input::placeholder {
+  color: var(--ink-2);
+  opacity: 1;
 }
 
 .finder-list {
@@ -46,6 +50,7 @@
 }
 
 .finder [role="option"] {
+  position: relative;
   display: grid;
   grid-template-columns: 3.1em minmax(0, 1fr);
   gap: var(--s-2);
@@ -68,10 +73,21 @@
   background: var(--wash);
 }
 
-/* The active match: where Enter or Tab lands. */
+/* The active match, where Enter or Tab lands: on the ice, with the accent's bar down its edge, the way a flight is
+   marked in a fare's timetable. */
 .finder [aria-selected="true"] {
   background: var(--wash);
-  box-shadow: inset 0 0 0 2px var(--focus);
+}
+
+.finder [aria-selected="true"]::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 8px;
+  bottom: 8px;
+  width: 3px;
+  background: var(--accent);
+  border-radius: 2px;
 }
 
 .finder-note {

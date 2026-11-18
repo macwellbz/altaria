@@ -8,7 +8,7 @@ import { onScroll, scrollToElement } from "./scroll.js";
 // styles/sections/hero.css plays the descent through the clouds from it. The page's scroll (scroll.js, through
 // Lenis or natively) writes --p straight to the element, so it never re-renders. The pass's height goes to CSS
 // as --pass-h, so on a short screen its slot moves up rather than off the bottom.
-export default function Hero({ onSolid }) {
+export default function Hero({ onBacking }) {
   const hero = useRef(null);
   useEffect(() => {
     const el = hero.current, pass = el.querySelector(".pass");
@@ -17,8 +17,11 @@ export default function Hero({ onSolid }) {
       const span = Math.max(1, el.offsetHeight - innerHeight);
       const p = scene.matches ? Math.min(1, Math.max(0, -el.getBoundingClientRect().top / span)) : 0;
       el.style.setProperty("--p", p.toFixed(4));
-      // over the sky the header is bare; once page content can pass beneath it, it gets a backing
-      onSolid(scene.matches ? scrollY > el.offsetHeight - innerHeight : scrollY > 24);
+      // Over the sky the header is bare. Its backing comes in with the scroll, eased at both ends, before page content
+      // can pass beneath it: through the scene's last quarter as the fog closes in, or else over the first 64px, before
+      // the headline reaches the bar.
+      const b = Math.min(1, Math.max(0, scene.matches ? (p - .75) / .25 : scrollY / 64));
+      onBacking(b * b * (3 - 2 * b));
     };
     const sized = new ResizeObserver(() => el.style.setProperty("--pass-h", `${pass.offsetHeight}px`));
     sized.observe(pass);
@@ -39,7 +42,7 @@ export default function Hero({ onSolid }) {
       removeEventListener("resize", update);
       scene.removeEventListener("change", update);
     };
-  }, [onSolid]);
+  }, [onBacking]);
 
   return (
     <section className="hero" id="top" aria-labelledby="hero-title" ref={hero}>
@@ -52,7 +55,7 @@ export default function Hero({ onSolid }) {
         <div className="hero-copy">
           {/* Two lines set by hand, each rising out of its own mask on load. */}
           <h1 id="hero-title"><span className="line"><span>The sky,</span></span> <span className="line"><span>sorted by&nbsp;price</span></span></h1>
-          <p className="lede">{`${NAME} checks every date pair you give it, then shows you what came back, cheapest first.`}</p>
+          <p className="lede">{`${NAME} searches every day you could fly, then shows you the best fares it found.`}</p>
           <a className="btn" href="#search">Search flights</a>
         </div>
 

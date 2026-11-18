@@ -50,13 +50,13 @@ export default function FarePass() {
 function describe(ex) {
   const r = ex.row, a = { currency: r.currency, ...ex.args };
   const legs = r.route.split("-");
-  const later = (a, b) => (b.slice(0, 10) !== a.slice(0, 10) ? ` ${day(b)}` : "");
+  const later = (a, b) => (b.slice(0, 10) !== a.slice(0, 10) ? `${day(b, true)}, ` : "");   // a landing on another day names it, as the departure does
   return {
     asked: a.out && a.ret ? `${a.orig} to ${a.dest}, out ${dateSpan(a.out)}, back ${dateSpan(a.ret)}` : "",
     from: legs[0],
     hop: legs.length > 2 ? `via ${legs.slice(1, -1).join(", ")}` : "nonstop",
     to: legs.at(-1),
-    out: `${day(r.depart, true)}, ${time(r.depart)} to ${time(r.arrive)}${later(r.depart, r.arrive)}`,
+    out: `${day(r.depart, true)}, ${time(r.depart)} to ${later(r.depart, r.arrive)}${time(r.arrive)}`,
     back: r.return_depart ? `${day(r.return_depart, true)}, ${time(r.return_depart)}` : day(r.search_ret, true),
     flights: r.segments?.length ? airlines(r.segments) : `${r.flights}, ${r.carriers.join(", ")}`,
     price: money(r.price_cmp),

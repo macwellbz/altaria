@@ -10,7 +10,6 @@ const ENTER = 5;   // rows that rise in with the brief when results land
 export default function Results({ rows, meta, trip }) {
   const [all, setAll] = useState(false);
   const cur = meta.currency;
-  const pairs = meta.pairs.length;
   if (!rows.length) {
     const limit = trip.stops === "0" ? " for nonstop flights" : trip.stops ? ` with ${STOPS[trip.stops]} each way` : "";
     const fix = trip.stops === "0" ? "Allow a stop or two" : trip.stops ? "Allow more stops" : "Try a wider date range";
@@ -25,7 +24,7 @@ export default function Results({ rows, meta, trip }) {
   }
   const list = [...groups.values()];
   const warnCol = rows.some((r) => r.warnings?.length);
-  const note = `Across ${pairs} date ${pairs === 1 ? "pair" : "pairs"}. Prices are for the whole round trip in ${cur}; ties go to the shorter flight.` +
+  const note = `Prices are for the whole round trip in ${cur}; ties go to the shorter flight.` +
     (list.length < rows.length ? " Fares that differ only by return date share a row." : "") +
     (rows.some((r) => !r.return_depart) ? " A return with just a date is one Google didn't detail." : "") +
     (trip.arrive ? ` Only outbound flights landing ${landing(trip.arrive)}, local time.` : "") +
@@ -49,12 +48,12 @@ export default function Results({ rows, meta, trip }) {
         </div>
         {list.length > TOP && !all && <button type="button" className="ghost more" onClick={() => setAll(true)}>{`Show all ${list.length} rows`}</button>}
       </section>
-      <p className="again"><a href="#form">Search again with different dates</a></p>
+      <p className="again"><a className="ghost" href="#composer">Search again with different dates</a></p>
     </>
   );
 }
 
-// Cheapest per date pair on each source, as print_compare does. diff = matrix - google.
+// Cheapest per departure and return date on each source, as print_compare does. diff = matrix - google.
 function Compare({ rows, pairs, cur }) {
   const diffs = [];
   const body = pairs.map(([o, r]) => {
@@ -77,8 +76,8 @@ function Compare({ rows, pairs, cur }) {
   const n = diffs.length;
   const mean = n ? diffs.reduce((a, b) => a + b, 0) / n : 0;
   const summary = n
-    ? `Matrix was cheaper in ${diffs.filter((d) => d < 0).length} of ${n} ${n === 1 ? "pair" : "pairs"}, Google in ${diffs.filter((d) => d > 0).length}. On average Matrix came in ${money(Math.abs(mean))} ${cur} ${mean < 0 ? "lower" : mean > 0 ? "higher" : "the same"}.`
-    : "No date pair had fares from both sources, so there's nothing to compare.";
+    ? `Matrix was cheaper in ${diffs.filter((d) => d < 0).length} of ${n} ${n === 1 ? "trip" : "trips"}, Google in ${diffs.filter((d) => d > 0).length}. On average Matrix came in ${money(Math.abs(mean))} ${cur} ${mean < 0 ? "lower" : mean > 0 ? "higher" : "the same"}.`
+    : "No trip had fares from both sources, so there's nothing to compare.";
   return (
     <section className="block">
       <h3>Matrix and Google, date by date</h3>

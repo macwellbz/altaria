@@ -6,7 +6,7 @@ const Out = ({ href, children }) => (
   <a href={href} target="_blank" rel="noopener noreferrer">{children}<span className="vh"> (opens in a new tab)</span></a>
 );
 
-// The footer: the lockup and the page's links, what the site is and isn't, and where its data and sky come from.
+// The footer: the lockup and the page's links, and where its data and sky come from.
 export default function Footer() {
   return (
     <footer className="foot">
@@ -19,7 +19,6 @@ export default function Footer() {
             <a href="#top">Back to top</a>
           </nav>
         </div>
-        <p className="honest">{`${NAME} runs on your machine and books nothing. Before you pay, confirm the fare on the operating airline's own site.`}</p>
         <p className="credits">
           Fares from <Out href="https://www.google.com/travel/flights">Google Flights</Out>. Airports
           from <Out href="https://ourairports.com/">OurAirports</Out>, in the public domain. The cloud shader

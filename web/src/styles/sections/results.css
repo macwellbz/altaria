@@ -70,11 +70,6 @@
   margin-top: var(--s-6);
 }
 
-.again a {
-  font-weight: 500;
-  text-underline-offset: 4px;
-}
-
 .block {
   margin-top: var(--s-8);
 }
@@ -270,7 +265,7 @@
 }
 
 .row-top td {
-  background: var(--wash);
+  background: var(--cheapest);
 }
 
 .more {
@@ -324,7 +319,7 @@
   }
 
   .fares-table tr.row-top {
-    background: var(--wash);
+    background: var(--cheapest);
   }
 
   .fares-table td.c-price {

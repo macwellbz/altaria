@@ -10,9 +10,8 @@
   white-space: nowrap;
 }
 
-/* Secondary text, and the optional parts of the search sentence. */
-.muted,
-.soft {
+/* Secondary text. */
+.muted {
   color: var(--ink-2);
 }
 

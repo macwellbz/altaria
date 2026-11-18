@@ -1,4 +1,4 @@
-/* The footer (Footer.jsx): the lockup with the page's links, the honest line, and the credits. */
+/* The footer (Footer.jsx): the lockup with the page's links, and the credits. */
 .foot {
   padding: var(--s-8) 0;
   font-size: var(--t-sm);
@@ -35,15 +35,9 @@
   color: var(--accent-text);
 }
 
-.honest {
-  max-width: var(--measure);
-  margin-top: var(--s-6);
-  font-size: var(--t-md);
-}
-
 .credits {
   max-width: var(--measure);
-  margin-top: var(--s-3);
+  margin-top: var(--s-6);
   color: var(--ink-2);
 }
 

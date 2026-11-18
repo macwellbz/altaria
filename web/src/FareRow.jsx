@@ -31,10 +31,10 @@ export default function FareRow({ r, rets, cur, top, warnCol, enter }) {
 // flights. A day name marks each time that falls on a new day. Rows without per-flight detail (Matrix rows,
 // runs saved before segments existed) list their route and flight numbers instead.
 function Leg({ L }) {
-  const later = L.arrive.slice(0, 10) !== L.depart.slice(0, 10) ? ` ${day(L.arrive, true)}` : "";
+  const later = L.arrive.slice(0, 10) !== L.depart.slice(0, 10) ? <><span className="t">{day(L.arrive, true)}</span>{", "}</> : null;
   const head = (
     <div className="leg-h">
-      <p className="when"><span className="t">{day(L.depart, true)}</span>{`, ${time(L.depart)} to ${time(L.arrive)}${later}`}</p>
+      <p className="when"><span className="t">{day(L.depart, true)}</span>{`, ${time(L.depart)} to `}{later}{time(L.arrive)}</p>
       {L.duration ? <p className="sub">{`${fmtMin(L.duration)}, ${stops(L.stops)}`}</p> : null}
     </div>
   );

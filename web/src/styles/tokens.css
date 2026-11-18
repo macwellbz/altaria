@@ -11,6 +11,7 @@
   --on-accent: #FFFFFF;
   --accent-text: #176B87;  /* the accent as text: 6.0:1 on white, 5.5:1 on paper */
   --wash: #EEF5FF;
+  --cheapest: #DFF2F9;     /* the cheapest fare's row: the accent's hue, washed out, so it stands apart from the paper; ink-2 4.8:1 */
   --user: #CEE3FF;
   --focus: #003D57;
   --sky-top: #86B6F6;
@@ -41,7 +42,7 @@
   --t-lg: clamp(1.125rem, .8125rem + .45vw, 1.3125rem);   /* 18 to 21px */
   --t-lede: clamp(1.25rem, .875rem + .6vw, 1.5rem);       /* 20 to 24px, the hero's standfirst */
   --t-xl: clamp(1.25rem, .75rem + 1.1vw, 1.8125rem);      /* 20 to 29px */
-  --t-say: clamp(1.1875rem, .55rem + 1.9vw, 2.25rem);     /* 19 to 36px, the search sentence: at 19, "each way" stays with its blank on a 360px phone */
+  --t-say: clamp(1.1875rem, 2.9vw - .5px, 2.25rem);       /* 19 to 36px, the search sentence: its first clause, 29em, fits one line from a 660px window up; at 19, "each way" stays with its blank on a 360px phone */
   --t-2xl: clamp(2.125rem, 1rem + 2.9vw, 3.625rem);       /* 34 to 58px */
   --t-3xl: clamp(2.375rem, .75rem + 4.4vw, 5.25rem);      /* 38 to 84px */
   --t-hero: clamp(3.5rem, .5rem + 7.65vw, 9.25rem);       /* 56 to 148px, 118px on a 1440px window */
@@ -65,7 +66,7 @@
 
   /* Motion: one curve, quick to answer and slow to settle, and three lengths. */
   --ease: cubic-bezier(.2, .8, .2, 1);
-  --dur-short: .2s;     /* colour and fill: hovers, focus, the header's backing */
+  --dur-short: .2s;     /* colour and fill: hovers and focus */
   --dur-medium: .45s;   /* things that move: the swap button's turn, the progress rail */
   --dur-long: 1.2s;     /* the load moment, and a price rolling into place */
 
@@ -83,6 +84,7 @@
   --on-accent: #011B27;
   --accent-text: #73CCEA;  /* 8.8:1 on cards */
   --wash: #113143;
+  --cheapest: #113143;
   --user: #143C53;
   --focus: #73CCEA;
   --sky-top: #01101C;

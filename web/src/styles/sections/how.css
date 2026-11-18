@@ -5,7 +5,7 @@
 }
 
 .statement {
-  max-width: 11.1em;   /* wide screens: three lines, breaking after "then" and "Nothing"; in em, so the font swap can't rewrap them */
+  max-width: 11.1em;   /* wide screens: three lines, breaking after "has" and "the"; in em, so the font swap can't rewrap them */
   font-family: var(--font-display);
   font-size: var(--t-3xl);
   font-weight: 300;
@@ -83,7 +83,7 @@
 }
 
 .board tr.first td {
-  background: var(--wash);
+  background: var(--cheapest);
 }
 
 /* One line a fare: the columns share the spare width in proportion, and the prices hug their column, so the
@@ -164,7 +164,7 @@
   }
 
   .board tr.first {
-    background: var(--wash);
+    background: var(--cheapest);
   }
 
   .board tr.first td {
@@ -211,11 +211,6 @@
   list-style: none;
 }
 
-.principles li {
-  padding-top: var(--s-4);
-  border-top: 1px solid var(--rule);
-}
-
 .principles h3 {
   font-size: var(--t-lg);
   letter-spacing: -.005em;
@@ -225,7 +220,7 @@
    weight and ink rather than size. */
 .principles p {
   max-width: var(--measure);
-  margin-top: var(--s-3);
+  margin-top: var(--s-2);
   font-size: var(--t-lg);
   line-height: 1.55;
   color: var(--ink-2);
@@ -233,7 +228,7 @@
 
 @media (max-width: 899px) {
   .how {
-    padding: var(--s-8) 0 var(--s-9);
+    padding: var(--s-8) 0;
   }
 
   .board {
@@ -242,7 +237,7 @@
 
   .principles {
     grid-template-columns: minmax(0, 1fr);
-    gap: var(--s-6);
+    gap: var(--s-7);
     margin-top: var(--s-8);
   }
 }

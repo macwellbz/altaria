@@ -49,7 +49,7 @@ def parse(q):
     # Count before building any date list, so a typo like 2026..2062 can't eat memory.
     if spans[0] * spans[1] * len(sources) > MAX_SEARCHES:
         raise ValueError(f"That's {spans[0] * spans[1] * len(sources)} searches. Narrow the dates to "
-                         f"{MAX_SEARCHES} or fewer (date pairs × sources).")
+                         f"{MAX_SEARCHES} or fewer.")
     pairs = list(itertools.product(search.date_range(q["out"]), search.date_range(q["ret"])))
     return orig, dest, currency, pairs, sources, window, stops
 

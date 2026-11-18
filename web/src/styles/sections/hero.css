@@ -6,7 +6,7 @@
      words change. */
   --h1: min(var(--t-hero), (100vw - 2 * var(--margin)) / 6);
   --copy-top: calc(var(--header) + clamp(40px, 9vh, 120px));
-  --pass-w: clamp(320px, 30vw, 400px);
+  --pass-w: clamp(320px, 36vw - 60px, 400px);   /* full width from a 1280px window, so it isn't tall beside the words */
   position: relative;
 }
 
@@ -17,11 +17,13 @@
   isolation: isolate;
 }
 
+/* The sky fills the stage. Without WebGL, and until the clouds come in, it's a screen of gradient and then the page;
+   the clouds are framed to the first screen too (vantaSky.js), and run on below it where the stage does. */
 .sky {
   position: absolute;
   inset: 0;
   z-index: -1;
-  background: linear-gradient(var(--sky-top), var(--sky-mid) 48%, var(--horizon) 64%, var(--paper));
+  background: linear-gradient(var(--sky-top), var(--sky-mid) 48%, var(--horizon) 64%, var(--paper)) top / 100% 100svh no-repeat;
 }
 
 .clouds {
@@ -33,15 +35,25 @@
   transform-origin: 50% 100%;
 }
 
-/* The cloud deck from inside: the page's own colour, thick at the bottom and thinning upward. */
+/* Where the clouds dissolve into the page: the page's own colour, thinning upward. It fades in along a smoothstep, in
+   nine stops, so there's no edge where it starts or where it meets the page. Outside the scroll scene it covers the
+   stage's lower half: on narrow screens that's from about the pass's top to the space below it. */
 .mist {
   position: absolute;
   left: 0;
   right: 0;
-  top: 0;
-  height: 160%;
-  background: linear-gradient(color-mix(in oklab, var(--paper) 0%, transparent), var(--paper) 37.5%);
-  opacity: 0;
+  bottom: 0;
+  height: 50%;
+  background: linear-gradient(
+    color-mix(in oklab, var(--paper) 0%, transparent),
+    color-mix(in oklab, var(--paper) 4.3%, transparent) 12.5%,
+    color-mix(in oklab, var(--paper) 15.6%, transparent) 25%,
+    color-mix(in oklab, var(--paper) 31.6%, transparent) 37.5%,
+    color-mix(in oklab, var(--paper) 50%, transparent) 50%,
+    color-mix(in oklab, var(--paper) 68.4%, transparent) 62.5%,
+    color-mix(in oklab, var(--paper) 84.4%, transparent) 75%,
+    color-mix(in oklab, var(--paper) 95.7%, transparent) 87.5%,
+    var(--paper));
 }
 
 .hero-copy {
@@ -84,12 +96,22 @@
   margin-top: var(--s-6);
 }
 
-/* Wide screens: the pass stands to the right, from beside the headline's second line down, and the lede
-   stops short of it. Its slot moves up on a short screen rather than running off the bottom (--pass-h is its
-   height, from Hero.jsx). */
+/* Wide screens: the words and the pass stand side by side on clear sky, above the clouds (vantaSky.js keeps the
+   horizon below them). The pass hangs from the headline's cap line, level with the top of its T (.156em into the line
+   box), and the lede stops short of it. On a short screen it moves up rather than run off the bottom (--pass-h is
+   its height, from Hero.jsx). Outside the scroll scene, the stage runs on a third of a screen below the first one,
+   where its clouds dissolve into the page. */
 @media (min-width: 900px) {
   .hero {
-    --pass-top: clamp(var(--copy-top) + 1.04 * var(--h1), 42vh, 100vh - var(--pass-h, 440px) - var(--s-5));
+    --pass-top: min(var(--copy-top) + .156 * var(--h1), 100vh - var(--pass-h, 440px) - var(--s-5));
+  }
+
+  .stage {
+    min-height: 130vh;
+  }
+
+  .mist {
+    height: 45vh;
   }
 
   .lede {
@@ -106,9 +128,9 @@
 }
 
 /* The scroll scene on wide screens: descending through the cloud deck. The stage sticks while --p runs from 0
-   to 1. What was above the clouds lifts away first, gone well before it reaches the header; the cloud tops rise
-   and swell toward the window and soften as you enter them; and a fog thickens from below until it is the page
-   itself, out of which the statement rises. */
+   to 1. What was above the clouds lifts away first, the words and the pass together, gone well before they reach the
+   header; the cloud tops rise and swell toward the window and soften as you enter them; and a fog thickens from
+   below until it is the page itself, out of which the statement rises. */
 @media (min-width: 900px) and (min-height: 560px) and (prefers-reduced-motion: no-preference) {
   .hero {
     --fog: clamp(0, (var(--p) - .1) / .8, 1);
@@ -130,50 +152,39 @@
 
   /* scaled about the stage's floor, so the deck's lower edge never lifts off it */
   .clouds {
-    transform: scale(calc(1 + var(--p) * .9));
+    transform: scale(calc(1 + var(--p) * 1.5));
     filter: blur(calc(max(0, var(--p) - .3) * 14px));
     will-change: transform, filter;
   }
 
+  /* the fog: the same fade, 60vh deep, with the page beneath it, rising from below the stage until it covers it */
   .mist {
-    opacity: 1;
+    top: 0;
+    bottom: auto;
+    height: 60vh;
     transform: translate3d(0, calc(100vh - var(--fog) * 160vh), 0);
     will-change: transform;
   }
 
-  .hero-copy {
+  .mist::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    height: 100vh;
+    background: var(--paper);
+  }
+
+  .hero-copy,
+  .pass {
     transform: translate3d(0, calc(var(--p) * -20vh), 0);
     opacity: calc(1 - var(--p) / .3);
   }
-
-  .pass {
-    transform: translate3d(0, calc(var(--p) * -36vh), 0);
-    opacity: calc(1 - var(--p) / .36);
-  }
 }
 
-/* The same composition, still, for wide screens that ask for less motion. */
-@media (min-width: 900px) and (min-height: 560px) and (prefers-reduced-motion: reduce) {
-  .stage {
-    min-height: 100vh;
-  }
-}
-
-/* One screen of sky; the pass floats on the lower clouds, which dissolve into the page beneath it. */
+/* The words, then the pass, standing in the clouds, which dissolve into the page round it and beneath it. */
 @media (max-width: 899px) {
-  .sky {
-    bottom: auto;
-    height: 100svh;
-  }
-
-  .mist {
-    top: auto;
-    bottom: 0;
-    height: 100%;
-    opacity: 1;
-    background: linear-gradient(to top, var(--paper), color-mix(in oklab, var(--paper) 0%, transparent) 16%);
-  }
-
   .hero-copy {
     min-height: 62svh;
   }

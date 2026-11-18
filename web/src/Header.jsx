@@ -1,28 +1,28 @@
 import { useState } from "react";
 import Logo from "./Logo.jsx";
 import { NAME } from "./brand.js";
-import { still } from "./helpers.js";
 
-// The fixed header. It's bare over the sky and gets a backing (solid) once page content can pass beneath it.
+// The fixed header. It's bare over the sky, and its backing comes in with the scroll (--backing, from App.jsx).
 // Light unless the visitor picked dark; the head script in index.html applies a saved choice before first paint.
-// Day and night crossfade where the browser has view transitions and motion is welcome; elsewhere they swap at once.
-export default function Header({ solid }) {
+// Day and night swap at once, in the page itself: a view transition shows the page as a snapshot while it runs, and
+// the header's blur drops out of it.
+export default function Header({ ref }) {
   const [dark, setDark] = useState(() => document.documentElement.dataset.theme === "dark");
   const toggle = () => {
     const next = !dark;
-    const apply = () => {
-      if (next) document.documentElement.dataset.theme = "dark";
-      else delete document.documentElement.dataset.theme;
-    };
-    if (document.startViewTransition && !still()) document.startViewTransition(apply);
-    else apply();
+    if (next) document.documentElement.dataset.theme = "dark";
+    else delete document.documentElement.dataset.theme;
     setDark(next);
     try { localStorage.setItem("theme", next ? "dark" : "light"); } catch (e) {}
   };
   return (
-    <header className={solid ? "nav solid" : "nav"} id="nav">
-      {/* the primary lockup, 'altaria ai'; phones get the secondary, 'altaria', which the guide gives a mobile header */}
-      <a className="brand" href="#top"><Logo file="altaria-lockup" alt={NAME} className="lockup" /></a>
+    <header className="nav" id="nav" ref={ref}>
+      <a className="brand" href="#top">
+        <Logo file="altaria-lockup" alt={NAME} className="lockup" />
+        {/* Over the day's sky, the kit's one-colour ink lockup: the guide keeps the colour one off sky blue, where its
+            sky half would vanish. It hands over to the colour one as the backing comes in. */}
+        <img className="lockup on-sky light-only" src="/logo/altaria-lockup-ink.svg" alt="" />
+      </a>
       <nav aria-label="Page">
         <a className="link" href="#how">How it ranks</a>
         <button className="theme" type="button" aria-label="Dark mode" aria-pressed={dark} onClick={toggle}>

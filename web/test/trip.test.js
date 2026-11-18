@@ -101,7 +101,7 @@ test("ask shows the server's sentence for each refusal as it is, and never rejec
 });
 
 test("reader is the model's status when one can read, and null otherwise", async () => {
-  const on = { available: true, provider: "claude", model: "sonnet", label: "Read by Claude via Claude Code" };
+  const on = { available: true, provider: "claude", model: "sonnet", label: "Claude via Claude Code" };
   assert.deepEqual(await withFetch(() => json(200, on), reader), on);
   assert.equal(await withFetch(() => json(200, { available: false, why: "No model found." }), reader), null);
   assert.equal(await withFetch(() => new Response("Not found", { status: 404 }), reader), null, "a server from before the trip box");

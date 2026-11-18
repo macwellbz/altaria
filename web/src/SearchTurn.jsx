@@ -117,7 +117,7 @@ export default function SearchTurn({ turn, onStop }) {
           </div>
         )}
         {listed && (
-          <ul className="tasks" aria-label="Searches by date pair">
+          <ul className="tasks" aria-label="Searches by date">
             {meta?.pairs.map(([o, r]) => (
               <li key={`${o}|${r}`}>
                 <b>{`${day(o)} to ${day(r)}`}</b>

@@ -19,50 +19,73 @@
   color: var(--ink-2);
 }
 
-/* The composer holds two forms: the trip box, when there's a model to read with, and the sentence below it. */
+/* The composer (SearchForm.jsx): one sheet holding two forms, the trip box, when there's a model to read with, and
+   the sentence below it. It is drawn like the page's other cards, and everything on it follows three rules. What you
+   write goes on a ruled line: your own words on the long line at the top, each value on a short one in the sentence.
+   Each form ends in its action, a pill, and beside the pill, in small type, what the action did or will do. And all
+   of it shares one left edge. */
 .composer {
+  --pad: clamp(16px, 4vw, 40px);
   display: grid;
-  gap: var(--s-4);   /* with the sentence's half-leading, about the trip box's own space above its hairline */
+  gap: var(--s-7);
   margin-top: var(--s-7);
-  padding: clamp(24px, 4vw, 56px);
+  padding: calc(var(--pad) - 4px) var(--pad) var(--pad);   /* the first line's capitals stand 4px below its trimmed top */
   background: var(--surface);
   border: 1px solid var(--line);
-  border-radius: 32px;
-  box-shadow: var(--shadow);
+  border-radius: var(--radius);
 }
 
 .sentence {
   display: grid;
-  gap: var(--s-5);
+  gap: var(--s-6);
 }
 
-/* The trip box (TripBox.jsx): quiet chrome at text size, so the sentence stays the largest thing here. The field and
-   its button, then who reads the text, then what the reading did; a hairline hands over to the sentence. */
-.trip {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: end;
-  gap: var(--s-2) var(--s-4);
-  padding-bottom: var(--s-6);
-  border-bottom: 1px solid var(--line);
+/* Both forms end the same way: the pill, then what it says, which goes under the pill where there's no room beside
+   it. */
+.trip,
+.go {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-4) var(--s-5);
 }
 
-/* Drawn like a blank being filled in: tinted, underlined, its top corners round. It grows a line at a time. */
-.trip textarea {
-  min-width: 0;
-  min-height: 48px;
-  margin: 0;
-  padding: 10px 14px 11px;
-  font-size: var(--t-md);
+/* What a pill says. It trims its spare leading, (1.5 - 1) / 2 a side, so two lines fit a ghost pill's height and a
+   reading's answer doesn't move the sentence; and it balances its lines, so there's never a long one and a stray
+   word. */
+.trip-note,
+.go-says {
+  flex: 1 1 14em;
+  max-width: var(--measure);
+  margin-block: -.25em;
+  font-size: var(--t-sm);
   line-height: 1.5;
+  text-wrap: balance;
+}
+
+/* The trip box (TripBox.jsx): a line across the sheet to write the trip on, three quarters of the sentence's size
+   and never less than its smallest. Ruled like a blank, the line as close under the words, in the accent under the
+   pointer, and on the page's ice while it's written on: the ice runs a little past the words, as a blank's does, so
+   the words keep the sheet's left edge. It grows a line at a time. */
+.trip textarea {
+  --size: max(.75 * var(--t-say), 1.1875rem);
+  flex: 1 1 100%;
+  min-width: 0;
+  margin: calc(-.2 * var(--size)) -.12em 0;   /* the first line's spare leading, as the sentence trims its own */
+  padding: 0 .12em var(--s-1);
+  font-size: var(--size);
+  line-height: 1.4;
   color: var(--ink);
   resize: none;
   field-sizing: content;
-  background: var(--wash);
+  background: none;
   border: 0;
-  border-bottom: 1.5px solid var(--rule);
-  border-radius: 12px 12px 0 0;
-  transition: border-color var(--dur-short) var(--ease);
+  border-bottom: clamp(1.5px, .07 * var(--t-say), 2px) solid var(--rule);   /* the blanks' own rule */
+  border-radius: .2em .2em 0 0;
+  outline: none;
+  transition:
+    background-color var(--dur-short) var(--ease),
+    border-color var(--dur-short) var(--ease);
 }
 
 .trip textarea::placeholder {
@@ -70,25 +93,33 @@
   opacity: 1;
 }
 
-.trip textarea:hover {
-  border-bottom-color: var(--ink);
-}
-
+.trip textarea:hover,
 .trip textarea:focus {
   border-bottom-color: var(--accent-text);
 }
 
-/* The ring sits on the field's own edge, over the underline, as a blank's does: one line along the bottom, not two. */
-.trip textarea:focus-visible {
-  outline-offset: -2px;
-  border-radius: 12px 12px 0 0;
+.trip textarea:focus {
+  background: var(--wash);
 }
 
-/* The button: a ghost in the accent, as tall as the field. Busy, it keeps its width and
-   its focus (aria-disabled) and shows the second label, a short rail that breathes while the model reads. */
+/* Asked for more contrast, the line is drawn in the ink, as the blanks' are. */
+@media (prefers-contrast: more) {
+  .trip textarea {
+    border-bottom-color: var(--ink);
+  }
+}
+
+/* A text field shows its focus to the pointer too, so the ring is the keyboard's alone (.kbd, set in SearchForm.jsx). */
+.kbd .trip textarea:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 4px;
+  border-radius: 2px;
+}
+
+/* The button: a ghost in the accent. Busy, it keeps its width, its name and its focus (aria-disabled), and its
+   label gives way to a short rail that a light passes along for as long as the model reads; the line beside it
+   says so in words. */
 .trip-go {
-  height: 48px;
-  padding: 0 var(--s-5);
   overflow: hidden;
   font-weight: 600;
   color: var(--accent-text);
@@ -105,26 +136,21 @@
 
 .trip-labels {
   display: inline-grid;
-  justify-items: center;
+  place-items: center;
 }
 
 .trip-labels > * {
   grid-area: 1 / 1;
 }
 
-.trip-go[aria-disabled="true"] .trip-idle,
-.trip-go:not([aria-disabled="true"]) .trip-busy {
+.trip-go[aria-disabled="true"] .trip-idle {
+  opacity: 0;   /* unseen, and still the button's name */
+}
+
+.trip-go:not([aria-disabled="true"]) .trip-rail {
   visibility: hidden;
 }
 
-.trip-busy {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--s-2);
-}
-
-/* A light passes along the segments, again and again, for as long as the model reads, and only then. Asked for less
-   motion, the label says it alone. */
 .trip-rail {
   display: inline-flex;
   gap: 3px;
@@ -152,9 +178,14 @@
   }
 }
 
+/* Asked for less motion, the label stays, dimmed, and the line beside it says the rest. */
 @media (prefers-reduced-motion: reduce) {
   .trip-rail {
     display: none;
+  }
+
+  .trip-go[aria-disabled="true"] .trip-idle {
+    opacity: .5;
   }
 }
 
@@ -164,18 +195,7 @@
   }
 }
 
-.trip-by,
-.trip-note {
-  grid-column: 1 / -1;
-  max-width: var(--measure);
-  font-size: var(--t-sm);
-  line-height: 1.5;
-}
-
-.trip-by {
-  color: var(--ink-2);
-}
-
+/* What the reading did. */
 .trip-note {
   font-weight: 500;
 }
@@ -193,36 +213,15 @@
   color: var(--risk);
 }
 
-/* The search button and its estimate, on the sentence's last line where there's room, in the page's own type. */
-.go {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: flex-end;
-  gap: var(--s-3) var(--s-5);
-  font-size: var(--t-md);
-  line-height: 1.6;
-  letter-spacing: 0;
-}
-
+/* Search, where the sentence ends, and beside it in the page's own type: what's in the way when a search can't
+   start, and under that what the search will take. */
 .go .btn {
-  min-width: 12em;
-}
-
-#estimate {
-  font-size: var(--t-sm);
-}
-
-#estimate:empty {
-  display: none;
+  min-width: min(10em, 100%);
 }
 
 .error {
-  padding: var(--s-3) var(--s-4);
-  font-size: var(--t-sm);
+  font-weight: 500;
   color: var(--risk);
-  background: var(--risk-bg);
-  border-radius: 12px;
 }
 
 @media (max-width: 899px) {
@@ -231,31 +230,14 @@
   }
 }
 
-@media (max-width: 959px) {
-  .go {
-    grid-column: 1 / -1;
-    justify-content: flex-start;
-    margin-top: var(--s-5);
-  }
-
-  .go .btn {
-    order: -1;
-  }
-
-  /* as Search goes under the sentence, Fill in the blanks goes under its field, which takes the full width */
-  .trip {
-    grid-template-columns: minmax(0, 1fr);
-    row-gap: var(--s-3);
-  }
-
-  .trip-go {
-    justify-self: start;
-  }
-}
-
+/* A phone: Search runs across the sheet. */
 @media (max-width: 600px) {
   .composer {
-    border-radius: 24px;
+    gap: var(--s-6);
+  }
+
+  .sentence {
+    gap: var(--s-5);
   }
 
   .go .btn {
