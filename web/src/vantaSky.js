@@ -291,8 +291,9 @@ export default function startVantaSky(host) {
 
   // The clouds' buffer, and the canvas's resolution: the screen's own (up to 2x, and about 8 million pixels) where a
   // mouse or trackpad can part the clouds, one pixel per CSS pixel on touch screens, and half that in software.
-  const clouds = gpu.soft ? RENDER / 2 : RENDER;
+  // The buffer has half the pixels on touch screens, and a quarter in software.
   const fine = matchMedia("(any-pointer: fine)").matches;
+  const clouds = gpu.soft ? RENDER / 2 : fine ? RENDER : RENDER * .7;
   const sharpness = (w, h) => (gpu.soft ? RENDER : Math.min(devicePixelRatio || 1, fine ? 2 : 1, Math.sqrt(8e6 / (w * h))));
   const buffer = new WebGLRenderTarget(1, 1, { depthBuffer: false });
   const sharp = new Scene();
@@ -422,17 +423,19 @@ export default function startVantaSky(host) {
   });
   for (const el of [host, copy, pass]) sized.observe(el);
 
-  // The wake: recent pointer positions, each fading out over about a second.
+  // The wake: recent pointer positions, each fading out over about a second. A finger leaves none: on a touch screen
+  // it is scrolling the page, and a wake would only double the frame rate as it starts.
   const trail = [];
 
   // Vanta draws on every animation frame, 120 a second on some screens. The clouds drift slowly, so they're drawn
-  // 30 times a second, and 60 while a wake is fading.
+  // 30 times a second (24 on touch screens, whose GPUs are a phone's), and 60 while a wake is fading. Each frame is
+  // due a whole gap after the last was due, so 24 a second holds on a 60Hz screen, alternating two and three refreshes.
   const loop = effect.animationLoop;
   let drawn = 0;
   effect.animationLoop = () => {
-    const now = performance.now();
-    if (now - drawn < (trail.length ? 15 : 31)) effect.req = requestAnimationFrame(effect.animationLoop);
-    else { drawn = now; loop(); }
+    const now = performance.now(), gap = 1000 / (trail.length ? 60 : fine ? 30 : 24);
+    if (now - drawn < gap - 2) effect.req = requestAnimationFrame(effect.animationLoop);
+    else { drawn = now - drawn < 2 * gap ? drawn + gap : now; loop(); }
   };
   let blend = null;   // a new theme's colours, blending in
   effect.onUpdate = () => {
@@ -469,7 +472,7 @@ export default function startVantaSky(host) {
 
   let last = null;
   const move = (e) => {
-    if (still()) return;
+    if (still() || e.pointerType === "touch") return;
     const r = host.getBoundingClientRect();
     const x = e.clientX - r.left, y = e.clientY - r.top, now = performance.now();
     if (last && Math.hypot(x - last.x, y - last.y) < 6) return;
