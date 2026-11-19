@@ -5,11 +5,8 @@ import { airportsFor, airportsLoaded, city } from "../src/airports.js";
 
 const codes = (q) => airportsFor(q).map((a) => a.c);
 
-test("the list loads", async () => {
+test("the finder matches cities, codes and names, an exact code first", async () => {
   assert.equal(await airportsLoaded, true);
-});
-
-test("the finder matches cities, codes and names, an exact code first", () => {
   assert.equal(codes("vilnius")[0], "VNO");
   assert.equal(codes("Toronto")[0], "YYZ");
   assert.equal(codes("yyz")[0], "YYZ");

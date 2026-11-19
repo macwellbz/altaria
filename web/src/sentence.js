@@ -9,7 +9,7 @@ const range = (a, b) => (b && b !== a ? `${a}..${b}` : a);
 const count = (a, b) => (a && b ? Math.round((new Date(b) - new Date(a)) / 864e5) + 1 : a ? 1 : 0);
 
 // How many date pairs the search will try: every departure day with every return day.
-export const pairs = (f) => count(f["out-from"], f["out-to"]) * count(f["ret-from"], f["ret-to"]);
+const pairs = (f) => count(f["out-from"], f["out-to"]) * count(f["ret-from"], f["ret-to"]);
 
 // "1 search, about 10 seconds", or "" before the dates are chosen.
 export function estimate(f) {

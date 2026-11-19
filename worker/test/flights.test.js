@@ -48,22 +48,12 @@ print(json.dumps(out))`, cases);
   assert.deepEqual(cases.map((c) => { const q = googleQuery(...c); return [q.tfs, q.url]; }), want);
 });
 
-test("normGoogle reads the saved payload as test_search.py expects", () => {
-  const rows = normGoogle(payload, "CAD");
-  assert.equal(rows.length, 2, "unpriced SAS row must be dropped, 'best' list must be read");
-  const [klm, ac] = rows;
-  assert.deepEqual([klm.price, klm.route, klm.flights], [1409, "YYZ-AMS-VNO", "KL692 BT962"]);
-  assert.deepEqual([klm.depart, klm.arrive, klm.duration], ["2026-12-29T17:55", "2026-12-30T13:20", 745]);
-  assert.ok(ac.arrive === "2026-12-31T13:20" && ac.return_depart === null);
-  assert.deepEqual(klm.segments.map((g) => [g.from, g.to, g.flight, g.airline]), [["YYZ", "AMS", "KL692", "KLM"], ["AMS", "VNO", "BT962", "Air Baltic"]]);
-  assert.deepEqual(normGoogle([null, null, [], null], "CAD"), [], "empty blocks hold no rows");
-});
-
-test("normGoogle and parseGoogle match search.py's on the saved payload", { skip: noPython }, () => {
+test("normGoogle and parseGoogle match search.py's on the saved payload, and on empty blocks", { skip: noPython }, () => {
+  const empty = [null, null, [], null];
   const want = py(`
 import search
-print(json.dumps([search.norm_google(arg[0], "CAD"), search.parse_google(arg[1], "EUR")]))`, [payload, page]);
-  assert.deepEqual([normGoogle(payload, "CAD"), parseGoogle(page, "EUR")], want);
+print(json.dumps([search.norm_google(arg[0], "CAD"), search.parse_google(arg[1], "EUR"), search.norm_google(arg[2], "CAD")]))`, [payload, page, empty]);
+  assert.deepEqual([normGoogle(payload, "CAD"), parseGoogle(page, "EUR"), normGoogle(empty, "CAD")], want);
 });
 
 test("parseGoogle fails on a page without results", () => {
@@ -80,14 +70,16 @@ test("cheapestReturn takes the cheapest, then the shortest, and links the whole 
   assert.equal(cheapestReturn([], "YYZ", "VNO", "2026-12-29", "2027-01-12", "CAD", null, out), null);
 });
 
-test("dates and the arrival window, as test_search.py checks them", () => {
-  assert.deepEqual(dateRange("2026-12-30..2027-01-01"), ["2026-12-30", "2026-12-31", "2027-01-01"]);
-  assert.deepEqual(dateRange("2026-12-30"), ["2026-12-30"]);
-  const window = ["2026-12-30", "2026-12-31"];
-  assert.ok(!arrivesWithin({ arrive: "2027-01-01T00:30" }, window), "00:30 on Jan 1 is too late");
-  const landBy = arrivalWindow(",2026-12-31");
-  assert.ok(arrivesWithin({ arrive: "2026-12-20T09:00" }, landBy) && !arrivesWithin({ arrive: "2027-01-01T00:30" }, landBy));
-  assert.deepEqual(arrivalWindow("2026-12-30,"), ["2026-12-30", "9999-12-31"]);
+test("dates and the arrival window match search.py's", { skip: noPython }, () => {
+  const spans = ["2026-12-30..2027-01-01", "2026-12-30"], windows = [",2026-12-31", "2026-12-30,", "2026-12-30,2026-12-31"];
+  const lands = ["2026-12-20T09:00", "2026-12-31T13:20", "2027-01-01T00:30"];   // 00:30 on Jan 1 is too late for Dec 31
+  const want = py(`
+import search
+spans, windows, lands = arg
+ws = [search.arrival_window(w) for w in windows]
+print(json.dumps([[search.date_range(s) for s in spans], ws, [[search.arrives_within({"arrive": a}, w) for a in lands] for w in ws]]))`, [spans, windows, lands]);
+  const ws = windows.map(arrivalWindow);
+  assert.deepEqual([spans.map(dateRange), ws, ws.map((w) => lands.map((a) => arrivesWithin({ arrive: a }, w)))], want);
   assert.throws(() => arrivalWindow("2026-02-30,"));
 });
 

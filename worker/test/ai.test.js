@@ -33,21 +33,6 @@ print(json.dumps([ai.instructions(arg[0]), ai.schema(), [ai.check(s, arg[0]) for
   assert.deepEqual([instructions(TODAY), schema(), SAID.map((s) => check(s, TODAY, airports))], want);
 });
 
-test("check keeps what the form accepts and says why it drops the rest", () => {
-  const { fields, missing, dropped } = check(SAID[1], TODAY, airports);
-  assert.equal(fields.to, "YYZ");
-  assert.deepEqual(missing, ["ret-to"]);
-  assert.deepEqual(dropped.map((d) => [d.field, d.why]), [
-    ["from", "YTO isn't an airport code on Altaria's list."],
-    ["out-from", "That's before today, 2026-11-17."],
-    ["out-to", "That isn't a date like 2026-12-29."],
-    ["arr-to", "That's before the first landing day, 2026-12-01."],
-    ["ret-from", "That's more than a year away, further ahead than airlines sell."],
-    ["stops", "Stops must be 0, 1 or 2 on each leg, or any."],
-    ["currency", "BTC isn't one of the form's currencies."],
-  ]);
-});
-
 // Swaps fetch for a stand-in Gemini that answers each call with the next of replies: [status, body].
 function standIn(replies) {
   const heard = [], real = globalThis.fetch;

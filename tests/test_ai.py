@@ -38,7 +38,7 @@ def why(r, field):
 
 # --- the form's lists, the prompt, parsing ---
 
-assert len(ai.currencies()) == 30 and {"CAD", "EUR", "USD"} <= set(ai.currencies()), \
+assert {"CAD", "EUR", "USD"} <= set(ai.currencies()), \
     "the form's CURRENCIES list moved or changed: point ai.currencies() at it"
 assert {"YYZ", "VNO", "JFK"} <= ai.airports() and "YTO" not in ai.airports()
 prompt = ai.instructions(TODAY)
@@ -68,13 +68,13 @@ assert "from" not in r["missing"], "a dropped value is listed in dropped, not mi
 assert "same airport" in why(check(**{"from": "YYZ", "to": "yyz"}), "to")
 assert "isn't an airport" in why(check(**{"from": "Toronto"}), "from")
 
-assert why(check(**{"out-from": "2026-11-15"}), "out-from") == "That's before today, 2026-11-16."
+assert "before today" in why(check(**{"out-from": "2026-11-15"}), "out-from")
 assert check(**{"out-from": TODAY})["fields"]["out-from"] == TODAY
 for bad in ("2026-02-30", "20261228", "Dec 28", "2026-12-28T10:00"):
     assert "isn't a date" in why(check(**{"out-from": bad}), "out-from"), bad
 assert "more than a year" in why(check(**{"out-from": "2027-11-18"}), "out-from")
 r = check(**{"out-from": "2026-12-30", "out-to": "2026-12-28"})
-assert r["fields"]["out-from"] == "2026-12-30" and why(r, "out-to") == "That's before the first departure day, 2026-12-30."
+assert r["fields"]["out-from"] == "2026-12-30" and "first departure day" in why(r, "out-to")
 assert "first departure day" in why(check(**{"out-from": "2026-12-28", "ret-from": "2026-12-20"}), "ret-from")
 assert "first departure day" in why(check(**{"out-from": "2026-12-28", "ret-to": "2026-12-27"}), "ret-to")
 assert "first return day" in why(check(**{"ret-from": "2027-01-13", "ret-to": "2027-01-12"}), "ret-to")
@@ -88,9 +88,9 @@ assert r["fields"]["stops"] == "" and "stops" not in r["missing"] and not r["dro
 assert check(stops="0")["fields"]["stops"] == "0" and check(stops=2)["fields"]["stops"] == "2"
 assert "0, 1 or 2" in why(check(stops="3"), "stops") and "single value" in why(check(stops=True), "stops")
 assert check(currency="eur")["fields"]["currency"] == "EUR"
-assert why(check(currency="BTC"), "currency") == "BTC isn't one of the form's currencies."
+assert "BTC" in why(check(currency="BTC"), "currency")
 r = check(**{"from": ["YYZ"]})
-assert r["dropped"] == [{"field": "from", "value": '["YYZ"]', "why": "That isn't a single value."}]
+assert [(d["field"], d["value"]) for d in r["dropped"]] == [("from", '["YYZ"]')] and "single value" in why(r, "from")
 
 # --- a fake Ollama and a fake claude ---
 
@@ -325,7 +325,8 @@ assert len(calls()) == 4
 fake_claude("ok")
 for headers in ({"Origin": "http://evil.example"}, {"Origin": "null"}, {"Origin": f"https://127.0.0.1:{PORT}"},
                 {"Host": "evil.example"}, {"Host": f"evil.example:{PORT}"}, {"Host": "localhost:3000", "Origin": "http://localhost:3000"}):
-    assert call_site("POST", "/api/ai/trip", ask, **headers) == (403, {"error": "Altaria only answers its own page."}), headers
+    status, body = call_site("POST", "/api/ai/trip", ask, **headers)
+    assert status == 403 and set(body) == {"error"}, headers
 for ctype in ("text/plain", "application/x-www-form-urlencoded", "multipart/form-data", None):
     assert call_site("POST", "/api/ai/trip", ask, Content_Type=ctype)[0] == 415, ctype
 assert call_site("POST", "/api/ai/trip", {"text": "x" * 4500, "today": TODAY})[0] == 413

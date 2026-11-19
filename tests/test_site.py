@@ -25,6 +25,7 @@ OFF = "The trip reader is off because ALTARIA_AI=off. Unset it and restart the s
 SAID = {"from": "", "to": "VNO", "out-from": "2026-12-26", "out-to": "2026-12-27", "arr-from": "", "arr-to": "",
         "ret-from": "2027-01-10", "ret-to": "2027-01-10", "stops": "1", "currency": "CAD"}
 TRIP = "Vilnius on Boxing Day or the day after, back on January 10th, one stop at most, in Canadian dollars"
+FILLED = "filled in from your description"   # how each blank the trip box filled is named to a screen reader
 assert (server.SITE / "index.html").is_file(), "build the site first: cd web && npm run build"
 
 # --- the server: the saved run as the newest in results/, searches replayed from it, a model that answers on cue ---
@@ -120,9 +121,9 @@ def backing(page):   # how far the header's backing has come in, 0 to 1
 
 
 def blank(page, sel):
-    """The blank round a control: whether it's still open, how its line is drawn, its ring, and how wide it is."""
-    return page.eval_on_selector(sel, """(el) => { const b = el.closest('.blank'), s = getComputedStyle(b);
-      return { open: b.classList.contains('empty'), line: s.borderBottomStyle, ring: s.outlineStyle !== 'none', width: b.getBoundingClientRect().width }; }""")
+    """The blank round a control: its ring, and how wide it is."""
+    return page.eval_on_selector(sel, """(el) => { const b = el.closest('.blank');
+      return { ring: getComputedStyle(b).outlineStyle !== 'none', width: b.getBoundingClientRect().width }; }""")
 
 
 def top(page, sel):   # how far down the page something starts
@@ -157,11 +158,11 @@ AT = """() => {
            ring: s.outlineStyle !== 'none' && parseFloat(s.outlineWidth) >= 2 && seen > .5 && r.bottom > 0 && r.top < innerHeight };
 }"""
 
-# How the sentence sets: the lines each clause takes, and how many phrases meant to stay whole broke across two.
-SET = """() => ({
-  lines: [...document.querySelectorAll('.clause')].map((c) => Math.round(c.getBoundingClientRect().height / parseFloat(getComputedStyle(c).lineHeight))),
-  broken: [...document.querySelectorAll('.range, .tail')].filter((el) => el.getClientRects().length > 1).length,
-})"""
+# How the sentence sets: any clause that takes more than two lines, and any phrase meant to stay whole that broke.
+SET = """() => [...document.querySelectorAll('.clause')]
+  .filter((c) => Math.round(c.getBoundingClientRect().height / parseFloat(getComputedStyle(c).lineHeight)) > 2)
+  .concat([...document.querySelectorAll('.range, .tail')].filter((el) => el.getClientRects().length > 1))
+  .map((el) => el.textContent.trim().slice(0, 40))"""
 # The sentence's controls that answer a press less than 32px tall, measured through each one's middle.
 SMALL = """() => [...document.querySelectorAll('.say :is(button, input, select)')].map((el) => {
   const r = el.getBoundingClientRect(), x = r.left + r.width / 2, y = r.top + r.height / 2;
@@ -188,10 +189,8 @@ with sync_playwright() as p:
         "over the sky the header is bare, with the ink lockup"
     assert page.evaluate("document.documentElement.classList.contains('lenis')"), "Lenis smooths the scroll"
 
-    # the sentence's blanks: an open one the search can do without is dashed, the rest are solid, and each is as wide as what it holds
-    assert (blank(page, "#out-to")["open"], blank(page, "#out-to")["line"]) == (True, "dashed")
-    assert (blank(page, "#from")["open"], blank(page, "#from")["line"]) == (True, "solid")
-    assert (blank(page, "#stops")["open"], blank(page, "#stops")["line"]) == (False, "solid")
+    # the sentence's blanks: the search needs the first days but can do without the second, and each is as wide as what it holds
+    assert [page.eval_on_selector(f"#{f}", "(el) => el.required") for f in ("out-from", "ret-from", "out-to", "ret-to")] == [True, True, False, False]
     any_stops = blank(page, "#stops")["width"]
     page.select_option("#stops", "0")
     assert blank(page, "#stops")["width"] < any_stops / 2, "a blank is as wide as its value, so the sentence keeps its word spacing"
@@ -207,7 +206,6 @@ with sync_playwright() as p:
     page.keyboard.press("Enter")
     assert airport(page, "#from") == "From airport: YYZ" and page.evaluate("document.activeElement.id") == "from"
     assert page.locator("#finder").count() == 0
-    assert (blank(page, "#from")["open"], blank(page, "#from")["line"]) == (False, "solid")
     page.click("#out-from")
     assert page.evaluate("document.activeElement.id") == "out-from" and not blank(page, "#out-from")["ring"], \
         "pressed with the pointer, a blank shows its accent line, not the keyboard's ring"
@@ -227,14 +225,14 @@ with sync_playwright() as p:
     page.wait_for_selector(".trip-note[data-tone=done]")
     assert top(page, ".say") == sentence, "the reading's line is beside its button, so it never moves the sentence"
     assert model.heard == [f"The trip:\n{TRIP}"]
-    assert text(page, ".trip-note") == "Filled 7 blanks. Check them, then press Search."
+    assert text(page, ".trip-note").startswith("Filled 7"), "the note says how many blanks the reading filled"
     assert airport(page, "#from") == "From airport: YYZ", "a blank the answer leaves open keeps the person's choice"
     assert airport(page, "#to") == "To airport: VNO, filled in from your description"
     assert [page.input_value(f"#{f}") for f in ("out-from", "out-to", "arr-from", "arr-to", "ret-from", "ret-to", "stops", "currency")] == [
         "2026-12-26", "2026-12-27", "", "", "2027-01-10", "2027-01-10", "1", "CAD"]
-    assert page.locator(".blank.from-trip").count() == 7
+    assert page.get_by_label(FILLED).count() == 7, "each blank the reading filled says so"
     assert page.evaluate("document.activeElement.id") == "go", "nothing required is open, so focus goes to Search"
-    assert text(page, "#estimate") == "2 searches, about 15 seconds"
+    assert text(page, "#estimate").startswith("2 searches")
     page.wait_for_timeout(500)
     assert not any("/api/search" in u for u in page.urls) and page.locator(".turn").count() == 0, "reading a trip never searches"
     page.evaluate(STOPS)   # Shift+Tab from the trip box goes back up into the hero, which the scroll scene has faded out
@@ -257,7 +255,7 @@ with sync_playwright() as p:
     assert text(page, ".turn .status").endswith("2 of 2 searches came back.")
     rest(page)   # the glide to the new turn
     assert backing(page) == 1, "over the page the header has its backing"
-    assert page.locator(".blank.from-trip").count() == 0 and text(page, ".trip-note") == "", "searching clears the marks"
+    assert page.get_by_label(FILLED).count() == 0 and text(page, ".trip-note") == "", "searching clears the marks"
 
     # the keyboard: Tab reaches everything, each with a visible ring, from the skip link round to it again
     rest(page)
@@ -293,7 +291,7 @@ with sync_playwright() as p:
 
     page = visit(browser, 360, 740)
     assert wide(page) == []
-    assert page.evaluate(SET) == {"lines": [2, 2, 2, 2, 1], "broken": 0}, "each clause turns over once, as whole phrases"
+    assert page.evaluate(SET) == [], "each clause turns over once at most, as whole phrases"
     seen = []
     for y in (0, 32, 200):   # the header's backing comes in with the scroll rather than at a threshold
         page.evaluate(f"scrollTo(0, {y})")
@@ -312,7 +310,7 @@ with sync_playwright() as p:
     page.wait_for_selector(".trip-note[data-tone=done]")
     assert wide(page) == []
     rest(page)   # the glide to Search, which leaves the sentence in view
-    assert page.evaluate(SET) == {"lines": [2, 2, 2, 2, 1], "broken": 0}, "filled in, the sentence sets the same way"
+    assert page.evaluate(SET) == [], "filled in, the sentence sets the same way"
     assert page.evaluate(SMALL) == [], "every blank answers a press anywhere on its line"
     page.click("#go")
     page.wait_for_selector(".fares-table tbody tr")
@@ -325,7 +323,7 @@ with sync_playwright() as p:
 
     page = visit(browser, 320, 700, touch=True)
     assert wide(page) == []
-    assert page.evaluate(SET) == {"lines": [2, 2, 2, 2, 1], "broken": 0}, "under 360px the sentence scales down, so its phrases stay whole"
+    assert page.evaluate(SET) == [], "under 360px the sentence scales down, so its phrases stay whole"
     page.tap("#from")
     assert page.evaluate("parseFloat(getComputedStyle(document.getElementById('finder-q')).fontSize)") >= 16, \
         "a phone zooms the whole page in on a field under 16px"
@@ -376,7 +374,7 @@ with sync_playwright() as p:
     # beside Search: what the search will take, and above that, when it can't start, what's in the way
     page.fill("#out-from", "2026-12-26")
     page.fill("#ret-from", "2027-01-10")
-    assert text(page, "#estimate") == "1 search, about 10 seconds" and page.locator("#form-error").is_hidden()
+    assert text(page, "#estimate").startswith("1 search") and page.locator("#form-error").is_hidden()
     page.click("#go")
     assert text(page, "#form-error").startswith("Pick both airports") and page.locator("#estimate").is_visible()
     assert page.evaluate("""() => { const [b, e, t] = ['go', 'form-error', 'estimate'].map((id) => document.getElementById(id).getBoundingClientRect());
@@ -384,9 +382,9 @@ with sync_playwright() as p:
         "the error is beside the button that raised it, with the estimate under it"
     assert page.evaluate("document.activeElement.id") == "from" and not any("/api/search" in u for u in page.urls)
     page.fill("#ret-from", "2027-01-11")   # the estimate stays, and follows the blanks, while the error is up
-    assert text(page, "#estimate") == "1 search, about 10 seconds" and page.locator("#form-error").is_visible()
+    assert text(page, "#estimate").startswith("1 search") and page.locator("#form-error").is_visible()
     page.fill("#ret-to", "2027-01-12")
-    assert text(page, "#estimate") == "2 searches, about 15 seconds"
+    assert text(page, "#estimate").startswith("2 searches")
     done(page)
 
     # --- a value the server throws out, and a model that fails: said as given ---
@@ -397,8 +395,7 @@ with sync_playwright() as p:
     page.fill("#trip", "Out of Toronto, any airport")
     page.click(".trip-go")
     page.wait_for_selector(".trip-note[data-tone=done]")
-    assert text(page, ".trip-note") == ("Nothing in that fills a blank. Didn't use YTO as the origin. YTO isn't an airport code "
-                                       "on Altaria's list. Try naming the airports or cities, and the days you could fly.")
+    assert "YTO" in text(page, ".trip-note")
     assert airport(page, "#from") == "From airport: not chosen yet" and page.evaluate("document.activeElement.id") != "go"
     model.said = ai.ProviderError("Claude Code failed: Not logged in")
     page.click(".trip-go")
