@@ -1,7 +1,7 @@
 /* The hero (Hero.jsx): flying above the clouds. */
 .hero {
   --p: 0;   /* the scroll scene's progress, 0 to 1, written by Hero.jsx */
-  /* The headline's size: as large as the scale allows, but the longer line, "ranked for you" (5.8em wide in
+  /* The headline's size: as large as the scale allows, but the longer line, "priced for you" (5.5em wide in
      Spectral Light at this tracking), always fits the column, even with a large text setting; remeasure if the
      words change. */
   --h1: min(var(--t-hero), (100vw - 2 * var(--margin)) / 6);

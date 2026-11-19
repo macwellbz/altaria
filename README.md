@@ -1,10 +1,10 @@
 # Altaria
 
-A round-trip flight search, ranked for you. It prices every pair of dates you give it and sorts round trips by price, then by flight time. Nothing is sponsored, and nothing is estimated: every fare on the page came back from a search.
+A round-trip flight search, priced for you. It prices every pair of dates you give it and sorts round trips by price, then by flight time. Nothing is sponsored, and nothing is estimated: every fare on the page came back from a search.
 
 Try it at [altaria.macwell.workers.dev](https://altaria.macwell.workers.dev), or run it yourself.
 
-![The hero: "The sky, ranked for you" over a sky of clouds, with a boarding pass holding the cheapest fare of the last search](docs/hero.png)
+![The hero: "The sky, priced for you" over a sky of clouds, with a boarding pass holding the cheapest fare of the last search](docs/hero.png)
 
 ## What it does
 
