@@ -1,6 +1,5 @@
 import { json, withFetch } from "./setup.js";
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
 import { test } from "node:test";
 import { localDay } from "../src/helpers.js";
 import { EMPTY } from "../src/sentence.js";
@@ -15,10 +14,7 @@ function answer(said, dropped = []) {
 }
 const said = (a) => outcome(merge(EMPTY, a), a);
 
-test("the page and the server agree on the sentence's blanks", async () => {
-  const py = await readFile(new URL("../../ai.py", import.meta.url), "utf8");
-  const theirs = JSON.parse(py.match(/^FIELDS = (\[.*\])$/m)[1]);
-  assert.deepEqual([...FIELDS].sort(), [...theirs].sort());
+test("the sentence has a blank for every field", () => {
   assert.deepEqual([...FIELDS].sort(), Object.keys(EMPTY).sort());
   assert.ok(REQUIRED.every((id) => FIELDS.includes(id)));
 });

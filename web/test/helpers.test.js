@@ -2,7 +2,7 @@ import { run } from "./setup.js";
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { airportsLoaded } from "../src/airports.js";
-import { LONG, STOPS, airlines, dateSpan, day, fmtMin, landing, layovers, localDay, money, picks, remark, savedOn, stops, time, waits, weekday } from "../src/helpers.js";
+import { airlines, dateSpan, day, fmtMin, landing, layovers, localDay, money, picks, remark, savedOn, stops, time, waits, weekday } from "../src/helpers.js";
 
 const rows = run.rows;
 await airportsLoaded;
@@ -37,7 +37,6 @@ test("lengths, prices and stops", () => {
   assert.equal(money(1147), "1,147");
   assert.equal(money(1146.6), "1,147");
   assert.deepEqual([stops(0), stops(1), stops(2)], ["nonstop", "1 stop", "2 stops"]);
-  assert.deepEqual(Object.keys(STOPS).sort(), ["", "0", "1", "2"]);
 });
 
 test("a run's file name says when it was saved", () => {
@@ -46,7 +45,6 @@ test("a run's file name says when it was saved", () => {
 });
 
 test("layovers: long over six hours, overnight when the next flight leaves another day", () => {
-  assert.equal(LONG, 360);
   assert.deepEqual(layovers(rows[0].segments), [{ at: "AMS", next: "AMS", m: 1435, long: true, night: true }]);   // 23h55 in Amsterdam
   assert.deepEqual(layovers(rows[1].segments), [{ at: "AMS", next: "AMS", m: 390, long: true, night: false }]);
   assert.deepEqual(layovers(undefined), []);

@@ -13,11 +13,8 @@ access requires a registered business; the code is in the git history.
 ```
 python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
 .venv/bin/python -m playwright install chromium
-.venv/bin/python tests/test_search.py
-.venv/bin/python tests/test_ai.py
-cd web && npm install && npm run build && npm test && cd ..
-.venv/bin/python tests/test_site.py
-cd worker && npm test && cd ..   # parity with search.py and ai.py runs when .venv exists, or set PYTHON=
+cd web && npm install && cd ..
+./test.sh   # every suite: search, ai, web unit, built site, worker parity; fails without .venv
 ```
 
 ## Web app (Altaria)

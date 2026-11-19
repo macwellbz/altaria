@@ -5,6 +5,7 @@ import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import { FIELDS, Gemini, ProviderError, check, instructions, readTrip, schema } from "../ai.js";
 import { ROOT, noPython, py } from "./python.js";
+import { FIELDS as PAGE_FIELDS } from "../../web/src/trip.js";
 
 const airports = new Set(JSON.parse(readFileSync(`${ROOT}web/public/airports.json`, "utf8")).map((a) => a.c));
 const TODAY = "2026-11-17";
@@ -16,6 +17,14 @@ const SAID = [
   { from: "YYZ", to: "YYZ", "out-from": "2026-12-01", "ret-from": "2026-11-30", "ret-to": "2026-12-05", stops: 1, currency: ["CAD"] },
   { "out-from": " 2026-12-01 ", "arr-to": "2026-11-20", "ret-to": "next week", stops: "0" },
 ];
+
+test("the page, the worker and ai.py agree on the sentence's blanks", { skip: noPython }, () => {
+  const want = py(`
+import ai
+print(json.dumps(sorted(ai.FIELDS)))`);
+  assert.deepEqual([...PAGE_FIELDS].sort(), want);
+  assert.deepEqual([...FIELDS].sort(), want);
+});
 
 test("instructions, schema and checks match ai.py's", { skip: noPython }, () => {
   const want = py(`
