@@ -46,4 +46,25 @@
   .pick option::checkmark {
     color: var(--accent-text);
   }
+
+  /* A phone: the list centres on its blank and opens upward when there's no room under it, so it's always on
+     screen (hung from the blank's left edge, the currencies are wider than what's left of a phone, and the browser
+     then leaves the list where it is, off the bottom). It's short enough to fit one side or the other wherever
+     the blank is and never wider than the screen, at a large text size too, where a long name takes two lines.
+     Its rows are a finger tall. */
+  @media (max-width: 600px) {
+    .pick ::picker(select) {
+      position-area: block-end span-all;
+      position-try-order: normal;
+      position-try-fallbacks: flip-block;
+      max-width: calc(100vw - 2 * var(--s-4));
+      max-height: min(45dvh, 420px);
+      margin: 6px var(--s-4);
+    }
+
+    .pick option {
+      padding-block: 12px;
+      white-space: normal;
+    }
+  }
 }

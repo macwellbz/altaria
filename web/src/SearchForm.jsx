@@ -34,9 +34,9 @@ export default function SearchForm({ busy, onSearch }) {
 
   // Someone moving by keyboard gets .kbd on the root: while it has focus, a date shows its native editor, and the trip
   // box and a blank with its finder open show the focus ring. With the pointer they show the accent line alone, and
-  // a date its readable label.
+  // a date its readable label. Arrows inside the finder only move through its matches, so they don't count.
   useEffect(() => {
-    const key = (e) => { if (e.key === "Tab" || e.key.startsWith("Arrow")) document.documentElement.classList.add("kbd"); };
+    const key = (e) => { if (e.key === "Tab" || (e.key.startsWith("Arrow") && !e.target.closest?.(".finder"))) document.documentElement.classList.add("kbd"); };
     const pointer = () => document.documentElement.classList.remove("kbd");
     addEventListener("keydown", key);
     addEventListener("pointerdown", pointer);

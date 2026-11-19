@@ -74,8 +74,8 @@ threading.Thread(target=httpd.serve_forever, daemon=True).start()
 URL = f"http://127.0.0.1:{httpd.server_address[1]}"
 
 
-def visit(browser, width=1440, height=900, motion="no-preference"):
-    page = browser.new_context(viewport={"width": width, "height": height}, reduced_motion=motion).new_page()
+def visit(browser, width=1440, height=900, motion="no-preference", touch=False):
+    page = browser.new_context(viewport={"width": width, "height": height}, reduced_motion=motion, has_touch=touch, is_mobile=touch).new_page()
     page.clock.set_fixed_time(NOW)
     page.errors, page.urls = [], []
     page.on("console", lambda m: m.type == "error" and page.errors.append(m.text))
@@ -201,6 +201,9 @@ with sync_playwright() as p:
     page.click("#from")   # the finder, by city name
     page.keyboard.type("toronto")
     page.wait_for_selector("#finder-0 >> text=YYZ")
+    page.keyboard.press("ArrowDown")
+    page.keyboard.press("ArrowUp")
+    assert not blank(page, "#from")["ring"], "arrows in a finder opened with the pointer move through its matches, and bring no focus ring"
     page.keyboard.press("Enter")
     assert airport(page, "#from") == "From airport: YYZ" and page.evaluate("document.activeElement.id") == "from"
     assert page.locator("#finder").count() == 0
@@ -317,6 +320,46 @@ with sync_playwright() as p:
     assert wide(page) == []
     done(page)
     model.said = SAID
+
+    # --- a small phone under a finger: the sentence scales to the sheet, and nothing that opens leaves the screen ---
+
+    page = visit(browser, 320, 700, touch=True)
+    assert wide(page) == []
+    assert page.evaluate(SET) == {"lines": [2, 2, 2, 2, 1], "broken": 0}, "under 360px the sentence scales down, so its phrases stay whole"
+    page.tap("#from")
+    assert page.evaluate("parseFloat(getComputedStyle(document.getElementById('finder-q')).fontSize)") >= 16, \
+        "a phone zooms the whole page in on a field under 16px"
+    page.keyboard.type("tor")
+    page.wait_for_selector("#finder-0")
+    rest(page)
+    assert page.evaluate("document.getElementById('from').getBoundingClientRect().top") < 120, \
+        "the blank goes to the top of the screen, so its matches stand clear of the keyboard"
+    assert wide(page) == []
+    # A phone sends a mousedown after a tap, and that is what would blur the search box and close the finder under
+    # the finger: the page stops it, and leaves the pointerdown alone, which Safari needs for the tap's click.
+    assert page.evaluate("""() => { const press = (type, Kind) => document.getElementById('finder-0').dispatchEvent(new Kind(type, { bubbles: true, cancelable: true }));
+      return [press('pointerdown', PointerEvent), press('mousedown', MouseEvent)]; }""") == [True, False]
+    code = text(page, "#finder-0 b")
+    page.tap("#finder-0")
+    assert airport(page, "#from") == f"From airport: {code}" and page.locator("#finder").count() == 0, "a tap on a match picks it"
+    assert wide(page) == []
+    assert page.evaluate("getComputedStyle(document.documentElement).overflowX") == "clip", \
+        "the page clips sideways at the root too: clipped at the body alone, a phone still pans past its edge"
+    # the trip line's ice nests in the sheet's rounded corner: as far from its sides as from its top, on a corner less that gap
+    top, left, right, corner, sheet = page.evaluate("""() => { const c = document.getElementById('composer'), t = document.getElementById('trip'),
+      a = c.getBoundingClientRect(), b = t.getBoundingClientRect(), r = (el) => parseFloat(getComputedStyle(el).borderTopLeftRadius);
+      return [b.top - a.top, b.left - a.left, a.right - b.right, r(t), r(c)]; }""")
+    assert max(top, left, right) - min(top, left, right) < 1 and abs(corner - (sheet - top)) < 1, (top, left, right, corner, sheet)
+    page.evaluate("scrollTo(0, scrollY + document.getElementById('currency').getBoundingClientRect().bottom - innerHeight + 40)")   # low on the screen
+    rest(page)
+    page.tap("#currency")
+    page.wait_for_function("document.getElementById('currency').matches(':open')")
+    assert page.evaluate("""() => [...document.getElementById('currency').options].slice(0, 3).every((o) => {
+      const r = o.getBoundingClientRect();
+      return r.top >= 0 && r.bottom <= innerHeight && r.left >= 0 && r.right <= innerWidth && document.elementFromPoint(r.left + 8, r.top + 8) === o; })"""), \
+        "with no room under its blank, the list opens above it rather than off the screen"
+    page.keyboard.press("Escape")
+    done(page)
 
     # --- asked for less motion: no Lenis, and the page is all there ---
 

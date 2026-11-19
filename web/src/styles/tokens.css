@@ -42,7 +42,7 @@
   --t-lg: clamp(1.125rem, .8125rem + .45vw, 1.3125rem);   /* 18 to 21px */
   --t-lede: clamp(1.25rem, .875rem + .6vw, 1.5rem);       /* 20 to 24px, the hero's standfirst */
   --t-xl: clamp(1.25rem, .75rem + 1.1vw, 1.8125rem);      /* 20 to 29px */
-  --t-say: clamp(1.1875rem, 2.9vw - .5px, 2.25rem);       /* 19 to 36px, the search sentence: its first clause, 29em, fits one line from a 660px window up; at 19, "each way" stays with its blank on a 360px phone */
+  --t-say: clamp(1.1875rem, 2.9vw - .5px, 2.25rem);       /* 19 to 36px, the search sentence: its first clause, 29em, fits one line from a 660px window up; at 19, "each way" stays with its blank on a 360px phone, and under that the composer scales it down (search.css) */
   --t-2xl: clamp(2.125rem, 1rem + 2.9vw, 3.625rem);       /* 34 to 58px */
   --t-3xl: clamp(2.375rem, .75rem + 4.4vw, 5.25rem);      /* 38 to 84px */
   --t-hero: clamp(3.5rem, .5rem + 7.65vw, 9.25rem);       /* 56 to 148px, 118px on a 1440px window */

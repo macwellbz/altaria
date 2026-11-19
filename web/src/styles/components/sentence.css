@@ -5,7 +5,7 @@
 .say {
   container: say / inline-size;   /* phrases stay whole by how much of the clause fits (below), in em of the sentence */
   margin-block: -.45em;           /* the first and last lines' spare leading, (1.9 - 1) / 2: the sheet's padding starts at the type */
-  font-size: var(--t-say);
+  font-size: var(--say, var(--t-say));   /* --say: the composer's, which follows a narrow sheet (search.css) */
   font-weight: 400;
   line-height: 1.9;
   letter-spacing: -.01em;

@@ -6,7 +6,7 @@
   --inset: 6px;
   position: absolute;
   top: calc(100% + 8px);
-  left: 0;
+  right: 0;   /* until AirportBlank.jsx sets its left: to the blank's left, where it can't widen the page */
   z-index: 20;
   width: min(22em, 100vw - 2 * var(--s-4));
   padding: var(--inset);
@@ -35,6 +35,13 @@
   border: 0;
   border-bottom: 1.5px solid var(--accent-text);
   border-radius: 0;
+}
+
+/* On a touch screen the line is set at body size: a phone zooms the whole page in on a field under 16px. */
+@media (pointer: coarse) {
+  .finder input {
+    font-size: var(--t-md);
+  }
 }
 
 .finder input::placeholder {

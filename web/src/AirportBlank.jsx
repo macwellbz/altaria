@@ -55,13 +55,19 @@ function Finder({ name, typed, onPick, onClose }) {
   const active = Math.min(at, picks.length - 1);   // -1 when nothing matches
 
   useLayoutEffect(() => {
-    const el = finder.current, r = el.getBoundingClientRect(), room = document.documentElement.clientWidth - 16;
-    if (r.right > room) el.style.left = `${room - r.right}px`;   // near the right edge, it slides left to stay on screen
+    // It hangs from its blank's left edge, and near the right edge slides left to stay on screen. Until it's placed
+    // here it lies to the blank's left (finder.css): Safari keeps the page as wide as anything that was ever laid
+    // out past its right edge, even for a moment.
+    const el = finder.current, room = document.documentElement.clientWidth - 16;
+    el.style.left = `${Math.min(0, room - el.previousElementSibling.getBoundingClientRect().left - el.getBoundingClientRect().width)}px`;
     input.current.focus({ preventScroll: true });   // the effect below brings the whole finder into view
   }, []);
   useLayoutEffect(() => {   // new matches: the first is active, and the finder scrolls into view
     if (picks.length) showIn(list.current, list.current.firstElementChild);
-    scrollToElement(finder.current, { block: "nearest" });
+    // On a touch screen its blank goes to the top of the view instead, so the matches stand clear of the keyboard,
+    // which covers the bottom of the screen without the page knowing.
+    if (matchMedia("(pointer: coarse)").matches) scrollToElement(finder.current.parentElement);
+    else scrollToElement(finder.current, { block: "nearest" });
   }, [picks]);
 
   const choose = (i) => {
@@ -86,7 +92,10 @@ function Finder({ name, typed, onPick, onClose }) {
       choose(active);   // focus then moves on as usual, and the finder closes behind it
     }
   };
-  const keepFocus = (e) => e.preventDefault();   // pressing on a match keeps the search box focused
+  // Pressing on a match keeps the search box focused. It's the mousedown that moves focus, and a phone sends one
+  // after a tap whatever became of the pointerdown, so that is the one to stop: the blur would close the finder
+  // before the click landed. Stopping the pointerdown instead costs the tap its click in Safari.
+  const keepFocus = (e) => e.preventDefault();
   const note = !q.trim() ? "Matching airports show as you type."
     : picks.length ? "" : loaded === false ? "The airport list didn't load. Type a three-letter code instead." : "No airport matches that.";
 
@@ -97,7 +106,7 @@ function Finder({ name, typed, onPick, onClose }) {
         aria-expanded={picks.length > 0} aria-controls="finder-list" aria-activedescendant={active < 0 ? undefined : `finder-${active}`}
         autoComplete="off" autoCapitalize="off" spellCheck="false" placeholder="City, airport or code"
         value={q} onChange={(e) => { setQ(e.target.value); setAt(0); }} onKeyDown={onKeyDown} />
-      <span className="finder-list" id="finder-list" role="listbox" aria-label="Airports" hidden={!picks.length} ref={list} onPointerDown={keepFocus}>
+      <span className="finder-list" id="finder-list" role="listbox" aria-label="Airports" hidden={!picks.length} ref={list} onMouseDown={keepFocus}>
         {picks.map(([c, airport, place], i) => (
           <span role="option" id={`finder-${i}`} aria-selected={i === active} key={i}
             onPointerMove={() => i !== active && setAt(i)} onClick={() => choose(i) && onClose(true)}>

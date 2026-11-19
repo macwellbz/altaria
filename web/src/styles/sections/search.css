@@ -26,6 +26,10 @@
    of it shares one left edge. */
 .composer {
   --pad: clamp(16px, 4vw, 40px);
+  /* The sentence's size on this sheet: the token's, down to the body's on a sheet too narrow for the token's
+     smallest (a phone under 360px), so the sheet is always 15.4em wide and the phrases stay whole (sentence.css). */
+  --say: clamp(1rem, 100cqi / 15.45, var(--t-say));
+  container-type: inline-size;
   display: grid;
   gap: var(--s-7);
   margin-top: var(--s-7);
@@ -64,11 +68,11 @@
 }
 
 /* The trip box (TripBox.jsx): a line across the sheet to write the trip on, three quarters of the sentence's size
-   and never less than its smallest. Ruled like a blank, the line as close under the words, in the accent under the
-   pointer, and on the page's ice while it's written on: the ice runs a little past the words, as a blank's does, so
-   the words keep the sheet's left edge. It grows a line at a time. */
+   and never less than its smallest, or than the sentence itself. Ruled like a blank, the line as close under the
+   words, in the accent under the pointer, and on the page's ice while it's written on: the ice runs a little past
+   the words, as a blank's does, so the words keep the sheet's left edge. It grows a line at a time. */
 .trip textarea {
-  --size: max(.75 * var(--t-say), 1.1875rem);
+  --size: max(.75 * var(--say), min(var(--say), 1.1875rem));
   flex: 1 1 100%;
   min-width: 0;
   margin: calc(-.2 * var(--size)) -.12em 0;   /* the first line's spare leading, as the sentence trims its own */
@@ -230,10 +234,19 @@
   }
 }
 
-/* A phone: Search runs across the sheet. */
+/* A phone: Search runs across the sheet. The trip line sits close in the sheet's rounded corner there, so its ice
+   nests in it: as far from the sheet's sides as from its top (--gap: the sheet's top padding less the leading the
+   line trims), its corners the sheet's less that gap. The words stay on the sheet's left edge. */
 @media (max-width: 600px) {
   .composer {
     gap: var(--s-6);
+  }
+
+  .trip textarea {
+    --gap: calc(var(--pad) - 4px - .2 * var(--size));
+    margin-inline: calc(var(--gap) - var(--pad));
+    padding-inline: calc(var(--pad) - var(--gap));
+    border-radius: max(.2em, var(--radius) - 1px - var(--gap)) max(.2em, var(--radius) - 1px - var(--gap)) 0 0;
   }
 
   .sentence {

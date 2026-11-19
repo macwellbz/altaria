@@ -3,6 +3,7 @@
    Nothing else sets a scroll margin, so the stops never add up. */
 html {
   scroll-padding-top: calc(var(--header) + var(--s-4));
+  overflow-x: clip;   /* with the body's: set on the body alone it passes to the window, and a phone pans past it */
 }
 
 body {
