@@ -413,7 +413,7 @@ export default function startVantaSky(host) {
     u.iMouse.value.set(effect.width / 2, effect.height / 2);   // the camera's height comes from it: the same at every size
     frame();
     measure();
-    if (still()) requestAnimationFrame(draw);   // resizing cleared the canvas
+    draw();   // resizing cleared the canvas: redraw before it's painted, not on the next (throttled) frame
   };
   // The canvas follows the stage, whose height its content sets on narrow screens (the pass filling in), not only the
   // window; and the horizon follows the words and the pass.
