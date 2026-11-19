@@ -54,7 +54,7 @@ export default function Hero({ onBacking }) {
 
         <div className="hero-copy">
           {/* Two lines set by hand, each rising out of its own mask on load. */}
-          <h1 id="hero-title"><span className="line"><span>The sky,</span></span> <span className="line"><span>sorted by&nbsp;price</span></span></h1>
+          <h1 id="hero-title"><span className="line"><span>The sky,</span></span> <span className="line"><span>ranked for&nbsp;<em>you</em></span></span></h1>
           <p className="lede">{`${NAME} searches every day you could fly, then shows you the best fares it found.`}</p>
           <a className="btn" href="#search">Search flights</a>
         </div>

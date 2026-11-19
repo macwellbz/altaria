@@ -16,7 +16,7 @@ export default function Brief({ rows, cur }) {
   const leaving = (iso) => <span className="nw">{`${day(iso, true)} at ${time(iso)}`}</span>;   // the date and time after "leaving", kept on one line
   const back = best.return_depart
     ? <>{` ${best.return_segments?.length ? `${airlines(best.return_segments)}, ` : ""}leaving `}{leaving(best.return_depart)}{`.${takes(best.return_duration, best.return_segments)}`}</>
-    : ` on ${day(best.search_ret, true)}. Google didn't detail the flights.`;
+    : ` on ${day(best.search_ret, true)}, with no flight details.`;
 
   let flags = null;
   if (best.warnings?.length) {

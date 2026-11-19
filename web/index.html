@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <!-- the product's name comes from src/brand.js (vite.config.js) -->
 <title>%NAME%</title>
-<meta name="description" content="Round-trip flight search sorted by price. No paid placement, nothing estimated.">
+<meta name="description" content="Round-trip fares for every day you could fly, cheapest first. No airline can pay to rank higher.">
 <meta name="color-scheme" content="light">
 <!-- a saved dark theme applies before first paint; the header's toggle sets it (src/Header.jsx) -->
 <script>try { if (localStorage.getItem("theme") === "dark") document.documentElement.dataset.theme = "dark"; } catch (e) {}</script>
@@ -25,9 +25,10 @@ if (!location.hash) {
 <link rel="manifest" href="/site.webmanifest">
 <meta name="theme-color" content="#EEF5FF" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#061925" media="(prefers-color-scheme: dark)">
-<!-- the two font files the first screen sets, Inter's latin cut and Spectral Light (src/styles/fonts.css) -->
+<!-- the font files the first screen sets, Inter's latin cut and Spectral Light and its italic (src/styles/fonts.css) -->
 <link rel="preload" href="/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/fonts/spectral-latin-300.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/spectral-latin-300-italic.woff2" as="font" type="font/woff2" crossorigin>
 <script type="module" src="/src/main.jsx"></script>
 </head>
 <body>

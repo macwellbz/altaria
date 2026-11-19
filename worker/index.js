@@ -61,7 +61,7 @@ function parse(q) {
   if (Math.min(...spans) < 1 || (window && window[0] > window[1])) throw new RangeError("Each date range must run forwards: the first date can't be after the second.");
   const stops = (q.get("stops") || "").trim();
   if (!["", "0", "1", "2"].includes(stops)) throw new RangeError("Max stops must be 0 (nonstop), 1 or 2, or left open.");
-  if (!(q.get("sources") || "google").split(",").includes("google")) throw new RangeError("This site searches Google Flights only.");
+  if (!(q.get("sources") || "google").split(",").includes("google")) throw new RangeError("This site doesn't search that source.");
   if (spans[0] * spans[1] > MAX_PAIRS) throw new RangeError(`That's ${spans[0] * spans[1]} date pairs. Narrow the dates to ${MAX_PAIRS} or fewer.`);
   const pairs = dateRange(q.get("out").trim()).flatMap((o) => dateRange(q.get("ret").trim()).map((r) => [o, r]));
   return { orig, dest, currency, pairs, window, stops: stops === "" ? null : Number(stops) };
@@ -88,7 +88,7 @@ async function google(query, currency, again = true) {
       console.log(`Google Flights redirected to ${to.slice(0, 300)}; asking again`);
       return google(query, currency, false);
     }
-    throw new Error(`Google Flights answered ${r.status}`);
+    throw new Error(`The fare search answered ${r.status}`);
   }
   return parseGoogle(await r.text(), currency);
 }
@@ -106,7 +106,7 @@ async function searchOne(q, caps) {
   }
   const [[out, ret]] = p.pairs;
   if (!(await caps.take("google", GOOGLE_PER_DAY))) {
-    return json({ error: "Altaria has used up today's searches, so Google isn't asked again until midnight UTC.", cap: true }, 429);
+    return json({ error: "Altaria has used up today's searches. Try again after midnight UTC.", cap: true }, 429);
   }
   try {
     if (pick) {

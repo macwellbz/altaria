@@ -29,7 +29,7 @@ test("each pair asks for its outbounds, then each outbound's return, and the row
     if (!p.get("pick")) return json(200, { rows: structuredClone(outbound) });
     const flights = JSON.parse(p.get("pick")).map((g) => g.flight).join(" ");
     if (flights === outbound[0].flights) return json(200, { ret: { price: 999, return_flights: back.return_flights, return_depart: back.return_depart, link: "trip" } });
-    return flights === outbound[1].flights ? json(502, { error: "Google Flights answered 302" }) : json(200, { ret: null });
+    return flights === outbound[1].flights ? json(502, { error: "The fare search answered 302" }) : json(200, { ret: null });
   });
   assert.deepEqual(asked[0], { from: "YYZ", to: "VNO", currency: "CAD", stops: "1", out: "2026-12-26", ret: "2027-01-10" });
   assert.equal(asked.length, 1 + outbound.length);

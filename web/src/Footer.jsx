@@ -21,8 +21,8 @@ export default function Footer() {
         </div>
         <p className="credits">
           Fares from <Out href="https://www.google.com/travel/flights">Google Flights</Out>. Airports
-          from <Out href="https://ourairports.com/">OurAirports</Out>, in the public domain. The cloud shader
-          is <Out href="https://www.vantajs.com/">Vanta.js</Out>'s, after Inigo Quilez's <Out href="https://www.shadertoy.com/view/XslGRr">“Clouds”</Out>,
+          from <Out href="https://ourairports.com/">OurAirports</Out>, in the public domain. The sky is
+          by <Out href="https://www.vantajs.com/">Vanta.js</Out>, after Inigo Quilez's <Out href="https://www.shadertoy.com/view/XslGRr">"Clouds"</Out> shader,
           licensed <Out href="https://creativecommons.org/licenses/by-nc-sa/3.0/">CC BY-NC-SA 3.0</Out>.
         </p>
       </div>

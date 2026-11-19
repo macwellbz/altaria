@@ -3,7 +3,7 @@ import SearchForm from "./SearchForm.jsx";
 import SearchTurn, { streamSearch } from "./SearchTurn.jsx";
 import { NAME } from "./brand.js";
 
-const STOPPED = "Stopped. Partial results aren't shown, since a stopped search may have missed the cheapest fare.";
+const STOPPED = "Stopped. Partial results stay hidden, since they may be missing the cheapest fare.";
 
 // The search section: its heading, the thread of searches so far (each your sentence, then what came back), and
 // the composer below them.
@@ -24,7 +24,7 @@ export default function Search() {
     <section className="search" id="search" aria-labelledby="search-title">
       <div className="wrap">
         <h2 id="search-title">Where are you headed?</h2>
-        <p className="search-lede">{`If your dates are flexible, give a range each way and ${NAME} searches all of it.`}</p>
+        <p className="search-lede">{`If your dates are flexible, give a range each way and ${NAME} searches every combination.`}</p>
         {turns.length > 0 && (
           <div className="thread" id="thread">
             {turns.map((t) => <SearchTurn key={t.id} turn={t} onStop={() => active.current.stop(STOPPED)} />)}

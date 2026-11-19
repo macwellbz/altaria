@@ -1,7 +1,7 @@
 /* The hero (Hero.jsx): flying above the clouds. */
 .hero {
   --p: 0;   /* the scroll scene's progress, 0 to 1, written by Hero.jsx */
-  /* The headline's size: as large as the scale allows, but the longer line, "sorted by price" (5.9em wide in
+  /* The headline's size: as large as the scale allows, but the longer line, "ranked for you" (5.8em wide in
      Spectral Light at this tracking), always fits the column, even with a large text setting; remeasure if the
      words change. */
   --h1: min(var(--t-hero), (100vw - 2 * var(--margin)) / 6);
@@ -66,13 +66,13 @@
   font-family: var(--font-display);
   font-size: var(--h1);
   font-weight: 300;
-  line-height: 1.04;   /* Spectral's descender and ascender take .99em: any tighter, the y of "sky," meets the b of "by" */
+  line-height: 1.04;   /* Spectral's descender and ascender take .99em, so any tighter and a descender can meet an ascender */
   letter-spacing: -.035em;
   text-wrap: initial;
 }
 
 /* Each line is its own mask for the load moment's rise. The clip reaches past the line box, so ascenders and
-   the descenders of "sky," and "by" are never cut, and costs no layout. */
+   the descenders of "sky," and "you" are never cut, and costs no layout. */
 .hero h1 .line {
   display: block;
   clip-path: inset(-.2em -.3em -.3em);

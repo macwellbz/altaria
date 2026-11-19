@@ -21,7 +21,7 @@ export default function FarePass() {
     <aside className={card === undefined ? "pass" : "pass in"} style={card === undefined ? undefined : { animationDelay: `${at(520)}ms` }}
       aria-labelledby="pass-title" hidden={broken || card === null}>
       <div className="pass-top">
-        <h2 id="pass-title">From your last saved search</h2>
+        <h2 id="pass-title">From your last search</h2>
         {card && (
           <>
             {card.asked && <p className="asked">{card.asked}</p>}
@@ -38,7 +38,7 @@ export default function FarePass() {
         <div className="pass-stub">
           <p className="fare-big"><Flap className="n" text={card.price} delay={at(920)} /><small>{`${card.currency} round trip`}</small></p>
           <Badges warnings={card.warnings} />
-          <p className="fine">{`The cheapest fare it returned on ${card.saved}. Fares change, so search again for today's price.`}</p>
+          <p className="fine">{`The cheapest fare on ${card.saved}. Search again for today's price.`}</p>
         </div>
       )}
     </aside>

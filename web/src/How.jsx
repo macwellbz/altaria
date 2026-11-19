@@ -12,7 +12,7 @@ export default function How() {
         <ul className="principles">
           <li>
             <h3>No paid placement</h3>
-            <p>No airline or travel site pays to appear here, and no link earns a commission. A fare's place depends on its price, then its flight time.</p>
+            <p>No airline or travel site pays to appear here, and no link earns a commission.</p>
           </li>
           <li>
             <h3>Searched live</h3>

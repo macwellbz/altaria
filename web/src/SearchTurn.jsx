@@ -56,7 +56,7 @@ export function streamSearch(q, update) {
 
     progress: (p) => {
       const k = `${p.src}|${p.out}|${p.ret}`;
-      if (p.status === "searching") mark(k, { s: "searching", text: "asking…" });
+      if (p.status === "searching") mark(k, { s: "searching", text: "searching…" });
       else if (p.status === "failed") mark(k, { s: "failed", text: "failed", error: p.error });
       else mark(k, { s: "done", text: `${p.count} ${p.count === 1 ? "fare" : "fares"}` });
     },
@@ -70,8 +70,8 @@ export function streamSearch(q, update) {
         return {
           running: false,
           rows,
-          status: `Done in ${took}. ` + (total === 1 ? (failed ? "The search failed." : "The search came back.")
-            : `${total - failed} of ${total} searches came back` + (failed ? `; ${failed} failed.` : ".")),
+          status: `Done in ${took}.` + (total === 1 ? (failed ? " The search failed." : "")
+            : ` ${total - failed} of ${total} searches came back` + (failed ? `; ${failed} failed.` : ".")),
         };
       });
     },

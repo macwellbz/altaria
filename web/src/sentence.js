@@ -25,10 +25,10 @@ export function check(f) {
   if (f.from === f.to) return ["to", "Origin and destination are the same airport."];
   if (!f["out-from"]) return ["out-from", "Choose the first day you could depart."];
   if (!f["ret-from"]) return ["ret-from", "Choose the first day you could return."];
-  if (f["out-to"] && f["out-to"] < f["out-from"]) return ["out-to", "The departure dates run backwards: the second is before the first."];
-  if (f["ret-to"] && f["ret-to"] < f["ret-from"]) return ["ret-to", "The return dates run backwards: the second is before the first."];
+  if (f["out-to"] && f["out-to"] < f["out-from"]) return ["out-to", "The second departure date is before the first."];
+  if (f["ret-to"] && f["ret-to"] < f["ret-from"]) return ["ret-to", "The second return date is before the first."];
   if (f["ret-from"] < f["out-from"]) return ["ret-from", "The return starts before you depart."];
-  if (f["arr-to"] && f["arr-from"] && f["arr-to"] < f["arr-from"]) return ["arr-to", "The arrival dates run backwards: the second is before the first."];
+  if (f["arr-to"] && f["arr-from"] && f["arr-to"] < f["arr-from"]) return ["arr-to", "The second landing date is before the first."];
   return null;
 }
 

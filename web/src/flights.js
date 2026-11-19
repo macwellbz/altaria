@@ -51,10 +51,10 @@ export function googleQuery(orig, dest, out, ret, currency, maxStops = null, pic
 export function parseGoogle(html, currency) {
   const at = html.indexOf('class="ds:1"');
   const start = html.indexOf(">", at) + 1, end = html.indexOf("</script>", start);
-  if (at < 0 || !start || end < 0) throw new Error("Google's page had no results in it");
+  if (at < 0 || !start || end < 0) throw new Error("The fare search sent back a page with no results in it");
   const js = html.slice(start, end);
   const from = js.indexOf("data:");
-  if (from < 0) throw new Error("Google's page had no results in it");
+  if (from < 0) throw new Error("The fare search sent back a page with no results in it");
   const body = js.slice(from + 5);
   return normGoogle(JSON.parse(body.slice(0, body.lastIndexOf(","))), currency);
 }

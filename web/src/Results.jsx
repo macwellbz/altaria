@@ -26,7 +26,7 @@ export default function Results({ rows, meta, trip }) {
   const warnCol = rows.some((r) => r.warnings?.length);
   const note = `Prices are for the whole round trip in ${cur}; ties go to the shorter flight.` +
     (list.length < rows.length ? " Fares that differ only by return date share a row." : "") +
-    (rows.some((r) => !r.return_depart) ? " A return with just a date is one Google didn't detail." : "") +
+    (rows.some((r) => !r.return_depart) ? " A return with only a date came without flight details." : "") +
     (trip.arrive ? ` Only outbound flights landing ${landing(trip.arrive)}, local time.` : "") +
     (trip.stops ? ` ${STOPS[trip.stops][0].toUpperCase()}${STOPS[trip.stops].slice(1)} each way.` : "") +
     (rows.some((r) => waits(r).some((l) => l.long)) ? ` Layovers over ${LONG / 60} hours are highlighted.` : "") +
