@@ -208,17 +208,25 @@
   }
 }
 
-/* The principles: a ruled list, each a line of its own under a hairline, its heading leading by weight and ink
-   rather than size. The first rule stands level with the statement's capitals. */
+/* The principles: a ruled list, a hairline between each two and none above the first or below the last, where there
+   is nothing to part. Each heading leads by weight and ink rather than size. The first one's capitals stand level
+   with the statement's: Spectral's are .166 of its size into its line, Overpass's .25. */
 .principles {
-  margin: .5em 0 0;
+  margin: calc(.166 * var(--t-3xl) - .25 * var(--t-md)) 0 0;
   padding: 0;
   list-style: none;
 }
 
 .principles li {
   padding: var(--s-5) 0;
+}
+
+.principles li + li {
   border-top: 1px solid var(--line);
+}
+
+.principles li:first-child {
+  padding-top: 0;
 }
 
 .principles li:last-child {
