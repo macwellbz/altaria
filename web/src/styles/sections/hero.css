@@ -97,7 +97,7 @@
   font-size: var(--h1);
   font-weight: 300;
   line-height: 1.04;   /* Spectral's descender and ascender take .99em, so any tighter and a descender can meet an ascender */
-  letter-spacing: -.035em;
+  letter-spacing: -.04em;
   text-wrap: initial;
 }
 
