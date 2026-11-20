@@ -121,7 +121,7 @@ export default function SearchTurn({ turn, onStop }) {
       <p className="said">{said}</p>
       <div className="reply">
         <div className="heard">
-          <Logo file="altaria-symbol" alt={NAME} className="sender" />
+          <Logo file="altaria-symbol-small" alt={NAME} className="sender" />
           <div className="report">
             <div className="status-row">
               <p className="status" role="status">{line}</p>

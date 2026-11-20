@@ -12,7 +12,7 @@ export default function Footer() {
     <footer className="foot">
       <div className="wrap">
         <div className="foot-top">
-          <a className="brand" href="#top"><Logo file="altaria-lockup" alt={NAME} className="lockup" /></a>
+          <a className="brand" href="#top"><Logo file="altaria-lockup-small" alt={NAME} className="lockup" /></a>
           <nav aria-label="Footer">
             <a href="#how">How it ranks</a>
             <a href="#search">Search flights</a>

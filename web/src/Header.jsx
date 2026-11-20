@@ -18,10 +18,10 @@ export default function Header({ ref }) {
   return (
     <header className="nav" id="nav" ref={ref}>
       <a className="brand" href="#top">
-        <Logo file="altaria-lockup" alt={NAME} className="lockup" />
+        <Logo file="altaria-lockup-small" alt={NAME} className="lockup" />
         {/* Over the day's sky, the kit's one-colour ink lockup: the guide keeps the colour one off sky blue, where its
             sky half would vanish. It hands over to the colour one as the backing comes in. */}
-        <img className="lockup on-sky light-only" src="/logo/altaria-lockup-ink.svg" alt="" />
+        <img className="lockup on-sky light-only" src="/logo/altaria-lockup-small-ink.svg" alt="" />
       </a>
       <nav aria-label="Page">
         <a className="link" href="#how">How it ranks</a>
