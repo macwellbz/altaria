@@ -13,48 +13,28 @@
 }
 
 /* The backing is one sheet of frosted material: the page behind it, blurred until no word or shape survives, under a
-   paper tint about as thick as the one apple.com's bars wear. What passes beneath shows only as soft colour.
-   The sheet is whole for the bar's full height. Below the bar it has no edge: a single mask takes the blur and the
-   tint out together along a smoothstep, over 24px, so the page crosses to the material in one fade with no steps in
-   it. A quarter of it is left at the page's scroll stop (base.css) and none 8px on. The sheet runs on a further 56px
-   unseen, because a backdrop blur sees only what is behind its own box (joshwcomeau.com/css/backdrop-filter): that
-   way what is about to pass under the bar already colours it. */
+   paper tint about as thick as the one apple.com's bars wear, so what passes beneath shows only as soft colour. It
+   ends at the bar's foot in a clean edge, with a hairline under it like the cards': what scrolls beneath is cut
+   there, never left half dissolved. */
 .nav::before {
   content: "";
   position: absolute;
-  inset: 0 0 auto;
+  inset: 0;
   z-index: -1;
-  height: calc(var(--header) + 80px);
   background: color-mix(in oklab, var(--paper) 82%, transparent);
   -webkit-backdrop-filter: blur(40px) saturate(1.5);
   backdrop-filter: blur(40px) saturate(1.5);
-  mask: linear-gradient(
-    #000 var(--header),
-    rgb(0 0 0 / .98) calc(var(--header) + 2px),
-    rgb(0 0 0 / .926) calc(var(--header) + 4px),
-    rgb(0 0 0 / .844) calc(var(--header) + 6px),
-    rgb(0 0 0 / .741) calc(var(--header) + 8px),
-    rgb(0 0 0 / .624) calc(var(--header) + 10px),
-    rgb(0 0 0 / .5) calc(var(--header) + 12px),
-    rgb(0 0 0 / .376) calc(var(--header) + 14px),
-    rgb(0 0 0 / .259) calc(var(--header) + 16px),
-    rgb(0 0 0 / .156) calc(var(--header) + 18px),
-    rgb(0 0 0 / .074) calc(var(--header) + 20px),
-    rgb(0 0 0 / .02) calc(var(--header) + 22px),
-    #0000 calc(var(--header) + 24px));
+  box-shadow: 0 1px 0 var(--line);
   opacity: var(--backing);
   pointer-events: none;
 }
 
-/* Asked for less transparency or more contrast, or without backdrop blur: a solid bar and a clear edge. */
+/* Asked for less transparency or more contrast, or without backdrop blur: a solid bar. */
 @media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
   .nav::before {
-    height: var(--header);
     background: var(--paper);
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
-    mask: none;
-    box-shadow: 0 1px 0 var(--line);
   }
 }
 
@@ -66,10 +46,7 @@
 
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   .nav::before {
-    height: var(--header);
     background: var(--paper);
-    mask: none;
-    box-shadow: 0 1px 0 var(--line);
   }
 }
 
