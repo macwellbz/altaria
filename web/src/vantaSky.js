@@ -1,4 +1,4 @@
-// Altaria's sky: Vanta's clouds effect (vanta/src/vanta.clouds.js, on three.js r134) in the site's colours, with
+// Altaria's sky: Vanta's clouds effect (vanta/src/vanta.clouds.js) in the site's colours, with
 // the pointer's wake spliced into its shader: the clouds thin and part along the pointer's path and close again over
 // about a second, showing the land far below.
 // Each frame is drawn in two passes. The clouds, the costly part, are marched at half resolution into a buffer that
@@ -10,7 +10,7 @@
 // frame (hero.css, made by posters.py), which is all that shows until the canvas has drawn, and for good without
 // WebGL or on software GL, where compiling these shaders holds the page up for a second or two.
 // startVantaSky(host) fills an empty element (VantaSky.jsx) and returns a function that stops it.
-import { Camera, Color, Mesh, PlaneGeometry, Scene, ShaderMaterial, Vector2, Vector3, WebGLRenderer, WebGLRenderTarget } from "three";
+import { Camera, Color, ColorManagement, Mesh, PlaneGeometry, Scene, ShaderMaterial, Vector2, Vector3, WebGLRenderer, WebGLRenderTarget } from "three";
 import CLOUDS from "vanta/src/vanta.clouds.js";
 import { horizon } from "./horizon.js";
 
@@ -27,6 +27,10 @@ const THEMES = {
            sunGlareColor: 0x26404d, sunlightColor: 0x7fa3bd, groundColor: 0x041622, hazeColor: 0x193d4d, lightsColor: 0xffe2b8,
            starColor: 0xc8d6e4 },
 };
+// Vanta's shader takes its colours as written, as the three.js it was built on (r134) gave them. A newer three.js
+// would first convert each to linear light, which darkens them all.
+ColorManagement.enabled = false;
+
 const themeName = () => (document.documentElement.dataset.theme === "dark" ? "dark" : "light");
 // posters.py opens the page with ?still to photograph the sky. Its stills have no stars: where the stars dim depends on
 // where the words are, so they come out with the live sky.
@@ -330,7 +334,7 @@ export default function startVantaSky(host) {
       Object.assign(params.uniforms, view);
       super({ ...params, fragmentShader: withWake(params.fragmentShader) });
       const pass = new Mesh(new PlaneGeometry(2, 2), new ShaderMaterial({
-        uniforms: params.uniforms, vertexShader: params.vertexShader, fragmentShader: SHARP, extensions: { derivatives: true },
+        uniforms: params.uniforms, vertexShader: params.vertexShader, fragmentShader: SHARP,
       }));
       pass.frustumCulled = false;
       sharp.add(pass);
@@ -339,10 +343,10 @@ export default function startVantaSky(host) {
   class Renderer extends WebGLRenderer {
     constructor(params) {
       super({ ...params, antialias: false, depth: false, powerPreference: "low-power" });
-      this.debug.checkShaderErrors = import.meta.env.DEV;   // reading a shader's log waits for its compile: only while developing
       const render = this.render, setBuffer = this.setDrawingBufferSize;
+      this.ready = false;   // until both passes' shaders have compiled (below), there is nothing to draw with
       this.render = (scene, camera) => {
-        if (scene === sharp) return;
+        if (scene === sharp || !this.ready) return;
         this.setRenderTarget(buffer);
         render.call(this, scene, camera);
         this.setRenderTarget(null);
@@ -379,11 +383,26 @@ export default function startVantaSky(host) {
   const canvas = renderer.domElement;
   const draw = () => renderer.render(effect.scene, effect.camera);
   let visible = true;   // whether the hero is on screen
+  let stopped = false;
   const pause = () => { cancelAnimationFrame(effect.req); effect.req = 0; };
-  const resume = () => { if (!effect.req && visible && !still()) effect.animationLoop(); };
-  if (still()) pause();
-  // The canvas comes in over the still once its first frame is on screen (hero.css fades it).
-  requestAnimationFrame(() => requestAnimationFrame(() => canvas.classList.add("live")));
+  const resume = () => { if (!effect.req && visible && renderer.ready && !still()) effect.animationLoop(); };
+  // The shaders compile in the background (the GPU process's own time, where the browser can say when they're done),
+  // so the page goes on answering while they do: through Windows' Direct3D these two take a second or more, and
+  // drawing with them at once would hold everything up for as long. Each pass compiles for the target it draws to.
+  // Until they're ready nothing is drawn and the clock waits, so the first frame is the very one the still shows
+  // (Vanta's clock starts at one second), and the canvas comes in over it unseen (hero.css fades it).
+  pause();
+  effect.t2 = 60;   // one second, in Vanta's sixtieths, where its clock would otherwise jump back to zero
+  renderer.setRenderTarget(buffer);
+  const clouded = renderer.compileAsync(effect.scene, effect.camera);
+  renderer.setRenderTarget(null);
+  Promise.all([clouded, renderer.compileAsync(sharp, effect.camera)]).then(() => {
+    if (stopped) return;
+    renderer.ready = true;
+    draw();
+    requestAnimationFrame(() => requestAnimationFrame(() => canvas.classList.add("live")));
+    resume();
+  });
 
   // Where the hero's lines of text sit on the canvas, so the stars stay faint behind them and the words keep their
   // contrast. Measured again once the fonts are in and the words have risen into place; the scroll scene fades them
@@ -401,7 +420,6 @@ export default function startVantaSky(host) {
     words.fill(-1e4);
     lines.slice(0, 8).forEach((b, i) => words.set([(b.left - r.left) * k, (b.top - r.top) * k, (b.right - r.left) * k, (b.bottom - r.top) * k], i * 4));
   };
-  let stopped = false;
   const remeasure = () => { if (stopped) return; measure(); if (still()) draw(); };
   measure();
   document.fonts.ready.then(remeasure);
