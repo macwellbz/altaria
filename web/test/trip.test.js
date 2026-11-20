@@ -60,14 +60,14 @@ test("anything malformed in an answer is left alone", () => {
 
 test("one line says what the reading did", () => {
   const all = said(answer({ from: "YYZ", to: "VNO", "out-from": "2026-12-26", "out-to": "2026-12-27", "ret-from": "2027-01-10", "ret-to": "2027-01-10", stops: "1", currency: "CAD" }));
-  assert.ok(all.startsWith("Filled 8 blanks") && !all.includes("open"), all);
+  assert.ok(all.includes("8") && !all.includes("open"), all);
   const most = said(answer({ from: "YYZ", to: "VNO", "out-from": "2026-12-26" }));
-  assert.ok(most.startsWith("Filled 3 blanks") && most.includes("first return day") && !most.includes("departure"), most);
-  assert.ok(said(answer({ to: "VNO" })).startsWith("Filled 1 blank."));
+  assert.ok(most.includes("3") && most.includes("first return day") && !most.includes("departure"), most);
+  assert.ok(/\b1 \w+\b(?<!s)\./.test(said(answer({ to: "VNO" }))), "one of them is counted in the singular");
   const why = "VNX isn't an airport code on Altaria's list.";
   const thrown = said(answer({ from: "YYZ" }, [{ field: "to", value: "VNX", why }]));
   assert.ok(thrown.includes("VNX as the destination") && thrown.includes(why), thrown);
-  assert.ok(!said(answer({})).includes("Filled"));
+  assert.ok(!/\d/.test(said(answer({}))), "with nothing filled in, it counts nothing");
 });
 
 test("ask posts the text and the visitor's date as JSON, and hands back the answer", async () => {

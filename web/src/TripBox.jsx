@@ -29,7 +29,7 @@ export default function TripBox({ busy, note, onRead }) {
       {/* busy, the button keeps its place, its name and its focus (aria-disabled, not disabled), and shows the rail */}
       <button type="submit" className="ghost trip-go" aria-disabled={busy || undefined}>
         <span className="trip-labels">
-          <span className="trip-idle">Fill in the blanks</span>
+          <span className="trip-idle">Fill in the search</span>
           <span className="trip-rail" aria-hidden="true"><i></i><i></i><i></i></span>
         </span>
       </button>

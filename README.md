@@ -15,7 +15,7 @@ Try it at [altaria.macwell.workers.dev](https://altaria.macwell.workers.dev), or
 
 | | |
 |---|---|
-| ![The ranking board: the five cheapest fares of the last search in price order](docs/ranking-board.png) | ![The trip box: a sentence typed in plain English has filled the search blanks](docs/trip-box.png) |
+| ![The ranking board: the five cheapest fares of the last search in price order](docs/ranking-board.png) | ![The trip box: a sentence typed in plain English has filled in the search](docs/trip-box.png) |
 | ![A finished search at night: the cheapest fare as a headline, then the timetable](docs/results-dark.png) | ![The hero at night](docs/hero-dark.png) |
 
 The fares in these screenshots come from one real saved search, replayed, and the trip box's answer is a canned one, so taking the screenshots queried neither Google nor a model.
@@ -54,7 +54,7 @@ From the command line, with both sources:
 ```
 search.py   fetch fares (Google Flights, ITA Matrix), normalise, convert currency, rank, save
 server.py   standard-library HTTP server: serves the built site, streams each search as Server-Sent Events
-ai.py       the trip reader: a model fills the form's blanks, and every value is checked before the page sees it
+ai.py       the trip reader: a model fills in the form's fields, and every value is checked before the page sees it
 web/        the site: React and Vite in plain JavaScript, plain CSS, no UI kit
 worker/     the public site: a Cloudflare Worker serving the same page and API, Google only, with daily caps
 ```
@@ -83,7 +83,7 @@ The direction is calm, exact and candid. The page belongs to two places: the win
 
 ## The trip reader
 
-`POST /api/ai/trip` hands the text to a model and gets back values for the form's blanks. `ai.py` then checks each one: airport codes against the airport list, currencies against the form's own list, and dates against the calendar and each other. Anything that fails is dropped with a reason. The page marks what was filled, says what is still open, and never starts the search itself.
+`POST /api/ai/trip` hands the text to a model and gets back values for the form's fields. `ai.py` then checks each one: airport codes against the airport list, currencies against the form's own list, and dates against the calendar and each other. Anything that fails is dropped with a reason. The page marks what was filled, says what is still open, and never starts the search itself.
 
 Two providers sit behind one small interface, chosen with `ALTARIA_AI`:
 

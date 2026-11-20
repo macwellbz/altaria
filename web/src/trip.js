@@ -52,7 +52,7 @@ export function merge(fields, answer) {
 // then what's still needed before a search, or that the rest is the person's to check.
 export function outcome({ filled, open }, answer) {
   const n = Object.keys(filled).length;
-  const said = [n ? `Filled ${n} ${n === 1 ? "blank" : "blanks"}.` : "Nothing in that fills a blank."];
+  const said = [n ? `Filled in ${n} ${n === 1 ? "field" : "fields"}.` : "No trip details found in that description."];
   for (const d of answer.dropped || []) said.push(`Didn't use ${d.value} as the ${NAMES[d.field] || d.field}. ${d.why}`);
   if (!n) said.push("Try naming the airports or cities, and the days you could fly.");
   else if (open.length) said.push(`Still open: ${list(open.map((id) => `the ${NAMES[id]}`))}.`);

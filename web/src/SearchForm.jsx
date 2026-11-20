@@ -111,7 +111,7 @@ export default function SearchForm({ busy, onSearch }) {
             <span className="range">
               {date("out-from", "Depart between: first date", true)}
               {" "}
-              <span className="nw">{"and "}{date("out-to", "Depart between: last date (optional; blank searches one day)")}</span>
+              <span className="nw">{"and "}{date("out-to", "Depart between: last date (optional; leave empty to search one day)")}</span>
             </span>
           </p>
           <p className="clause">
@@ -127,7 +127,7 @@ export default function SearchForm({ busy, onSearch }) {
             <span className="range">
               {date("ret-from", "Return between: first date", true)}
               {" "}
-              <span className="nw">{"and "}{date("ret-to", "Return between: last date (optional; blank searches one day)")}</span>
+              <span className="nw">{"and "}{date("ret-to", "Return between: last date (optional; leave empty to search one day)")}</span>
             </span>
           </p>
           <p className="clause">

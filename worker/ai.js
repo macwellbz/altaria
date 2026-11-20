@@ -142,7 +142,7 @@ export class Gemini {
     if (r.status === 429) {
       const e = new ProviderError("The trip reader is busy. Try again in a minute.");
       e.daily = /per.?day/i.test(body);   // its quota id, e.g. GenerateRequestsPerDayPerProjectPerModel-FreeTier
-      if (e.daily) e.message = "The trip reader has used up today's free quota. Fill in the blanks yourself, or try again tomorrow.";
+      if (e.daily) e.message = "The trip reader has used up today's free quota. Fill in the search yourself, or try again tomorrow.";
       throw e;
     }
     if (!r.ok) throw new ProviderError(`Gemini answered ${r.status}: ${(body.match(/"message":\s*"([^"]*)"/)?.[1] || body).slice(0, 300)}`);
