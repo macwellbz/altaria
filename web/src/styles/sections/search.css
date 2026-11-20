@@ -1,7 +1,7 @@
 /* The search (Search.jsx, SearchForm.jsx): its heading and one supporting line, the thread of searches, and the
    composer, which takes the column's full width with the sentence as its largest type. */
 .search {
-  padding: var(--s-8) 0 var(--s-10);
+  padding: 0 0 var(--s-9);
 }
 
 .search h2 {
@@ -36,7 +36,7 @@
   padding: calc(var(--pad) - 4px) var(--pad) var(--pad);   /* the first line's capitals stand 4px below its trimmed top */
   background: var(--surface);
   border: 1px solid var(--line);
-  border-radius: var(--radius);
+  border-radius: var(--r-4);
 }
 
 .sentence {
@@ -85,7 +85,7 @@
   background: none;
   border: 0;
   border-bottom: clamp(1.5px, .07 * var(--t-say), 2px) solid var(--rule);   /* the blanks' own rule */
-  border-radius: .2em .2em 0 0;
+  border-radius: var(--r-1) var(--r-1) 0 0;
   outline: none;
   transition:
     background-color var(--dur-short) var(--ease),
@@ -117,7 +117,7 @@
 .kbd .trip textarea:focus-visible {
   outline: 2px solid var(--focus);
   outline-offset: 4px;
-  border-radius: 2px;
+  border-radius: var(--r-1);
 }
 
 /* The button: a ghost in the accent. Busy, it keeps its width, its name and its focus (aria-disabled), and its
@@ -157,11 +157,11 @@
 
 .trip-rail {
   display: inline-flex;
-  gap: 3px;
+  gap: var(--s-1);
 }
 
 .trip-rail i {
-  width: 10px;
+  width: 8px;
   height: 4px;
   background: currentColor;
   border-radius: 2px;
@@ -199,17 +199,11 @@
   }
 }
 
-/* What the reading did. */
-.trip-note {
-  font-weight: 500;
-}
-
 .trip-note:empty {
   display: none;
 }
 
 .trip-note[data-tone="busy"] {
-  font-weight: 400;
   color: var(--ink-2);
 }
 
@@ -224,13 +218,13 @@
 }
 
 .error {
-  font-weight: 500;
+  font-weight: 600;
   color: var(--risk);
 }
 
 @media (max-width: 899px) {
   .search {
-    padding-bottom: var(--s-9);
+    padding-bottom: var(--s-8);
   }
 }
 
@@ -246,7 +240,7 @@
     --gap: calc(var(--pad) - 4px - .2 * var(--size));
     margin-inline: calc(var(--gap) - var(--pad));
     padding-inline: calc(var(--pad) - var(--gap));
-    border-radius: max(.2em, var(--radius) - 1px - var(--gap)) max(.2em, var(--radius) - 1px - var(--gap)) 0 0;
+    border-radius: max(var(--r-1), var(--r-4) - 1px - var(--gap)) max(var(--r-1), var(--r-4) - 1px - var(--gap)) 0 0;
   }
 
   .sentence {

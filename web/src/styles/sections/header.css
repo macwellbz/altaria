@@ -77,7 +77,7 @@
   display: grid;
   flex: none;
   isolation: isolate;
-  border-radius: 8px;
+  border-radius: var(--r-2);
 }
 
 /* By day the ink lockup over the sky hands over to the colour one as the backing comes in. The two are stacked and
@@ -112,7 +112,7 @@
   padding: var(--s-2) var(--s-3);
   font-size: var(--t-sm);
   text-decoration: none;
-  border-radius: 999px;
+  border-radius: var(--r-2);
   transition: color var(--dur-short) var(--ease);
 }
 
@@ -134,7 +134,7 @@
   color: var(--ink);
   background: transparent;
   border: 0;
-  border-radius: 999px;
+  border-radius: var(--r-2);
   cursor: pointer;
   transition:
     background-color var(--dur-short) var(--ease),

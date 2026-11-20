@@ -8,7 +8,12 @@
 <meta name="description" content="Round-trip fares for every day you could fly, cheapest first. No airline can pay to rank higher.">
 <meta name="color-scheme" content="light">
 <!-- a saved dark theme applies before first paint; the header's toggle sets it (src/Header.jsx) -->
-<script>try { if (localStorage.getItem("theme") === "dark") document.documentElement.dataset.theme = "dark"; } catch (e) {}</script>
+<script>
+try { if (localStorage.getItem("theme") === "dark") document.documentElement.dataset.theme = "dark"; } catch (e) {}
+// the theme's still of the sky starts loading with the page, so it is there for the hero's first paint (src/styles/sections/hero.css)
+document.head.append(Object.assign(document.createElement("link"), { rel: "preload", as: "image", fetchPriority: "high",
+  href: document.documentElement.dataset.theme === "dark" ? "/sky/night.webp" : "/sky/day.webp" }));
+</script>
 <!-- a reload starts at the top like a first visit, unless the address names a section: a restored position would land
      part-way through the hero's scroll scene. The browser's own restoring is back on once the page has loaded, so
      Back and Forward within the page keep their places -->
@@ -25,10 +30,9 @@ if (!location.hash) {
 <link rel="manifest" href="/site.webmanifest">
 <meta name="theme-color" content="#EEF5FF" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#061925" media="(prefers-color-scheme: dark)">
-<!-- the font files the first screen sets, Inter's latin cut and Spectral Light and its italic (src/styles/fonts.css) -->
-<link rel="preload" href="/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
+<!-- the font files the first screen sets, Overpass's latin cut and Spectral Light (src/styles/fonts.css) -->
+<link rel="preload" href="/fonts/overpass-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/fonts/spectral-latin-300.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="/fonts/spectral-latin-300-italic.woff2" as="font" type="font/woff2" crossorigin>
 <script type="module" src="/src/main.jsx"></script>
 </head>
 <body>

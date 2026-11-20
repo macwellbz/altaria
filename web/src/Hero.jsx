@@ -1,7 +1,8 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef } from "react";
 import FarePass from "./FarePass.jsx";
 import Sky from "./VantaSky.jsx";   // Vanta's clouds. For the earlier raymarched sky and its wake: import Sky from "./CloudSky.jsx";
 import { NAME } from "./brand.js";
+import { horizon } from "./horizon.js";
 import { onScroll, scrollToElement } from "./scroll.js";
 
 // The hero: flying above the clouds. On wide screens the stage sticks while --p runs from 0 to 1 and
@@ -10,6 +11,20 @@ import { onScroll, scrollToElement } from "./scroll.js";
 // as --pass-h, so on a short screen its slot moves up rather than off the bottom.
 export default function Hero({ onBacking }) {
   const hero = useRef(null);
+  // The still of the sky (hero.css) is placed as the live clouds will be: its horizon from the layout, before the first
+  // paint and whenever the layout changes.
+  useLayoutEffect(() => {
+    const el = hero.current, stage = el.querySelector(".stage");
+    const place = () => {
+      const { ref, at } = horizon(stage);
+      el.style.setProperty("--ref", `${ref}px`);
+      el.style.setProperty("--cloud-top", at.toFixed(4));
+    };
+    place();
+    const sized = new ResizeObserver(place);
+    for (const part of [stage, ...stage.querySelectorAll(".hero-copy, .pass")]) sized.observe(part);
+    return () => sized.disconnect();
+  }, []);
   useEffect(() => {
     const el = hero.current, pass = el.querySelector(".pass");
     const scene = matchMedia("(min-width: 900px) and (min-height: 560px) and (prefers-reduced-motion: no-preference)");
@@ -54,7 +69,7 @@ export default function Hero({ onBacking }) {
 
         <div className="hero-copy">
           {/* Two lines set by hand, each rising out of its own mask on load. */}
-          <h1 id="hero-title"><span className="line"><span>The sky,</span></span> <span className="line"><span>priced for&nbsp;<em>you</em></span></span></h1>
+          <h1 id="hero-title"><span className="line"><span>The sky,</span></span> <span className="line"><span>priced for&nbsp;you</span></span></h1>
           <p className="lede">{`${NAME} searches every day you could fly, then shows you the best fares it found.`}</p>
           <a className="btn" href="#search">Search flights</a>
         </div>

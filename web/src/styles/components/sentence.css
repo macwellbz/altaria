@@ -8,7 +8,6 @@
   font-size: var(--say, var(--t-say));   /* --say: the composer's, which follows a narrow sheet (search.css) */
   font-weight: 400;
   line-height: 1.9;
-  letter-spacing: -.01em;
 }
 
 /* A blank's line takes its colour from --pen, registered as a colour so the line fades between states, dashes included. */
@@ -31,11 +30,11 @@
   padding: 0 .12em;   /* the rule runs a little past the words, as a blank's line does */
   line-height: 1.3;
   color: var(--ink);
-  font-weight: 500;
+  font-weight: 600;
   text-indent: 0;
   white-space: nowrap;
   border-bottom: clamp(1.5px, .07em, 2px) solid var(--pen);   /* 2px under the sentence on wide screens */
-  border-radius: .2em .2em 0 0;
+  border-radius: var(--r-1) var(--r-1) 0 0;
   transition:
     background-color var(--dur-short) var(--ease),
     --pen var(--dur-short) var(--ease);
@@ -66,10 +65,10 @@
   --pen: var(--accent-text);
 }
 
-/* A blank the trip box filled (SearchForm.jsx), until the person edits it or searches: tinted the colour of your
-   own words in the thread, the way a browser tints a field it has filled in for you. */
+/* A blank the trip box filled (SearchForm.jsx), until the person edits it or searches: tinted with the accent,
+   washed out, the way a browser tints a field it has filled in for you. */
 .blank.from-trip {
-  background: color-mix(in oklab, var(--user) 60%, transparent);
+  background: var(--cheapest);
 }
 
 /* The blank being filled in, its finder or list open: its line in the accent, solid, on the page's ice. Two
@@ -206,7 +205,7 @@
   color: var(--ink-2);
   background: none;
   border: 0;
-  border-radius: 999px;
+  border-radius: var(--r-1);
   cursor: pointer;
   transition:
     rotate var(--dur-medium) var(--ease),
@@ -228,7 +227,7 @@
 
 .swap:active {
   scale: .92;
-  background: var(--user);
+  background: var(--press);
   transition-duration: var(--dur-medium), 60ms, 60ms, 60ms;
 }
 

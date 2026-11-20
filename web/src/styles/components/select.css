@@ -2,8 +2,8 @@
    site's own type, its corners nested like the finder's; elsewhere it's the native list. */
 @supports (appearance: base-select) {
   .pick select {
-    --corner: 16px;
-    --inset: 6px;
+    --corner: var(--r-3);
+    --inset: var(--s-1);
   }
 
   .pick select,
@@ -13,7 +13,7 @@
 
   .pick ::picker(select) {
     max-height: min(50vh, 420px);
-    margin-top: 6px;
+    margin-top: var(--s-2);
     padding: var(--inset);
     overflow-y: auto;
     font-size: var(--t-sm);
@@ -28,7 +28,7 @@
   }
 
   .pick option {
-    padding: 8px 12px;
+    padding: var(--s-2) var(--s-3);
     font-weight: 400;
     border-radius: calc(var(--corner) - var(--inset));
   }
@@ -59,11 +59,11 @@
       position-try-fallbacks: flip-block;
       max-width: calc(100vw - 2 * var(--s-4));
       max-height: min(45dvh, 420px);
-      margin: 6px var(--s-4);
+      margin: var(--s-2) var(--s-4);
     }
 
     .pick option {
-      padding-block: 12px;
+      padding-block: var(--s-3);
       white-space: normal;
     }
   }

@@ -21,7 +21,7 @@
 }
 
 .pass-top {
-  border-radius: var(--radius) var(--radius) 0 0;
+  border-radius: var(--r-4) var(--r-4) 0 0;
   mask:
     radial-gradient(circle 12px at 0 100%, #0000 11.5px, #000 12px) left / 51% 100% no-repeat,
     radial-gradient(circle 12px at 100% 100%, #0000 11.5px, #000 12px) right / 51% 100% no-repeat;
@@ -33,7 +33,7 @@
   position: relative;
   margin-top: -1px;
   padding-top: calc(var(--s-5) + 1px);
-  border-radius: 0 0 var(--radius) var(--radius);
+  border-radius: 0 0 var(--r-4) var(--r-4);
   mask:
     radial-gradient(circle 12px at 0 1px, #0000 11.5px, #000 12px) left / 51% 100% no-repeat,
     radial-gradient(circle 12px at 100% 1px, #0000 11.5px, #000 12px) right / 51% 100% no-repeat;
@@ -44,15 +44,15 @@
   content: "";
   position: absolute;
   top: 0;
-  left: 20px;
-  right: 20px;
+  left: var(--s-5);
+  right: var(--s-5);
   border-top: 2px dashed var(--line);
 }
 
 .pass h2 {
   font-size: var(--t-sm);
-  font-weight: 500;
-  letter-spacing: 0;
+  font-weight: 400;
+  line-height: 1.6;
   color: var(--ink-2);
 }
 
@@ -66,10 +66,9 @@
   align-items: center;
   gap: var(--s-3);
   margin-top: var(--s-4);
-  font-size: 2.125rem;   /* 34px */
+  font-size: 2rem;   /* 32px */
   font-weight: 400;
   line-height: 1;
-  letter-spacing: -.01em;
 }
 
 .legs .hop {
@@ -86,9 +85,7 @@
   translate: -50% -50%;
   padding: 2px var(--s-2);
   font-size: var(--t-xs);
-  font-weight: 500;
   line-height: 1.2;
-  letter-spacing: .02em;
   white-space: nowrap;
   color: var(--ink-2);
   background: var(--surface);
@@ -97,7 +94,7 @@
 .pass dl {
   display: grid;
   grid-template-columns: auto 1fr;
-  gap: 2px var(--s-4);
+  gap: var(--s-1) var(--s-4);
   margin: var(--s-4) 0 0;
   font-size: var(--t-sm);
 }
@@ -116,7 +113,7 @@
   flex-wrap: wrap;
   align-items: baseline;
   gap: 0 var(--s-2);
-  font-size: 3.625rem;   /* 58px */
+  font-size: 3.5rem;   /* 56px */
   line-height: 1;
   font-variant-numeric: tabular-nums;
 }
@@ -129,7 +126,7 @@
 
 .fare-big small {
   font-size: var(--t-sm);
-  font-weight: 500;
+  font-weight: 400;
   color: var(--ink-2);
 }
 

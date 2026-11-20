@@ -9,7 +9,7 @@ export default function Badges({ warnings = [] }) {
         const [cls, label, tip] = WARN[w] || ["info", w.toLowerCase().replaceAll("_", " ").replace(/^./, (c) => c.toUpperCase()), w];
         return (
           <span key={w} className={`badge ${cls}`} title={`${tip} (${w})`}>
-            {cls === "info" ? null : <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 1.5 11 10.5H1z" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" /><path d="M6 5v2.4M6 8.9v.1" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" /></svg>}
+            {cls === "info" ? null : <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 1.5 11 10.5H1z" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" /><path d="M6 5v2.4M6 8.9v.1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>}
             {label}
           </span>
         );

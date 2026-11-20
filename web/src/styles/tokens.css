@@ -5,18 +5,19 @@
   --surface: #FFFFFF;
   --ink: #003D57;          /* deep teal: 10.6:1 on paper */
   --ink-2: #4C6E7B;        /* secondary text: 5.0:1 on paper */
-  --line: #D4E6FF;
-  --rule: #6694D2;         /* input underlines: 3.1:1, enough to mark a field */
+  --line: rgb(0 61 87 / .12);   /* hairlines: the ink itself, thinned, so they sit on any surface */
+  --rule: #6C8E9E;         /* the lines you write on, the ink lightened: 3.5:1 on white and 3.2:1 on paper, enough to mark a field */
   --accent: #176B87;       /* teal: 6.0:1 under white text */
   --on-accent: #FFFFFF;
   --accent-text: #176B87;  /* the accent as text: 6.0:1 on white, 5.5:1 on paper */
   --wash: #EEF5FF;
-  --cheapest: #DFF2F9;     /* the cheapest fare's row: the accent's hue, washed out, so it stands apart from the paper; ink-2 4.8:1 */
-  --user: #CEE3FF;
+  --cheapest: #DFF2F9;     /* the accent's hue, washed out: the cheapest fare's row, and a blank filled in for you; ink-2 4.8:1 */
+  --press: rgb(0 61 87 / .1);   /* a quiet control while it's pressed */
   --focus: #003D57;
   --sky-top: #86B6F6;
   --sky-mid: #B4D4FF;
   --horizon: #EEF5FF;
+  --sky-still: url("/sky/day.webp");   /* the clouds' first frame, under the live ones (hero.css) */
   --risk: #B42318;
   --risk-bg: #FDECEA;
   --warn: #7A5A00;
@@ -28,21 +29,20 @@
   /* Depth in daylight: a soft, small, neutral shadow. At night it comes from surface steps and hairlines instead. */
   --shadow: 0 1px 2px rgb(0 0 0 / .05), 0 6px 20px -6px rgb(0 0 0 / .12);
 
-  /* Type: two families. Spectral Light sets only the display lines (the hero's headline, the how statement,
-     the section headings and the fare pass's price) and nothing under about 28px. Inter sets everything
-     else at 400, 500 or 600, its optical size following the font size. Fallbacks are in fonts.css. */
+  /* Type: two families and three styles. Spectral Light, roman only, sets the display lines (the hero's headline,
+     the how statement, the section headings and the fare pass's price) and nothing under about 28px. Overpass sets
+     everything else at two weights: 400, and 600 where something leads. Hierarchy comes from size and ink before
+     weight. Fallbacks are in fonts.css. */
   --font-display: "Spectral", "Spectral fallback", ui-serif, Georgia, serif;
-  --font-text: "Inter", "Inter fallback", ui-sans-serif, system-ui, sans-serif;
+  --font-text: "Overpass", "Overpass fallback", ui-sans-serif, system-ui, sans-serif;
 
   /* One scale, in rem so a visitor's text size setting scales it. The fluid steps grow with the window
      between their two ends, with a rem share so zooming in grows them too. Pixel sizes at a 16px root. */
-  --t-xs: .8125rem;                                       /* 13px, the smallest text on the page */
-  --t-sm: .9375rem;                                       /* 15px */
-  --t-md: 1.0625rem;                                      /* 17px, body text */
-  --t-lg: clamp(1.125rem, .8125rem + .45vw, 1.3125rem);   /* 18 to 21px */
-  --t-lede: clamp(1.25rem, .875rem + .6vw, 1.5rem);       /* 20 to 24px, the hero's standfirst */
-  --t-xl: clamp(1.25rem, .75rem + 1.1vw, 1.8125rem);      /* 20 to 29px */
-  --t-say: clamp(1.1875rem, 2.9vw - .5px, 2.25rem);       /* 19 to 36px, the search sentence: its first clause, 29em, fits one line from a 660px window up; at 19, "each way" stays with its blank on a 360px phone, and under that the composer scales it down (search.css) */
+  --t-xs: .875rem;                                        /* 14px, the smallest text on the page: labels and notes */
+  --t-sm: 1rem;                                           /* 16px: tables, menus, buttons */
+  --t-md: 1.125rem;                                       /* 18px, body text */
+  --t-lg: clamp(1.25rem, 1rem + .56vw, 1.5rem);           /* 20 to 24px: the hero's standfirst, running copy, the board */
+  --t-say: clamp(1.1875rem, 2.9vw - .5px, 2.25rem);       /* 19 to 36px, the search sentence: its first clause fits one line from a 660px window up; at 19, "each way" stays with its blank on a 360px phone, and under that the composer scales it down (search.css) */
   --t-2xl: clamp(2.125rem, 1rem + 2.9vw, 3.625rem);       /* 34 to 58px */
   --t-3xl: clamp(2.375rem, .75rem + 4.4vw, 5.25rem);      /* 38 to 84px */
   --t-hero: clamp(3.5rem, .5rem + 7.65vw, 9.25rem);       /* 56 to 148px, 118px on a 1440px window */
@@ -60,7 +60,11 @@
   --s-10: 144px;
   --margin: clamp(16px, 4vw, 56px);
   --edge: max(var(--margin), (100% - 1280px) / 2);   /* the shared left and right edge of every section */
-  --radius: 22px;
+  /* Corners: one scale, by size. Inside a rounded box, a corner is the box's less the padding between them. */
+  --r-1: 4px;     /* marks and tags: a blank's tint, a badge, the focus ring */
+  --r-2: 8px;     /* controls: buttons, and rows in a menu */
+  --r-3: 12px;    /* menus that open over the page */
+  --r-4: 16px;    /* cards: the board, the composer, a table, the pass */
   --header: 72px;     /* the fixed header's height, and the one offset every scroll stops clear of */
   --measure: 36em;    /* the longest line of prose, about 65 characters */
 
@@ -78,18 +82,19 @@
   --surface: #092435;
   --ink: #D7E5F1;          /* 14:1 on paper */
   --ink-2: #86A3B3;        /* 6.0:1 on cards */
-  --line: #1B3647;
+  --line: rgb(215 229 241 / .1);
   --rule: #4B728C;         /* 3.1:1 on cards */
   --accent: #64C3E2;       /* the teal, lifted: 8.8:1 under the dark label */
   --on-accent: #011B27;
   --accent-text: #73CCEA;  /* 8.8:1 on cards */
   --wash: #113143;
   --cheapest: #113143;
-  --user: #143C53;
+  --press: rgb(215 229 241 / .1);
   --focus: #73CCEA;
   --sky-top: #01101C;
   --sky-mid: #002135;
   --horizon: #173A4B;
+  --sky-still: url("/sky/night.webp");
   --risk: #FF9C91;
   --risk-bg: #3A1A1D;
   --warn: #F2CD6B;

@@ -17,14 +17,13 @@ body {
   overflow-x: clip;
 }
 
-/* Headings set in Inter by default; the display ones (h1, the statement, section headings) switch to
-   Spectral where they're styled. */
+/* Headings set in Overpass by default, leading by weight; the display ones (h1, the statement, section headings)
+   switch to Spectral Light where they're styled. */
 h1,
 h2,
 h3 {
-  font-weight: 500;
-  letter-spacing: -.01em;
-  line-height: 1.05;
+  font-weight: 600;
+  line-height: 1.2;
   text-wrap: balance;
 }
 
@@ -40,7 +39,7 @@ a {
 :focus-visible {
   outline: 2px solid var(--focus);
   outline-offset: 3px;
-  border-radius: 6px;
+  border-radius: var(--r-1);
 }
 
 .wrap {
@@ -55,7 +54,7 @@ a {
   z-index: 50;
   padding: var(--s-2) var(--s-4);
   background: var(--surface);
-  border-radius: 10px;
+  border-radius: var(--r-2);
 }
 
 .skip:focus {

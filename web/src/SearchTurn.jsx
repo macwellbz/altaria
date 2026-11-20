@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from "react";
+import Logo from "./Logo.jsx";
 import Results from "./Results.jsx";
+import { NAME } from "./brand.js";
 import { drive } from "./drive.js";
 import { day } from "./helpers.js";
 import { scrollToElement } from "./scroll.js";
@@ -87,8 +89,9 @@ export function streamSearch(q, update) {
   return { stop };
 }
 
-// One search in the thread: your sentence, echoed back, then what came back: a status line, a rail with one
-// segment per search (as in a race's sector timing), the date pairs, and the answer.
+// One search in the thread, which reads as a chat: your sentence as the message you sent, then the reply. Its first
+// message, from the site's symbol, says how the search is going: a status line, a rail with one segment per search
+// (as in a race's sector timing) and the searches by date. The answer follows across the full column.
 export default function SearchTurn({ turn, onStop }) {
   const { said, status, running, meta, tasks, listed, rows } = turn;
   const entry = useRef(null);
@@ -117,34 +120,39 @@ export default function SearchTurn({ turn, onStop }) {
     <article className="turn" ref={entry} tabIndex={-1}>
       <p className="said">{said}</p>
       <div className="reply">
-        <div className="status-row">
-          <p className="status" role="status">{line}</p>
-          {running && <button type="button" className="ghost stop" onClick={onStop}>Stop</button>}
-        </div>
-        {running && (
-          <div className="rail" role="progressbar" aria-label="Search progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow={total ? Math.round((done / total) * 100) : 0}>
-            {keys.map((k) => <i key={k} data-k={k} data-s={tasks[k].s}></i>)}
+        <div className="heard">
+          <Logo file="altaria-symbol-small" alt={NAME} className="sender" />
+          <div className="report">
+            <div className="status-row">
+              <p className="status" role="status">{line}</p>
+              {running && <button type="button" className="ghost stop" onClick={onStop}>Stop</button>}
+            </div>
+            {running && (
+              <div className="rail" role="progressbar" aria-label="Search progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow={total ? Math.round((done / total) * 100) : 0}>
+                {keys.map((k) => <i key={k} data-k={k} data-s={tasks[k].s}></i>)}
+              </div>
+            )}
+            {listed && meta && (
+              <ul className="tasks" aria-label="Searches by date">
+                {meta.pairs.map(([o, r]) => (
+                  <li key={`${o}|${r}`}>
+                    <b>{`${day(o)} to ${day(r)}`}</b>
+                    {meta.sources.map((s) => {
+                      const k = `${s}|${o}|${r}`;
+                      return <span key={k} className="s" data-k={k} data-s={tasks[k].s} title={tasks[k].error}><i>{tasks[k].text}</i></span>;
+                    })}
+                  </li>
+                ))}
+              </ul>
+            )}
+            {!running && failed.length > 0 && (
+              <details className="failures">
+                <summary>{`Why ${failed.length === 1 ? "one search" : `${failed.length} searches`} failed`}</summary>
+                <ul>{failed.map((k) => <li key={k}>{`${day(k.split("|")[1])} to ${day(k.split("|")[2])}: ${tasks[k].error}`}</li>)}</ul>
+              </details>
+            )}
           </div>
-        )}
-        {listed && (
-          <ul className="tasks" aria-label="Searches by date">
-            {meta?.pairs.map(([o, r]) => (
-              <li key={`${o}|${r}`}>
-                <b>{`${day(o)} to ${day(r)}`}</b>
-                {meta.sources.map((s) => {
-                  const k = `${s}|${o}|${r}`;
-                  return <span key={k} className="s" data-k={k} data-s={tasks[k].s} title={tasks[k].error}><i>{tasks[k].text}</i></span>;
-                })}
-              </li>
-            ))}
-          </ul>
-        )}
-        {!running && failed.length > 0 && (
-          <details className="failures">
-            <summary>{`Why ${failed.length === 1 ? "one search" : `${failed.length} searches`} failed`}</summary>
-            <ul>{failed.map((k) => <li key={k}>{`${day(k.split("|")[1])} to ${day(k.split("|")[2])}: ${tasks[k].error}`}</li>)}</ul>
-          </details>
-        )}
+        </div>
         <div className="answer">{rows && <Results rows={rows} meta={meta} trip={turn.trip} />}</div>
       </div>
     </article>

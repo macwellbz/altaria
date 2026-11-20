@@ -1,14 +1,15 @@
 import Board from "./Board.jsx";
 
-// How it ranks: the aim in one statement, the ranking board showing it on your own last saved search, and the
-// three things the site never does. The statement is a sentence, so the section's heading is for screen readers.
+// How it ranks: the aim in one statement, beside it the three things the site never does, and under both the
+// ranking board showing it on your own last saved search. The statement is a sentence, so the section's heading is
+// for screen readers.
 export default function How() {
   return (
     <section className="how" id="how" aria-labelledby="how-title">
       <div className="wrap">
         <h2 id="how-title" className="vh">How it ranks</h2>
+        <div className="how-top">
         <p className="statement">Every search has one goal: finding the best flight for&nbsp;you.</p>
-        <Board />
         <ul className="principles">
           <li>
             <h3>No paid placement</h3>
@@ -23,6 +24,8 @@ export default function How() {
             <p>Every price you see came back from a real search. Nothing is guessed.</p>
           </li>
         </ul>
+        </div>
+        <Board />
       </div>
     </section>
   );

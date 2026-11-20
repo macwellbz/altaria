@@ -17,8 +17,8 @@
   isolation: isolate;
 }
 
-/* The sky fills the stage. Without WebGL, and until the clouds come in, it's a screen of gradient and then the page;
-   the clouds are framed to the first screen too (vantaSky.js), and run on below it where the stage does. */
+/* The sky fills the stage: a screen of gradient and then the page, under a still of the clouds, under the clouds
+   themselves, which are framed to the first screen too (vantaSky.js) and run on below it where the stage does. */
 .sky {
   position: absolute;
   inset: 0;
@@ -33,6 +33,36 @@
   width: 100%;
   height: 100%;
   transform-origin: 50% 100%;
+}
+
+/* The still: the live clouds' first frame, one per theme (--sky-still, made by posters.py). It is the sky from the
+   first paint until the canvas has drawn over it, so nobody watches a gradient while three.js loads and its shaders
+   compile, and it stays the sky where there is no WebGL to draw with. It is drawn as the clouds are: scaled to the
+   first screen's height (--ref) and centred, with its cloud tops moved to where the layout puts the horizon
+   (--cloud-top; both from Hero.jsx). The picture is 3.6 screens wide and two tall, with its horizon .88 of a screen
+   down, the lowest the layout asks for, so moving it up never uncovers its top. */
+.clouds::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: calc(3.6 * var(--ref, 100svh));
+  height: calc(2 * var(--ref, 100svh));
+  background: var(--sky-still) center / 100% 100% no-repeat;
+  translate: -50% calc((var(--cloud-top, .7) - .88) * var(--ref, 100svh));
+  transition: translate var(--dur-medium) var(--ease);
+}
+
+/* The canvas comes in over the still once it has drawn (.live, from vantaSky.js). The two show the same frame, so
+   the fade can't be seen, except at night, when the stars come out with it. */
+.clouds > canvas {
+  position: relative;
+  opacity: 0;
+  transition: opacity var(--dur-long) var(--ease);
+}
+
+.clouds > canvas.live {
+  opacity: 1;
 }
 
 /* Where the clouds dissolve into the page: the page's own colour, thinning upward. It fades in along a smoothstep, in
@@ -82,12 +112,12 @@
   display: block;
 }
 
-/* The measure is in em rather than ch: ch is the width of a font's zero, which differs between Inter and
-   the fallback that stands in while it loads, so the lede would rewrap when Inter arrived. */
+/* The measure is in em rather than ch: ch is the width of a font's zero, which differs between Overpass and
+   the fallback that stands in while it loads, so the lede would rewrap when Overpass arrived. */
 .lede {
   max-width: 20.5em;
   margin-top: var(--s-6);
-  font-size: var(--t-lede);
+  font-size: var(--t-lg);
   line-height: 1.45;
   text-wrap: balance;
 }
@@ -208,14 +238,10 @@
   }
 }
 
-/* The one load moment, about 1.4s end to end: the clouds come in (Vanta's fade over the gradient), the
-   headline's lines rise out of their masks one after the other, the lede and the button follow, the pass rises
-   once its fare is in, and its codes and price flip into place (FarePass.jsx). */
+/* The one load moment, about 1.4s end to end, over a sky that is there from the first paint: the headline's lines
+   rise out of their masks one after the other, the lede and the button follow, the pass rises once its fare is in,
+   and its codes and price flip into place (FarePass.jsx). */
 @media (prefers-reduced-motion: no-preference) {
-  .clouds > canvas {
-    animation: appear var(--dur-long) var(--ease) both;
-  }
-
   .hero h1 .line > span {
     animation: surface var(--dur-long) var(--ease) both;
   }
@@ -239,12 +265,6 @@
   .pass.in {
     visibility: visible;
     animation: land var(--dur-long) var(--ease) both;
-  }
-}
-
-@keyframes appear {
-  from {
-    opacity: 0;
   }
 }
 

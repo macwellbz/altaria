@@ -1,10 +1,11 @@
-/* Buttons. A filled pill for actions, its depth from the fill alone; a ghost pill for quieter ones. Both answer the
-   moment they're pressed: they settle a little and deepen, and spring back on release. */
+/* Buttons. Filled for actions, its depth from the fill alone; a ghost, outlined, for quieter ones. Both take the
+   controls' corner and the bold weight, and answer the moment they're pressed: they settle a little and deepen,
+   and spring back on release. */
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: 52px;
+  height: 48px;
   padding: 0 var(--s-5);
   overflow: hidden;
   font-size: var(--t-md);
@@ -15,7 +16,7 @@
   white-space: nowrap;
   background: var(--accent);
   border: 0;
-  border-radius: 999px;
+  border-radius: var(--r-2);
   cursor: pointer;
   transition:
     background-color var(--dur-short) var(--ease),
@@ -54,13 +55,13 @@
   height: 40px;
   padding: 0 var(--s-4);
   font-size: var(--t-sm);
-  font-weight: 500;
+  font-weight: 600;
   line-height: 1;
   color: var(--ink);
   text-decoration: none;
   background: transparent;
   border: 1px solid var(--rule);
-  border-radius: 999px;
+  border-radius: var(--r-2);
   cursor: pointer;
   transition:
     background-color var(--dur-short) var(--ease),
@@ -73,5 +74,5 @@
 }
 
 .ghost:active {
-  background: var(--user);
+  background: var(--press);
 }

@@ -4,7 +4,7 @@
   overflow-x: auto;
   background: var(--surface);
   border: 1px solid var(--line);
-  border-radius: var(--radius);
+  border-radius: var(--r-4);
 }
 
 table {
@@ -17,7 +17,7 @@ table {
 th {
   padding: var(--s-3) var(--s-4);
   font-size: var(--t-xs);
-  font-weight: 500;
+  font-weight: 400;
   text-align: left;
   color: var(--ink-2);
   border-bottom: 1px solid var(--line);
@@ -45,7 +45,7 @@ tbody tr:last-child > * {
 
 .cmp tbody th {
   font-size: var(--t-sm);
-  font-weight: 500;
+  font-weight: 400;
   color: var(--ink);
   white-space: nowrap;
 }
@@ -58,6 +58,6 @@ tbody tr:last-child > * {
 @media (max-width: 600px) {
   .cmp th,
   .cmp td {
-    padding: 10px 12px;
+    padding: var(--s-2) var(--s-3);
   }
 }

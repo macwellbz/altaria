@@ -67,11 +67,11 @@ The Worker runs on Cloudflare's free plan, which allows each request 10ms of CPU
 
 The direction is calm, exact and candid. The page belongs to two places: the window seat above the clouds, and the airport's own information, which is timetables, boarding passes and departure boards.
 
-- **Type.** Spectral Light for display lines only, with its italic for the one stressed word in the headline, and Inter for everything else, all self-hosted with metric-matched fallback faces so the swap moves nothing. The scale is in rem. Flight numbers get a slashed zero, because LO46 puts a letter O beside a zero.
+- **Type.** Spectral Light for display lines only and Overpass, the lettering of wayfinding signs, for everything else at two weights, all self-hosted with metric-matched fallback faces so the swap moves nothing. The scale is in rem. Flight numbers get a slashed zero, because LO46 puts a letter O beside a zero.
 - **Colour.** One ice and teal ramp in custom properties, light and dark. The richness is kept for three places: the sky, the fare pass and the ranking board.
 - **Signature.** A real value flips into place like a departure board character when it arrives: the pass's codes and fare, an airport when picked, a search's cheapest price, the board's rows. The final text is in the page from the first paint, so the accessible name is always right and nothing shifts.
 - **Scroll.** [Lenis](https://github.com/darkroomengineering/lenis) smooths wheel and trackpad scrolling and drives the hero's scroll scene. Touch, the keyboard and find-in-page stay native, and `web/src/scroll.js` is the only scroll code in the app.
-- **The sky.** Vanta's clouds, with a wake spliced into its shader: the clouds part along the pointer's path and show farmland by day and town lights by night. three.js loads after first paint in its own chunk.
+- **The sky.** Vanta's clouds, with a wake spliced into its shader: the clouds part along the pointer's path and show farmland by day and town lights by night. A still of the clouds' first frame is the sky from the first paint; three.js loads in its own chunk and takes over once the page has settled.
 - **Stylesheet.** Cascade layers (`reset, tokens, base, components, sections, utilities`), one concern per file, in `web/src/styles/`.
 
 ## Accessibility and performance
@@ -116,7 +116,7 @@ cd worker && npm test && cd ..            the Cloudflare version's search and tr
 ## Credits
 
 - Fares from Google Flights through [fast-flights](https://pypi.org/project/fast-flights/). Airports from [OurAirports](https://ourairports.com/), in the public domain.
-- [Spectral](https://github.com/productiontype/Spectral) and [Inter](https://rsms.me/inter/), both under the SIL Open Font License.
+- [Spectral](https://github.com/productiontype/Spectral) and [Overpass](https://github.com/RedHatOfficial/Overpass), both under the SIL Open Font License.
 - The sky is by [Vanta.js](https://www.vantajs.com/), after Inigo Quilez's "Clouds" shader, licensed CC BY-NC-SA 3.0, so this project is non-commercial.
 - The split-flap is rewritten from the technique in [React Bits](https://reactbits.dev)' SplitFlapText (MIT with a Commons Clause).
 - The name is shared with a Pokémon. This project is not affiliated with Nintendo, Game Freak or The Pokémon Company.

@@ -1,5 +1,7 @@
-/* The thread of searches (Search.jsx, SearchTurn.jsx): each one your sentence, echoed on the right, then what came
-   back across the column's full width: a status line, the progress rail, the date pairs, and the answer. */
+/* The thread of searches (Search.jsx, SearchTurn.jsx), which reads as a chat's history: your sentence as the message
+   you sent, on the right; then the reply, whose first message, on the left beside the site's symbol, says how the
+   search went (a status line, the progress rail, the searches by date); then the answer, across the column's full
+   width, since a timetable needs all of it. */
 .thread {
   display: flex;
   flex-direction: column;
@@ -17,14 +19,38 @@
   outline: none;
 }
 
+/* Your message: the accent, thinned into the page, so it stands off the paper in the page's one hue. Its corners
+   are a card's, but for the one nearest the sender, which is a mark's. */
 .said {
   justify-self: end;
   max-width: min(36em, 92%);
   padding: var(--s-3) var(--s-5);
-  font-size: var(--t-lg);
   line-height: 1.5;
-  background: var(--user);
-  border-radius: 24px 24px 6px 24px;
+  background: color-mix(in oklab, var(--accent) 16%, var(--paper));
+  border-radius: var(--r-4) var(--r-4) var(--r-1) var(--r-4);
+}
+
+/* The reply's first message: a bubble on the cards' surface, edged with a hairline, its corners your message's,
+   mirrored: a mark's nearest its sender, the symbol, which stands level with its top. */
+.heard {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s-3);
+}
+
+.sender {
+  flex: none;
+  width: 32px;
+  height: 32px;
+}
+
+.report {
+  min-width: 0;
+  max-width: min(36em, 92%);
+  padding: var(--s-3) var(--s-5);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-1) var(--r-4) var(--r-4) var(--r-4);
 }
 
 .status-row {
@@ -32,26 +58,30 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--s-4);
-  min-height: 40px;
+}
+
+.stop {
+  height: 32px;
 }
 
 .status {
-  font-weight: 500;
+  font-size: var(--t-sm);
+  font-weight: 600;
 }
 
 /* One segment per search, as in a race's sector timing: pending, asking, done, failed, stopped. */
 .rail {
   display: flex;
-  gap: 3px;
-  height: 6px;
-  margin-top: var(--s-3);
+  gap: var(--s-1);
+  height: 4px;
+  margin-block: var(--s-3);
 }
 
 .rail i {
   flex: 1;
   min-width: 2px;
   background: var(--line);
-  border-radius: 3px;
+  border-radius: 2px;
   transition: background-color var(--dur-medium) var(--ease);
 }
 
@@ -72,13 +102,15 @@
   opacity: .5;
 }
 
-/* The date pairs, one pill each, as wide as its words. */
+/* The searches by date, as plain text in tabular figures: the dates in the ink, what each returned after them. */
 .tasks {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--s-2);
-  margin: var(--s-4) 0 0;
+  gap: var(--s-1) var(--s-6);
+  margin: var(--s-1) 0 0;
   padding: 0;
+  font-size: var(--t-sm);
+  font-variant-numeric: tabular-nums;
   list-style: none;
 }
 
@@ -86,18 +118,11 @@
   display: inline-flex;
   flex-wrap: wrap;
   align-items: baseline;
-  gap: 0 var(--s-3);
-  padding: 6px 14px;
-  font-size: var(--t-xs);
-  line-height: 1.5;
-  font-variant-numeric: tabular-nums;
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: 999px;
+  gap: 0 var(--s-2);
 }
 
 .tasks li b {
-  font-weight: 500;
+  font-weight: 400;
 }
 
 .tasks .s {
@@ -109,31 +134,16 @@
   font-style: normal;
 }
 
-.tasks .s[data-s="done"] i {
-  font-weight: 500;
-  color: var(--ink);
-}
-
 .tasks .s[data-s="searching"] i {
-  font-weight: 500;
   color: var(--accent-text);
 }
 
 .tasks .s[data-s="failed"] i {
-  font-weight: 500;
   color: var(--risk);
 }
 
 .tasks .s[data-s="stopped"] {
   opacity: .6;
-}
-
-.tasks li:has([data-s="searching"]) {
-  border-color: var(--accent);
-}
-
-.tasks li:has([data-s="failed"]) {
-  border-color: color-mix(in oklab, var(--risk) 50%, var(--line));
 }
 
 /* A search in flight breathes. The pulse eases in and out evenly, which the page's one curve doesn't. */
@@ -175,7 +185,12 @@
 }
 
 @media (max-width: 600px) {
-  .said {
+  .said,
+  .report {
     max-width: 100%;
+  }
+
+  .report {
+    padding-inline: var(--s-4);
   }
 }

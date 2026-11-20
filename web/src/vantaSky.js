@@ -6,11 +6,13 @@
 // the screen's own resolution and paints the land there through a soft lens of its own, so the land is as soft as a
 // photograph and no softer, at any pixel ratio. Outside a wake it only copies the buffer.
 // Vanta's clouds always drift, so they're drawn 30 times a second while the hero is on screen (60 during a wake),
-// and not at all once it isn't. Reduced motion and software GL get one still frame. Without WebGL the CSS gradient
-// behind the sky stays.
+// and not at all once it isn't. Reduced motion gets one still frame. Under the canvas is a still of this sky's first
+// frame (hero.css, made by posters.py), which is all that shows until the canvas has drawn, and for good without
+// WebGL or on software GL, where compiling these shaders holds the page up for a second or two.
 // startVantaSky(host) fills an empty element (VantaSky.jsx) and returns a function that stops it.
 import { Camera, Color, Mesh, PlaneGeometry, Scene, ShaderMaterial, Vector2, Vector3, WebGLRenderer, WebGLRenderTarget } from "three";
 import CLOUDS from "vanta/src/vanta.clouds.js";
+import { horizon } from "./horizon.js";
 
 const TRAIL = 24;
 const RENDER = 0.5;   // the clouds' pixels per CSS pixel: they're soft, and the shader marches every pixel every frame
@@ -26,6 +28,9 @@ const THEMES = {
            starColor: 0xc8d6e4 },
 };
 const themeName = () => (document.documentElement.dataset.theme === "dark" ? "dark" : "light");
+// posters.py opens the page with ?still to photograph the sky. Its stills have no stars: where the stars dim depends on
+// where the words are, so they come out with the live sky.
+const STILL = new URLSearchParams(location.search).has("still");
 
 // The view, shared by both passes: where a CSS pixel on the canvas looks. Framed to the first screen's height (uRef),
 // so a canvas taller than the window looks further down below it, as the view Vanta's gallery shows on a retina
@@ -270,31 +275,27 @@ void main() {
   gl_FragColor = vec4(col, 1.);
 }`;
 
-// Is there a GPU? Software WebGL gets one still frame, drawn small.
-function probe() {
-  const c = document.createElement("canvas");
-  let gl = c.getContext("webgl", { failIfMajorPerformanceCaveat: true });
-  const flagged = !gl;
-  if (flagged) gl = c.getContext("webgl");
-  if (!gl) return null;
+// Is there a GPU to draw on? Not without WebGL, and not when it runs in software (Windows' Basic Render Driver
+// included): then the still under the canvas is the sky.
+function gpu() {
+  const gl = document.createElement("canvas").getContext("webgl", { failIfMajorPerformanceCaveat: true });
+  if (!gl) return false;
   const info = gl.getExtension("WEBGL_debug_renderer_info");
-  const soft = flagged || /swiftshader|llvmpipe|software/i.test(info ? gl.getParameter(info.UNMASKED_RENDERER_WEBGL) : "");
+  const soft = /swiftshader|llvmpipe|software|basic render/i.test(info ? gl.getParameter(info.UNMASKED_RENDERER_WEBGL) : "");
   gl.getExtension("WEBGL_lose_context")?.loseContext();
-  return { soft };
+  return !soft;
 }
 
 export default function startVantaSky(host) {
-  const gpu = probe();
-  if (!gpu) return;
+  if (!gpu()) return;
   const reduce = matchMedia("(prefers-reduced-motion: reduce)");
-  const still = () => gpu.soft || reduce.matches;
+  const still = () => reduce.matches;
 
   // The clouds' buffer, and the canvas's resolution: the screen's own (up to 2x, and about 8 million pixels) where a
-  // mouse or trackpad can part the clouds, one pixel per CSS pixel on touch screens, and half that in software.
-  // The buffer has half the pixels on touch screens, and a quarter in software.
+  // mouse or trackpad can part the clouds, and one pixel per CSS pixel on touch screens, whose buffer has half the pixels.
   const fine = matchMedia("(any-pointer: fine)").matches;
-  const clouds = gpu.soft ? RENDER / 2 : fine ? RENDER : RENDER * .7;
-  const sharpness = (w, h) => (gpu.soft ? RENDER : Math.min(devicePixelRatio || 1, fine ? 2 : 1, Math.sqrt(8e6 / (w * h))));
+  const clouds = fine ? RENDER : RENDER * .7;
+  const sharpness = (w, h) => Math.min(devicePixelRatio || 1, fine ? 2 : 1, Math.sqrt(8e6 / (w * h)));
   const buffer = new WebGLRenderTarget(1, 1, { depthBuffer: false });
   const sharp = new Scene();
 
@@ -306,22 +307,16 @@ export default function startVantaSky(host) {
     uBuf: { value: new Vector2(1, 1) }, uOut: { value: new Vector2(1, 1) }, tClouds: { value: buffer.texture },
     uRef: { value: 1 }, uLift: { value: 0 },
   };
-  // The view is framed to the first screen's height, with the horizon placed in it. On wide screens the words and the
-  // pass stand side by side on clear sky, and the cloud tops start a little below the lower of them: at 70% of the
-  // screen, or lower when they reach further, down to 88%. On narrower screens only the words do, and the pass stands
-  // in the clouds below them. When the layout changes (the pass filling in, a resize), the horizon eases to its place.
+  // The view is framed to the first screen's height, with the horizon placed in it from the layout (horizon.js). When
+  // the layout changes (the pass filling in, a resize), the horizon eases to its place.
   const stage = host.closest(".stage"), copy = stage.querySelector(".hero-copy"), pass = stage.querySelector(".pass");
-  const wide = matchMedia("(min-width: 900px)");   // hero.css's wide layout
   let lift = null;
   const frame = () => {
-    const ref = Math.min(css.y, document.documentElement.clientHeight || css.y);
-    const button = copy.lastElementChild, foot = copy.offsetTop + button.offsetTop + button.offsetHeight;   // of the words
-    const floor = wide.matches ? Math.max(foot, pass.offsetTop + pass.offsetHeight) + 64 : foot + 24;
-    const horizon = Math.min(.88, Math.max(wide.matches ? .7 : .45, floor / ref));
+    const { ref, at } = horizon(stage);
     view.uRef.value = ref;
     // VIEW runs from -1 at the screen's foot to 3 at its top, and its camera looks 23.4 degrees down, which puts the
     // horizon at .648 plus the lift
-    const next = 3 - 4 * horizon - .648;
+    const next = 3 - 4 * at - .648;
     if (lift === null || still()) view.uLift.value = next;
     lift = next;
   };
@@ -344,6 +339,7 @@ export default function startVantaSky(host) {
   class Renderer extends WebGLRenderer {
     constructor(params) {
       super({ ...params, antialias: false, depth: false, powerPreference: "low-power" });
+      this.debug.checkShaderErrors = import.meta.env.DEV;   // reading a shader's log waits for its compile: only while developing
       const render = this.render, setBuffer = this.setDrawingBufferSize;
       this.render = (scene, camera) => {
         if (scene === sharp) return;
@@ -372,6 +368,7 @@ export default function startVantaSky(host) {
       scale: 1, scaleMobile: 1,
       speed: 0.5,
       ...THEMES[themeName()],
+      ...(STILL && { starColor: 0 }),
     });
   } catch (e) {
     console.warn("sky:", e.message);
@@ -385,6 +382,8 @@ export default function startVantaSky(host) {
   const pause = () => { cancelAnimationFrame(effect.req); effect.req = 0; };
   const resume = () => { if (!effect.req && visible && !still()) effect.animationLoop(); };
   if (still()) pause();
+  // The canvas comes in over the still once its first frame is on screen (hero.css fades it).
+  requestAnimationFrame(() => requestAnimationFrame(() => canvas.classList.add("live")));
 
   // Where the hero's lines of text sit on the canvas, so the stars stay faint behind them and the words keep their
   // contrast. Measured again once the fonts are in and the words have risen into place; the scroll scene fades them
