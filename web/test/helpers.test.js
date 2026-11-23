@@ -1,8 +1,9 @@
 import { run } from "./setup.js";
 import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
 import { test } from "node:test";
 import { airportsLoaded } from "../src/airports.js";
-import { airlines, byDate, dateSpan, day, fmtMin, landing, layovers, localDay, money, picks, remark, savedOn, stops, time, waits, weekday, weeks } from "../src/helpers.js";
+import { airlines, byDate, dateSpan, day, daysOn, fmtMin, grouped, landing, layovers, localDay, money, picks, remark, savedOn, stops, time, waits, weekday, weeks } from "../src/helpers.js";
 
 const rows = run.rows;
 await airportsLoaded;
@@ -106,4 +107,38 @@ test("a run of days sets out as a calendar's weeks, and a week or less as one ro
   // the clocks go back on Nov 1 2026 in Toronto and forward on Mar 14 2027: no day is skipped or doubled
   assert.equal(weeks("2026-10-25", "2026-11-07").flat().length, 14);
   assert.equal(weeks("2027-03-07", "2027-03-20").flat().length, 14);
+});
+
+// One departure day of a real nine-search run, three return days (tests/test_site_dates.json): two fares at one price
+// fly the same return a day apart, and two more at another price never had their return looked up.
+const dates = JSON.parse(await readFile(new URL("../../tests/test_site_dates.json", import.meta.url), "utf8")).rows;
+const returns = (rows) => grouped(rows).map((fares) => fares.map((r) => r.search_ret));
+// The same fare a day later: every time on its return moves a day, as it does when one flight runs daily.
+const tomorrow = (iso) => new Date(Date.parse(iso.slice(0, 10)) + 864e5).toISOString().slice(0, 10) + iso.slice(10);
+const nextDay = (r) => ({ ...r, search_ret: tomorrow(r.search_ret), return_depart: tomorrow(r.return_depart), return_arrive: tomorrow(r.return_arrive),
+  return_segments: r.return_segments.map((s) => ({ ...s, depart: tomorrow(s.depart), arrive: tomorrow(s.arrive) })) });
+
+test("fares that differ only by return date share a row, in date order", () => {
+  assert.deepEqual(returns(dates), [["2027-01-12", "2027-01-13"], ["2027-01-11"], ["2027-01-13"], ["2027-01-11", "2027-01-12"]]);
+  assert.deepEqual(returns([dates[1], dates[0]]), [["2027-01-12", "2027-01-13"]]);
+  assert.equal(grouped(dates).flat().length, dates.length);
+});
+
+test("a row's fares fly the same return at the same times, or they stand apart", () => {
+  const [first, second] = dates;
+  const retimed = { ...second, return_depart: second.return_depart.replace("07:45", "08:05"),
+    return_segments: second.return_segments.map((s, i) => (i ? s : { ...s, depart: s.depart.replace("07:45", "08:05") })) };
+  assert.equal(grouped([first, retimed]).length, 2, "the same flight numbers at another time of day");
+  const unknown = Object.fromEntries(Object.entries(second).map(([k, v]) => [k, k.startsWith("return_") ? null : v]));
+  assert.equal(grouped([first, unknown]).length, 2, "a return that wasn't looked up never joins one that was");
+  assert.equal(grouped([unknown, first]).length, 2);
+});
+
+test("a return that lands the next day is the same flight whichever day it leaves", () => {
+  const overnight = dates.find((r) => r.return_depart && daysOn(r.return_depart, r.return_arrive) === 1);
+  const later = nextDay(overnight);
+  assert.equal(later.return_arrive.slice(0, 10), "2027-01-13");
+  assert.deepEqual(returns([overnight, later]), [["2027-01-11", "2027-01-12"]]);
+  assert.equal(daysOn("2026-12-31T23:10", "2027-01-02T00:05"), 2);
+  assert.equal(daysOn("2027-01-12T07:45", "2027-01-12T14:15"), 0);
 });

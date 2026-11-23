@@ -34,19 +34,22 @@ export async function drive(q, meta, on, signal) {
     for (let i = 0; i < meta.pairs.length; i += AT_ONCE) {
       if (i) await new Promise((ok) => setTimeout(ok, PAUSE));
       if (signal.aborted) return;
-      await Promise.all(meta.pairs.slice(i, i + AT_ONCE).map(async ([out, ret]) => {
+      // each pair reports as it comes back, but its fares join in the order searched, as search.py's do, so fares
+      // that tie keep the order of their dates
+      const found = await Promise.all(meta.pairs.slice(i, i + AT_ONCE).map(async ([out, ret]) => {
         const p = { src: "google", out, ret };
         const got = capped ? { error: capped } : (on.progress({ ...p, status: "searching" }), await call(new URLSearchParams({ ...base, out, ret }), signal));
         if (got.error) {
           if (got.cap) capped = got.error;
           failed++;
           on.progress({ ...p, status: "failed", error: got.error });
-          return;
+          return [];
         }
         on.progress({ ...p, status: "done", count: got.rows.length });
-        rows.push(...got.rows);
+        return got.rows;
       }));
       if (signal.aborted) return;
+      rows.push(...found.flat());
     }
     if (capped && failed === meta.pairs.length) return on.fail({ message: capped });
     // add_return, for the cheapest fares that land in time: a lookup that fails leaves that row's return blank, never guessed

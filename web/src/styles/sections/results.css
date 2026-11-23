@@ -276,6 +276,41 @@
   flex: none;
 }
 
+/* A row that several return dates share has no one flight to view, so it lists the dates after the return flight
+   they share, each a "View flight" of its own at the size of a line of type. With no return flight looked up, the
+   dates are the leg's first line, centred on it so they stand level with the outbound's. */
+.days {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-1);
+  margin: calc((1lh - 32px) / 2) 0 var(--s-2);
+  padding: 0;
+  list-style: none;
+}
+
+.days li {
+  display: flex;
+  align-items: center;
+  min-height: 32px;
+  font-weight: 600;
+}
+
+.days .book {
+  justify-content: center;
+  min-width: 40px;
+  height: 32px;
+  padding: 0 var(--s-2);
+}
+
+.days:not(:first-child) {
+  margin: var(--s-3) 0 0;
+}
+
+/* the ring keeps clear of the dates on either side */
+.days .book:focus-visible {
+  outline-offset: 1px;
+}
+
 .row-top td {
   background: var(--cheapest);
 }
@@ -328,6 +363,20 @@
 
   .fares-table td.c-go:empty {
     display: none;
+  }
+
+  /* for a finger, each date is as tall as "View flight" */
+  .days {
+    margin-top: var(--s-1);
+  }
+
+  .days li {
+    min-height: 40px;
+  }
+
+  .days .book {
+    min-width: 44px;
+    height: 40px;
   }
 
   .fares-table tr.row-top {

@@ -104,6 +104,17 @@ test("a request that fails is asked once more, and only a second failure counts"
   assert.ok(heard.at(-1)[1].rows.every((r) => r.return_depart), "a return that failed once is found the second time");
 });
 
+test("fares that tie keep the order of their dates, however Google's answers arrive", async () => {
+  const pairs = pairsOf(4);
+  const { heard } = await search(plan(pairs), async (path, p) => {
+    if (p.get("pick")) return json(200, { ret: null });
+    await new Promise((ok) => setTimeout(ok, 40 - 10 * pairs.findIndex(([o]) => o === p.get("out"))));   // the last date answers first
+    return json(200, { rows: listed(p.get("out"), p.get("ret")) });
+  });
+  const dates = (heard.at(-1)[1].rows).filter((r) => r.flights === outbound[0].flights).map((r) => r.search_out);
+  assert.deepEqual(dates, pairs.map(([o]) => o));
+});
+
 test("a failed Google comes back empty, as server.py's does", async () => {
   const { heard } = await search(plan([["2026-12-26", "2027-01-10"]]), () => json(502, { error: "No." }));
   assert.deepEqual(heard.at(-1), ["result", { rows: [] }]);

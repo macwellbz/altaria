@@ -19,6 +19,9 @@ import server
 
 RUN = json.loads((Path(__file__).parent / "test_site_run.json").read_text())
 ROWS = RUN["rows"]
+# One departure day of a real nine-search run and its three return days: fares that differ only by the day they return.
+DATES = json.loads((Path(__file__).parent / "test_site_dates.json").read_text())["rows"]
+replayed = ROWS   # the rows a search finds
 NOW = datetime(2026, 11, 16, 12)   # the page's clock, so the run's dates stay ahead of "today" whenever this runs
 OFF = "The trip reader is off because ALTARIA_AI=off. Unset it and restart the server to turn it on."
 # What the stand-in model says for the trip: the saved run's own search. It leaves the origin open.
@@ -46,9 +49,9 @@ def replay(orig, dest, pairs, sources, currency, window=None, progress=lambda *a
         for src in sources:
             progress(src, out, ret, None)
             progress(src, out, ret, Exception("Google sent a page with no results in it") if (out, ret) in broken
-                     else [r for r in ROWS if (r["search_out"], r["search_ret"]) == (out, ret)])
+                     else [r for r in replayed if (r["search_out"], r["search_ret"]) == (out, ret)])
     returns.wait(10)
-    return [r for r in ROWS if (r["search_out"], r["search_ret"]) not in broken]
+    return [r for r in replayed if (r["search_out"], r["search_ret"]) not in broken]
 
 
 server.search.run_search = replay
@@ -372,6 +375,43 @@ with sync_playwright() as p:
     assert wide(page) == []
     done(page)
     broken.clear()
+    model.said = SAID
+
+    # --- on that phone, three return days: fares that differ only by the day they return share a row ---
+
+    page = visit(browser, 360, 740)
+    replayed = DATES
+    model.said = dict(SAID, **{"from": "YYZ", "out-from": "2026-12-30", "out-to": "2026-12-30", "ret-to": "2027-01-13", "stops": ""})
+    model.said["ret-from"] = "2027-01-11"
+    page.fill("#trip", TRIP)
+    page.click(".trip-go")
+    page.wait_for_selector(".trip-note[data-tone=done]")
+    page.click("#go")
+    page.wait_for_selector(".fares-table tbody tr")
+    by_price = {p: [r for r in DATES if r["price_cmp"] == p] for p in dict.fromkeys(r["price_cmp"] for r in DATES)}   # in this run, a row each
+    assert prices(page, ".fares-table tbody .c-price .price") == list(by_price)
+    assert page.locator(".fares-table tbody a").count() == len(DATES), "every fare has one link, and no row a link that could be any of them"
+    for row, fares in zip(page.locator(".fares-table tbody tr").all(), by_price.values()):
+        back = row.locator("td[data-label=Return]")
+        assert [a.get_attribute("href") for a in row.locator("a").all()] == [r["link"] for r in fares], "each date opens its own trip"
+        if len(fares) == 1:
+            continue
+        for a, r in zip(row.locator("a").all(), fares):   # a shared row's links are its dates, each named in full
+            assert a.locator("xpath=ancestor::td").get_attribute("data-label") == "Return"
+            assert datetime.strptime(r["search_ret"], "%Y-%m-%d").strftime("%a %b %d").replace(" 0", " ") in a.text_content()
+        legs = {json.dumps([[s["flight"], s["depart"][11:], s["arrive"][11:]] for s in r["return_segments"] or []]) for r in fares}
+        assert len(legs) == 1, "the fixture's shared rows fly one return"
+        flights = json.loads(legs.pop())
+        assert back.locator(".fl").count() == len(flights), "the flights home are listed once, or not at all when they weren't looked up"
+        said = back.locator(".leg-h, .hops").all_text_contents()
+        for flight, leaves, lands in flights:
+            assert any(flight in t and leaves in t and lands in t for t in said)
+        assert not any(re.search(r"Jan|Mon|Tue|Wed|Thu|Fri|Sat|Sun", t) for t in said), "times shared by several days name no day"
+    assert [len(f) for f in by_price.values()] == [2, 1, 1, 2] and [bool(f[0]["return_depart"]) for f in by_price.values()] == [True, True, True, False]
+    page.wait_for_timeout(1500)
+    assert wide(page) == []
+    done(page)
+    replayed = ROWS
     model.said = SAID
 
     # --- a small phone under a finger: the sentence scales to the sheet, and nothing that opens leaves the screen ---

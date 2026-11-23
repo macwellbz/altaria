@@ -1,0 +1,375 @@
+{
+ "args": {
+  "orig": "YYZ",
+  "dest": "VNO",
+  "out": "2026-12-30",
+  "ret": "2027-01-11..2027-01-13",
+  "arrive_between": null,
+  "source": "google",
+  "currency": "CAD",
+  "max_stops": null
+ },
+ "rows": [
+  {
+   "source": "google",
+   "price": 1132.0,
+   "currency": "CAD",
+   "carriers": [
+    "Air Canada",
+    "Air Baltic"
+   ],
+   "route": "YYZ-AMS-VNO",
+   "flights": "AC808 BT960",
+   "stops": 1,
+   "depart": "2026-12-30T20:50",
+   "arrive": "2026-12-31T19:55",
+   "duration": 965,
+   "return_depart": "2027-01-12T07:45",
+   "return_arrive": "2027-01-12T14:15",
+   "segments": [
+    {
+     "from": "YYZ",
+     "to": "AMS",
+     "depart": "2026-12-30T20:50",
+     "arrive": "2026-12-31T10:15",
+     "flight": "AC808",
+     "airline": "Air Canada",
+     "duration": 445
+    },
+    {
+     "from": "AMS",
+     "to": "VNO",
+     "depart": "2026-12-31T16:45",
+     "arrive": "2026-12-31T19:55",
+     "flight": "BT960",
+     "airline": "Air Baltic",
+     "duration": 130
+    }
+   ],
+   "link": "https://www.google.com/travel/flights/search?tfs=GlwSCjIwMjYtMTItMzBqBRIDWVlacgUSA1ZOTyIfCgNZWVoSCjIwMjYtMTItMzAaA0FNUyoCQUMyAzgwOCIfCgNBTVMSCjIwMjYtMTItMzEaA1ZOTyoCQlQyAzk2MBpcEgoyMDI3LTAxLTEyagUSA1ZOT3IFEgNZWVoiHwoDVk5PEgoyMDI3LTAxLTEyGgNBTVMqAkJUMgM5NjEiHwoDQU1TEgoyMDI3LTAxLTEyGgNZWVoqAkFDMgM4MDlCAQFIAZgBAQ==&hl=en&curr=CAD",
+   "return_route": "VNO-AMS-YYZ",
+   "return_flights": "BT961 AC809",
+   "return_stops": 1,
+   "return_duration": 810,
+   "return_segments": [
+    {
+     "from": "VNO",
+     "to": "AMS",
+     "depart": "2027-01-12T07:45",
+     "arrive": "2027-01-12T09:15",
+     "flight": "BT961",
+     "airline": "Air Baltic",
+     "duration": 150
+    },
+    {
+     "from": "AMS",
+     "to": "YYZ",
+     "depart": "2027-01-12T12:05",
+     "arrive": "2027-01-12T14:15",
+     "flight": "AC809",
+     "airline": "Air Canada",
+     "duration": 490
+    }
+   ],
+   "search_out": "2026-12-30",
+   "search_ret": "2027-01-12",
+   "price_cmp": 1132.0
+  },
+  {
+   "source": "google",
+   "price": 1132.0,
+   "currency": "CAD",
+   "carriers": [
+    "Air Canada",
+    "Air Baltic"
+   ],
+   "route": "YYZ-AMS-VNO",
+   "flights": "AC808 BT960",
+   "stops": 1,
+   "depart": "2026-12-30T20:50",
+   "arrive": "2026-12-31T19:55",
+   "duration": 965,
+   "return_depart": "2027-01-13T07:45",
+   "return_arrive": "2027-01-13T14:15",
+   "segments": [
+    {
+     "from": "YYZ",
+     "to": "AMS",
+     "depart": "2026-12-30T20:50",
+     "arrive": "2026-12-31T10:15",
+     "flight": "AC808",
+     "airline": "Air Canada",
+     "duration": 445
+    },
+    {
+     "from": "AMS",
+     "to": "VNO",
+     "depart": "2026-12-31T16:45",
+     "arrive": "2026-12-31T19:55",
+     "flight": "BT960",
+     "airline": "Air Baltic",
+     "duration": 130
+    }
+   ],
+   "link": "https://www.google.com/travel/flights/search?tfs=GlwSCjIwMjYtMTItMzBqBRIDWVlacgUSA1ZOTyIfCgNZWVoSCjIwMjYtMTItMzAaA0FNUyoCQUMyAzgwOCIfCgNBTVMSCjIwMjYtMTItMzEaA1ZOTyoCQlQyAzk2MBpcEgoyMDI3LTAxLTEzagUSA1ZOT3IFEgNZWVoiHwoDVk5PEgoyMDI3LTAxLTEzGgNBTVMqAkJUMgM5NjEiHwoDQU1TEgoyMDI3LTAxLTEzGgNZWVoqAkFDMgM4MDlCAQFIAZgBAQ==&hl=en&curr=CAD",
+   "return_route": "VNO-AMS-YYZ",
+   "return_flights": "BT961 AC809",
+   "return_stops": 1,
+   "return_duration": 810,
+   "return_segments": [
+    {
+     "from": "VNO",
+     "to": "AMS",
+     "depart": "2027-01-13T07:45",
+     "arrive": "2027-01-13T09:15",
+     "flight": "BT961",
+     "airline": "Air Baltic",
+     "duration": 150
+    },
+    {
+     "from": "AMS",
+     "to": "YYZ",
+     "depart": "2027-01-13T12:05",
+     "arrive": "2027-01-13T14:15",
+     "flight": "AC809",
+     "airline": "Air Canada",
+     "duration": 490
+    }
+   ],
+   "search_out": "2026-12-30",
+   "search_ret": "2027-01-13",
+   "price_cmp": 1132.0
+  },
+  {
+   "source": "google",
+   "price": 1214.0,
+   "currency": "CAD",
+   "carriers": [
+    "Air Canada",
+    "Air Baltic"
+   ],
+   "route": "YYZ-AMS-VNO",
+   "flights": "AC808 BT960",
+   "stops": 1,
+   "depart": "2026-12-30T20:50",
+   "arrive": "2026-12-31T19:55",
+   "duration": 965,
+   "return_depart": "2027-01-11T21:35",
+   "return_arrive": "2027-01-12T14:15",
+   "segments": [
+    {
+     "from": "YYZ",
+     "to": "AMS",
+     "depart": "2026-12-30T20:50",
+     "arrive": "2026-12-31T10:15",
+     "flight": "AC808",
+     "airline": "Air Canada",
+     "duration": 445
+    },
+    {
+     "from": "AMS",
+     "to": "VNO",
+     "depart": "2026-12-31T16:45",
+     "arrive": "2026-12-31T19:55",
+     "flight": "BT960",
+     "airline": "Air Baltic",
+     "duration": 130
+    }
+   ],
+   "link": "https://www.google.com/travel/flights/search?tfs=GlwSCjIwMjYtMTItMzBqBRIDWVlacgUSA1ZOTyIfCgNZWVoSCjIwMjYtMTItMzAaA0FNUyoCQUMyAzgwOCIfCgNBTVMSCjIwMjYtMTItMzEaA1ZOTyoCQlQyAzk2MBp9EgoyMDI3LTAxLTExagUSA1ZOT3IFEgNZWVoiHwoDVk5PEgoyMDI3LTAxLTExGgNSSVgqAkJUMgMzNDgiHwoDUklYEgoyMDI3LTAxLTEyGgNBTVMqAkJUMgM2MTciHwoDQU1TEgoyMDI3LTAxLTEyGgNZWVoqAkFDMgM4MDlCAQFIAZgBAQ==&hl=en&curr=CAD",
+   "return_route": "VNO-RIX-AMS-YYZ",
+   "return_flights": "BT348 BT617 AC809",
+   "return_stops": 2,
+   "return_duration": 1420,
+   "return_segments": [
+    {
+     "from": "VNO",
+     "to": "RIX",
+     "depart": "2027-01-11T21:35",
+     "arrive": "2027-01-11T22:25",
+     "flight": "BT348",
+     "airline": "Air Baltic",
+     "duration": 50
+    },
+    {
+     "from": "RIX",
+     "to": "AMS",
+     "depart": "2027-01-12T07:35",
+     "arrive": "2027-01-12T09:00",
+     "flight": "BT617",
+     "airline": "Air Baltic",
+     "duration": 145
+    },
+    {
+     "from": "AMS",
+     "to": "YYZ",
+     "depart": "2027-01-12T12:05",
+     "arrive": "2027-01-12T14:15",
+     "flight": "AC809",
+     "airline": "Air Canada",
+     "duration": 490
+    }
+   ],
+   "search_out": "2026-12-30",
+   "search_ret": "2027-01-11",
+   "price_cmp": 1214.0
+  },
+  {
+   "source": "google",
+   "price": 1229.0,
+   "currency": "CAD",
+   "carriers": [
+    "Air Canada",
+    "SWISS"
+   ],
+   "route": "YYZ-ZRH-VNO",
+   "flights": "AC880 LX1340",
+   "stops": 1,
+   "depart": "2026-12-30T20:35",
+   "arrive": "2027-01-01T00:55",
+   "duration": 1280,
+   "return_depart": "2027-01-13T06:20",
+   "return_arrive": "2027-01-13T16:15",
+   "segments": [
+    {
+     "from": "YYZ",
+     "to": "ZRH",
+     "depart": "2026-12-30T20:35",
+     "arrive": "2026-12-31T10:25",
+     "flight": "AC880",
+     "airline": "Air Canada",
+     "duration": 470
+    },
+    {
+     "from": "ZRH",
+     "to": "VNO",
+     "depart": "2026-12-31T21:20",
+     "arrive": "2027-01-01T00:55",
+     "flight": "LX1340",
+     "airline": "SWISS",
+     "duration": 155
+    }
+   ],
+   "link": "https://www.google.com/travel/flights/search?tfs=Gl0SCjIwMjYtMTItMzBqBRIDWVlacgUSA1ZOTyIfCgNZWVoSCjIwMjYtMTItMzAaA1pSSCoCQUMyAzg4MCIgCgNaUkgSCjIwMjYtMTItMzEaA1ZOTyoCTFgyBDEzNDAaXBIKMjAyNy0wMS0xM2oFEgNWTk9yBRIDWVlaIh8KA1ZOTxIKMjAyNy0wMS0xMxoDRlJBKgJMSDIDODk5Ih8KA0ZSQRIKMjAyNy0wMS0xMxoDWVlaKgJMSDIDNDcwQgEBSAGYAQE=&hl=en&curr=CAD",
+   "return_route": "VNO-FRA-YYZ",
+   "return_flights": "LH899 LH470",
+   "return_stops": 1,
+   "return_duration": 1015,
+   "return_segments": [
+    {
+     "from": "VNO",
+     "to": "FRA",
+     "depart": "2027-01-13T06:20",
+     "arrive": "2027-01-13T07:35",
+     "flight": "LH899",
+     "airline": "Lufthansa",
+     "duration": 135
+    },
+    {
+     "from": "FRA",
+     "to": "YYZ",
+     "depart": "2027-01-13T13:20",
+     "arrive": "2027-01-13T16:15",
+     "flight": "LH470",
+     "airline": "Lufthansa",
+     "duration": 535
+    }
+   ],
+   "search_out": "2026-12-30",
+   "search_ret": "2027-01-13",
+   "price_cmp": 1229.0
+  },
+  {
+   "source": "google",
+   "price": 1434.0,
+   "currency": "CAD",
+   "carriers": [
+    "Air Canada",
+    "SWISS"
+   ],
+   "route": "YYZ-ZRH-VNO",
+   "flights": "AC880 LX1340",
+   "stops": 1,
+   "depart": "2026-12-30T20:35",
+   "arrive": "2027-01-01T00:55",
+   "duration": 1280,
+   "return_depart": null,
+   "return_arrive": null,
+   "segments": [
+    {
+     "from": "YYZ",
+     "to": "ZRH",
+     "depart": "2026-12-30T20:35",
+     "arrive": "2026-12-31T10:25",
+     "flight": "AC880",
+     "airline": "Air Canada",
+     "duration": 470
+    },
+    {
+     "from": "ZRH",
+     "to": "VNO",
+     "depart": "2026-12-31T21:20",
+     "arrive": "2027-01-01T00:55",
+     "flight": "LX1340",
+     "airline": "SWISS",
+     "duration": 155
+    }
+   ],
+   "link": "https://www.google.com/travel/flights/search?tfs=GhoSCjIwMjYtMTItMzBqBRIDWVlacgUSA1ZOTxoaEgoyMDI3LTAxLTExagUSA1ZOT3IFEgNZWVpCAQFIAZgBAQ==&hl=en&curr=CAD",
+   "return_route": null,
+   "return_flights": null,
+   "return_stops": null,
+   "return_duration": null,
+   "return_segments": null,
+   "search_out": "2026-12-30",
+   "search_ret": "2027-01-11",
+   "price_cmp": 1434.0
+  },
+  {
+   "source": "google",
+   "price": 1434.0,
+   "currency": "CAD",
+   "carriers": [
+    "Air Canada",
+    "SWISS"
+   ],
+   "route": "YYZ-ZRH-VNO",
+   "flights": "AC880 LX1340",
+   "stops": 1,
+   "depart": "2026-12-30T20:35",
+   "arrive": "2027-01-01T00:55",
+   "duration": 1280,
+   "return_depart": null,
+   "return_arrive": null,
+   "segments": [
+    {
+     "from": "YYZ",
+     "to": "ZRH",
+     "depart": "2026-12-30T20:35",
+     "arrive": "2026-12-31T10:25",
+     "flight": "AC880",
+     "airline": "Air Canada",
+     "duration": 470
+    },
+    {
+     "from": "ZRH",
+     "to": "VNO",
+     "depart": "2026-12-31T21:20",
+     "arrive": "2027-01-01T00:55",
+     "flight": "LX1340",
+     "airline": "SWISS",
+     "duration": 155
+    }
+   ],
+   "link": "https://www.google.com/travel/flights/search?tfs=GhoSCjIwMjYtMTItMzBqBRIDWVlacgUSA1ZOTxoaEgoyMDI3LTAxLTEyagUSA1ZOT3IFEgNZWVpCAQFIAZgBAQ==&hl=en&curr=CAD",
+   "return_route": null,
+   "return_flights": null,
+   "return_stops": null,
+   "return_duration": null,
+   "return_segments": null,
+   "search_out": "2026-12-30",
+   "search_ret": "2027-01-12",
+   "price_cmp": 1434.0
+  }
+ ]
+}

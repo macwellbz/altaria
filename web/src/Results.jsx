@@ -3,7 +3,7 @@ import Brief from "./Brief.jsx";
 import Dates from "./Dates.jsx";
 import FareRow from "./FareRow.jsx";
 import { DETAIL } from "./drive.js";
-import { LONG, STOPS, day, landing, money, waits } from "./helpers.js";
+import { LONG, STOPS, day, grouped, landing, money, waits } from "./helpers.js";
 import { scrollToElement } from "./scroll.js";
 
 const TOP = 25;    // rows shown before "Show all"
@@ -21,22 +21,11 @@ export default function Results({ rows, meta, trip, tasks }) {
     const fix = trip.stops === "0" ? "Allow a stop or two" : trip.stops ? "Allow more stops" : "Try a wider date range";
     return <p><strong>{`No fares came back${limit}.`}</strong>{` ${fix}${trip.stops ? ", or try a wider date range" : ""}${trip.arrive ? ", or clear the arrival window" : ""}. A failed search above means that search broke, not that it found nothing.`}</p>;
   }
-  // Same outbound at the same price for several return dates becomes one row, as print_table does. A fare whose
-  // return wasn't looked up joins the row its outbound and price already have, whichever return that one found.
   const shown = pick ? rows.filter((r) => `${r.search_out}|${r.search_ret}` === pick) : rows;
-  const groups = new Map(), first = new Map();
-  for (const r of shown) {
-    const flown = [r.source, r.search_out, r.flights, r.price_cmp].join("|");
-    const k = r.return_flights ? `${flown}|${r.return_flights}` : first.get(flown) ?? flown;
-    if (!first.has(flown)) first.set(flown, k);
-    if (!groups.has(k)) groups.set(k, { r, rets: [] });
-    groups.get(k).rets.push(r.search_ret);
-  }
-  const list = [...groups.values()];
-  list.forEach((g) => g.rets.sort());
+  const list = grouped(shown);
   const warnCol = rows.some((r) => r.warnings?.length);
   const note = `Prices are for the whole round trip in ${cur}; ties go to the shorter flight.` +
-    (list.length < shown.length ? " Fares that differ only by return date share a row." : "") +
+    (list.length < shown.length ? " Fares that differ only by return date share a row, and each date opens its own trip." : "") +
     (!shown.some((r) => !r.return_depart) ? "" : rows.length > DETAIL
       ? ` Return flights are looked up for the ${DETAIL} cheapest fares. A return that shows only a date is past those, or couldn't be found.`
       : " A return that shows only a date couldn't be looked up.") +
@@ -68,7 +57,7 @@ export default function Results({ rows, meta, trip, tasks }) {
           <table className="fares-table">
             <thead><tr><th scope="col">Price</th><th scope="col">Outbound</th><th scope="col">Return</th>{warnCol && <th scope="col">Warnings</th>}<th scope="col"><span className="vh">Booking</span></th></tr></thead>
             {/* the first rows rise in after the brief, and their prices flip in */}
-            <tbody>{(all ? list : list.slice(0, TOP)).map(({ r, rets }, i) => <FareRow key={i} r={r} rets={rets} cur={cur} top={i === 0 && r.price_cmp === rows[0].price_cmp} warnCol={warnCol} enter={i < ENTER ? 4 + i : undefined} />)}</tbody>
+            <tbody>{(all ? list : list.slice(0, TOP)).map((fares, i) => <FareRow key={i} fares={fares} cur={cur} top={i === 0 && fares[0].price_cmp === rows[0].price_cmp} warnCol={warnCol} enter={i < ENTER ? 4 + i : undefined} />)}</tbody>
           </table>
         </div>
         {list.length > TOP && !all && <button type="button" className="ghost more" onClick={() => setAll(true)}>{`Show all ${list.length} rows`}</button>}

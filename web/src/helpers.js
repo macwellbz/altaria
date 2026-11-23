@@ -58,6 +58,22 @@ export const layovers = (segs) => (segs || []).slice(1).map((s, i) => {
   return { at: segs[i].to, next: s.from, m, long: m > LONG, night: s.depart.slice(0, 10) > segs[i].arrive.slice(0, 10) };
 });
 export const waits = (r) => [...layovers(r.segments), ...layovers(r.return_segments)];   // a fare's layovers, out and back
+// Whole days from one local date to a later one: from "2027-01-11T21:35" to "2027-01-12T14:15" is 1.
+export const daysOn = (from, to) => (Date.parse(to.slice(0, 10)) - Date.parse(from.slice(0, 10))) / 864e5;
+// The fares table's rows: fares that differ only by return date share one, in date order. They share it only when
+// what the row shows is true of every one of them: the same outbound at the same price, and the same return flights
+// at the same times of day. A fare whose return wasn't looked up never joins one whose return was.
+export function grouped(rows) {
+  const out = new Map();
+  for (const r of rows) {
+    const at = (iso) => `${daysOn(r.return_depart, iso)} ${time(iso)}`;   // a time on the return, without its date
+    const back = !r.return_depart ? [] : [r.return_flights, r.return_route, r.return_duration, at(r.return_depart), at(r.return_arrive),
+      ...(r.return_segments || []).flatMap((s) => [s.flight, s.from, s.to, at(s.depart), at(s.arrive)])];
+    const k = [r.source, r.search_out, r.flights, r.price_cmp, ...back].join("|");
+    out.set(k, [...(out.get(k) || []), r]);
+  }
+  return [...out.values()].map((fares) => fares.sort((a, b) => (a.search_ret < b.search_ret ? -1 : 1)));
+}
 // The ranking board's note on row i, which is sorted by price, then outbound length. A tie is two fares at one price;
 // the shorter outbound comes first and wins it, and only then is it marked.
 export function remark(rows, i) {
