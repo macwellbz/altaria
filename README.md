@@ -8,7 +8,7 @@ Try it at [altaria.macwell.workers.dev](https://altaria.macwell.workers.dev), or
 
 ## What it does
 
-- **Searches a window of dates, not one date.** Three possible departure days and three return days are nine searches, each run live against Google Flights. The command line can also search ITA Matrix, the fare engine airlines price with.
+- **Searches a window of dates, not one date.** Three possible departure days and three return days are nine searches, each run live against Google Flights, and a search can cover up to 100. A table then shows the cheapest fare for each day out and back, so the cheap days stand out. The command line can also search ITA Matrix, the fare engine airlines price with.
 - **Ranks by price, then flight time.** There is no paid slot and no affiliate link. A tie on price goes to the shorter trip.
 - **Shows the whole trip.** Each fare lists every flight and layover both ways, and marks layovers over six hours.
 - **Takes a trip in plain English.** With a model set up, "Toronto to Vilnius for New Year's, back mid January, one stop at most" fills in the search for you to check. The model never sees or produces a price.
@@ -108,6 +108,7 @@ cd worker && npm test && cd ..            the Cloudflare version's search and tr
 
 ## Known limits
 
+- Return flights are looked up for the 25 cheapest fares of a search. The rest show their return date and link to Google's search for those dates.
 - The public site shares one daily cap on searches and trip readings among all its visitors. Once the day's searches are used up, it says so instead of showing saved fares.
 - The Google parser reads a private format by position and will break when that format changes. The Matrix source drives the real page in a headless browser and takes about 30 seconds per date pair, which is why the site uses Google only.
 - The styled currency and stops lists need a recent Chromium. Safari and Firefox show their native lists.
