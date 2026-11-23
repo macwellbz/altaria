@@ -35,6 +35,9 @@ tmp = Path(tempfile.mkdtemp(prefix="altaria-site-"))
 (tmp / "results" / "20260927-183130-YYZ-VNO.json").write_text(json.dumps(RUN))
 server.ROOT = tmp
 searched, saved = [], []
+broken = set()   # the days, (out, ret), whose search fails
+returns = threading.Event()   # shut, a run waits where search.py looks up the cheapest fares' return flights
+returns.set()
 
 
 def replay(orig, dest, pairs, sources, currency, window=None, progress=lambda *a: None, stops=None):
@@ -42,8 +45,10 @@ def replay(orig, dest, pairs, sources, currency, window=None, progress=lambda *a
     for out, ret in pairs:
         for src in sources:
             progress(src, out, ret, None)
-            progress(src, out, ret, [r for r in ROWS if (r["search_out"], r["search_ret"]) == (out, ret)])
-    return ROWS
+            progress(src, out, ret, Exception("Google sent a page with no results in it") if (out, ret) in broken
+                     else [r for r in ROWS if (r["search_out"], r["search_ret"]) == (out, ret)])
+    returns.wait(10)
+    return [r for r in ROWS if (r["search_out"], r["search_ret"]) not in broken]
 
 
 server.search.run_search = replay
@@ -253,6 +258,24 @@ with sync_playwright() as p:
     assert prices(page, ".fares-table tbody .c-price .price") == [r["price_cmp"] for r in ROWS]
     assert page.locator(".fares-table tbody a[href^='https://www.google.com/travel/flights']").count() == len(ROWS)
     assert text(page, ".turn .status").endswith("2 of 2 searches came back.")
+
+    # the cheapest fare by date: a price for each day searched, each the run's own cheapest that day, the lowest marked
+    by_day = [min(r["price_cmp"] for r in ROWS if r["search_out"] == out) for out in ("2026-12-26", "2026-12-27")]
+    assert prices(page, ".dates td button .p") == by_day == [1147, 1443]
+    assert page.get_by_role("button", name=re.compile("the cheapest$")).get_attribute("aria-label").startswith("Out Sat Dec 26, back Sun Jan 10: 1,147 CAD")
+    # choosing a price lists that day's fares alone; "Show every date" brings the rest back
+    sunday = page.get_by_role("button", name=re.compile("^Out Sun Dec 27"))
+    sunday.click()
+    assert sunday.get_attribute("aria-pressed") == "true"
+    assert prices(page, ".fares-table tbody .c-price .price") == [r["price_cmp"] for r in ROWS if r["search_out"] == "2026-12-27"]
+    page.get_by_role("button", name="Show every date").click()
+    assert sunday.get_attribute("aria-pressed") == "false"
+    assert prices(page, ".fares-table tbody .c-price .price") == [r["price_cmp"] for r in ROWS]
+    # the prices are one stop for Tab, and the arrow keys move through them
+    page.get_by_role("button", name=re.compile("^Out Sat Dec 26")).focus()
+    page.keyboard.press("ArrowRight")
+    assert page.evaluate("document.activeElement.getAttribute('aria-label')").startswith("Out Sun Dec 27")
+    assert page.eval_on_selector_all(".dates td button", "els => els.filter((el) => el.tabIndex === 0).length") == 1
     rest(page)   # the glide to the new turn
     assert backing(page) == 1, "over the page the header has its backing"
     assert page.get_by_label(FILLED).count() == 0 and text(page, ".trip-note") == "", "searching clears the marks"
@@ -317,6 +340,38 @@ with sync_playwright() as p:
     page.wait_for_timeout(1500)
     assert wide(page) == []
     done(page)
+    model.said = SAID
+
+    # --- a wide search on that phone: 8 days out by 2 back, where one search fails and most find nothing ---
+
+    page = visit(browser, 360, 740)
+    model.said = dict(SAID, **{"from": "YYZ", "out-from": "2026-12-20", "ret-to": "2027-01-11"})
+    broken.add(("2026-12-26", "2027-01-11"))
+    returns.clear()
+    page.fill("#trip", TRIP)
+    page.click(".trip-go")
+    page.wait_for_selector(".trip-note[data-tone=done]")
+    assert text(page, "#estimate").startswith("16 searches")
+    page.click("#go")
+    # every search is back, and the run isn't over: the line says what it's still doing
+    page.wait_for_function("document.querySelector('.turn .status')?.textContent.includes('return flights')")
+    assert page.get_by_role("button", name="Stop").is_visible() and page.locator(".fares-table").count() == 0
+    assert page.locator(".rail i").count() == 16
+    assert 0 < page.locator(".tasks li").count() < 16, "too many searches to list one a line: they're listed a day to a line"
+    assert wide(page) == []
+    returns.set()
+    page.wait_for_selector(".fares-table tbody tr")
+    assert text(page, ".turn .status").endswith("15 of 16 searches came back; 1 failed.")
+    assert page.locator(".tasks li", has_text="failed").count() == 1
+    # by date: a price where fares came back, and a failed search told apart from one that found nothing
+    assert prices(page, ".dates td button .p") == by_day
+    assert page.locator(".dates tbody th").count() == 8 and page.locator(".dates td").count() == 16
+    assert page.locator(".dates td", has_text="failed").count() == 1 and page.locator(".dates td", has_text="none").count() == 13
+    assert page.locator(".dates td", has_text="failed").get_attribute("title") == "Google sent a page with no results in it"
+    page.wait_for_timeout(1500)
+    assert wide(page) == []
+    done(page)
+    broken.clear()
     model.said = SAID
 
     # --- a small phone under a finger: the sentence scales to the sheet, and nothing that opens leaves the screen ---

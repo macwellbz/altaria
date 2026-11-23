@@ -1,49 +1,74 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Brief from "./Brief.jsx";
+import Dates from "./Dates.jsx";
 import FareRow from "./FareRow.jsx";
+import { DETAIL } from "./drive.js";
 import { LONG, STOPS, day, landing, money, waits } from "./helpers.js";
+import { scrollToElement } from "./scroll.js";
 
 const TOP = 25;    // rows shown before "Show all"
 const ENTER = 5;   // rows that rise in with the brief when results land
 
-// The answer to one search: the brief, then every fare, cheapest first.
-export default function Results({ rows, meta, trip }) {
+// The answer to one search: the brief, the cheapest fare by date when it covered more than one, then every fare,
+// cheapest first. A price chosen by date (pick, "out|ret") narrows the fares to its days.
+export default function Results({ rows, meta, trip, tasks }) {
   const [all, setAll] = useState(false);
+  const [pick, setPick] = useState(null);
+  const fares = useRef(null);
   const cur = meta.currency;
   if (!rows.length) {
     const limit = trip.stops === "0" ? " for nonstop flights" : trip.stops ? ` with ${STOPS[trip.stops]} each way` : "";
     const fix = trip.stops === "0" ? "Allow a stop or two" : trip.stops ? "Allow more stops" : "Try a wider date range";
     return <p><strong>{`No fares came back${limit}.`}</strong>{` ${fix}${trip.stops ? ", or try a wider date range" : ""}${trip.arrive ? ", or clear the arrival window" : ""}. A failed search above means that search broke, not that it found nothing.`}</p>;
   }
-  // Same outbound at the same price for several return dates becomes one row, as print_table does.
-  const groups = new Map();
-  for (const r of rows) {
-    const k = [r.source, r.search_out, r.flights, r.price_cmp, r.return_flights].join("|");
+  // Same outbound at the same price for several return dates becomes one row, as print_table does. A fare whose
+  // return wasn't looked up joins the row its outbound and price already have, whichever return that one found.
+  const shown = pick ? rows.filter((r) => `${r.search_out}|${r.search_ret}` === pick) : rows;
+  const groups = new Map(), first = new Map();
+  for (const r of shown) {
+    const flown = [r.source, r.search_out, r.flights, r.price_cmp].join("|");
+    const k = r.return_flights ? `${flown}|${r.return_flights}` : first.get(flown) ?? flown;
+    if (!first.has(flown)) first.set(flown, k);
     if (!groups.has(k)) groups.set(k, { r, rets: [] });
     groups.get(k).rets.push(r.search_ret);
   }
   const list = [...groups.values()];
+  list.forEach((g) => g.rets.sort());
   const warnCol = rows.some((r) => r.warnings?.length);
   const note = `Prices are for the whole round trip in ${cur}; ties go to the shorter flight.` +
-    (list.length < rows.length ? " Fares that differ only by return date share a row." : "") +
-    (rows.some((r) => !r.return_depart) ? " A return with only a date came without flight details." : "") +
+    (list.length < shown.length ? " Fares that differ only by return date share a row." : "") +
+    (!shown.some((r) => !r.return_depart) ? "" : rows.length > DETAIL
+      ? ` Return flights are looked up for the ${DETAIL} cheapest fares. A return that shows only a date is past those, or couldn't be found.`
+      : " A return that shows only a date couldn't be looked up.") +
     (trip.arrive ? ` Only outbound flights landing ${landing(trip.arrive)}, local time.` : "") +
     (trip.stops ? ` ${STOPS[trip.stops][0].toUpperCase()}${STOPS[trip.stops].slice(1)} each way.` : "") +
-    (rows.some((r) => waits(r).some((l) => l.long)) ? ` Layovers over ${LONG / 60} hours are highlighted.` : "") +
+    (shown.some((r) => waits(r).some((l) => l.long)) ? ` Layovers over ${LONG / 60} hours are highlighted.` : "") +
     (warnCol ? " Warnings cover the flights out and back together." : "");
+  const count = `${shown.length} ${shown.length === 1 ? "fare" : "fares"}`;
+  const days = pick && pick.split("|").map((d) => day(d, true));
+  // A price chosen by date brings its fares into view, unless their heading is already in the upper half of the screen.
+  function choose(k) {
+    setPick(k);
+    if (k && fares.current.getBoundingClientRect().top > innerHeight / 2) scrollToElement(fares.current);
+  }
 
   return (
     <>
       <Brief rows={rows} cur={cur} />
       {meta.sources.length === 2 && <Compare rows={rows} pairs={meta.pairs} cur={cur} />}
-      <section className="block">
-        <h3>{`${rows.length} ${rows.length === 1 ? "fare" : "fares"} from ${trip.from} to ${trip.to}, cheapest first`}</h3>
+      {meta.pairs.length > 1 && <Dates rows={rows} pairs={meta.pairs} tasks={tasks} cur={cur} pick={pick} onPick={choose} />}
+      <section className="block" ref={fares}>
+        <div className="block-h">
+          <h3>{days ? `${count} leaving ${days[0]} and returning ${days[1]}, cheapest first` : `${count} from ${trip.from} to ${trip.to}, cheapest first`}</h3>
+          {pick && <button type="button" className="ghost" onClick={() => setPick(null)}>Show every date</button>}
+        </div>
+        <p className="vh" role="status">{days ? `Showing ${count} leaving ${days[0]} and returning ${days[1]}.` : ""}</p>
         <p className="muted">{note}</p>
         <div className="table-scroll">
           <table className="fares-table">
             <thead><tr><th scope="col">Price</th><th scope="col">Outbound</th><th scope="col">Return</th>{warnCol && <th scope="col">Warnings</th>}<th scope="col"><span className="vh">Booking</span></th></tr></thead>
             {/* the first rows rise in after the brief, and their prices flip in */}
-            <tbody>{(all ? list : list.slice(0, TOP)).map(({ r, rets }, i) => <FareRow key={i} r={r} rets={rets} cur={cur} top={i === 0} warnCol={warnCol} enter={i < ENTER ? 4 + i : undefined} />)}</tbody>
+            <tbody>{(all ? list : list.slice(0, TOP)).map(({ r, rets }, i) => <FareRow key={i} r={r} rets={rets} cur={cur} top={i === 0 && r.price_cmp === rows[0].price_cmp} warnCol={warnCol} enter={i < ENTER ? 4 + i : undefined} />)}</tbody>
           </table>
         </div>
         {list.length > TOP && !all && <button type="button" className="ghost more" onClick={() => setAll(true)}>{`Show all ${list.length} rows`}</button>}

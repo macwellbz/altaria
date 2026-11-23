@@ -1,15 +1,15 @@
 // Altaria's public site on Cloudflare Workers: the built page (web/dist) as static assets, and server.py's API in
-// JavaScript. Google Flights only. The free plan gives each request 10ms of CPU and 50 subrequests, and one date
-// pair costs about a dozen Google requests of 2MB each, so the browser drives a search (web/src/drive.js): one call
-// here per Google request. Nothing a visitor searches is stored; the only shared state is two daily counters (Caps).
+// JavaScript. Google Flights only. The free plan gives each request 10ms of CPU and 50 subrequests, and a search
+// takes a Google request of 2MB for each date pair and each return it looks up, so the browser drives a search
+// (web/src/drive.js): one call here per Google request. Nothing a visitor searches is stored; the only shared state is two daily counters (Caps).
 import { DurableObject } from "cloudflare:workers";
 import { CURRENCIES } from "../web/src/currencies.js";
 import { arrivalWindow, cheapestReturn, dateRange, googleQuery, isDate, parseGoogle } from "../web/src/flights.js";
 import { Gemini, ProviderError, readTrip } from "./ai.js";
 
-const GOOGLE_PER_DAY = 2000;   // Google requests a day, for everyone: a date pair takes about 12
+const GOOGLE_PER_DAY = 4000;   // Google requests a day, for everyone: a search takes one a date pair, plus up to 25 returns
 const GEMINI_PER_DAY = 400;    // trip readings a day; the free tier allows 500, and resets at midnight Pacific
-const MAX_PAIRS = 30;          // date pairs in one search
+const MAX_PAIRS = 100;         // date pairs in one search
 const MODEL = "gemini-3.5-flash-lite";
 const CODE = /^[A-Z]{3}$/;
 const HEADERS = {   // a Chrome 145 on macOS, as fast-flights presents itself
@@ -62,7 +62,7 @@ function parse(q) {
   const stops = (q.get("stops") || "").trim();
   if (!["", "0", "1", "2"].includes(stops)) throw new RangeError("Max stops must be 0 (nonstop), 1 or 2, or left open.");
   if (!(q.get("sources") || "google").split(",").includes("google")) throw new RangeError("This site doesn't search that source.");
-  if (spans[0] * spans[1] > MAX_PAIRS) throw new RangeError(`That's ${spans[0] * spans[1]} date pairs. Narrow the dates to ${MAX_PAIRS} or fewer.`);
+  if (spans[0] * spans[1] > MAX_PAIRS) throw new RangeError(`That's ${spans[0] * spans[1]} searches. Narrow the dates to ${MAX_PAIRS} or fewer.`);
   const pairs = dateRange(q.get("out").trim()).flatMap((o) => dateRange(q.get("ret").trim()).map((r) => [o, r]));
   return { orig, dest, currency, pairs, window, stops: stops === "" ? null : Number(stops) };
 }
@@ -77,17 +77,14 @@ function pickOf(text) {
   return segs.map(({ from, to, depart, flight }) => ({ from, to, depart: depart.slice(0, 10), flight }));
 }
 
-// One Google Flights page, parsed. Anything but a 200 with results in it is a failure.
-async function google(query, currency, again = true) {
+// One Google Flights page, parsed. Anything but a 200 with results in it is a failure, and the page asks once more
+// (drive.js). About 1 lookup in 40 comes back as a redirect: where it pointed goes to the log, to find out why.
+async function google(query, currency) {
   const r = await fetch(`https://www.google.com/travel/flights?${query.params}`, { headers: HEADERS, redirect: "manual" });
   if (r.status !== 200) {
     await r.body?.cancel();
-    // About 1 lookup in 40 comes back as a redirect, so ask once more. Where it pointed goes to the log, to find out why.
     const to = r.headers.get("location");
-    if (again && to) {
-      console.log(`Google Flights redirected to ${to.slice(0, 300)}; asking again`);
-      return google(query, currency, false);
-    }
+    if (to) console.log(`Google Flights redirected to ${to.slice(0, 300)}`);
     throw new Error(`The fare search answered ${r.status}`);
   }
   return parseGoogle(await r.text(), currency);

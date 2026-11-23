@@ -21,7 +21,7 @@ export function streamSearch(q, update) {
     status: "Starting…",   // the status line, except while searches run: then it counts them
     running: true,         // until the search ends: the Stop button and the rail show
     meta: null,            // the plan: date pairs, sources and currency
-    tasks: {},             // one per search, keyed "source|out|ret": { s: pending, searching, done, failed or stopped, text, error }
+    tasks: {},             // one per search, keyed "source|out|ret": { s: pending, searching, done, failed or stopped, n, error }
     listed: true,          // a failed run drops its list of searches
     rows: null,            // what came back
   }));
@@ -36,7 +36,7 @@ export function streamSearch(q, update) {
     update((t) => ({
       running: false,
       status: why,
-      tasks: Object.fromEntries(Object.entries(t.tasks).map(([k, x]) => [k, x.s === "pending" || x.s === "searching" ? { s: "stopped", text: "stopped" } : x])),
+      tasks: Object.fromEntries(Object.entries(t.tasks).map(([k, x]) => [k, x.s === "pending" || x.s === "searching" ? { s: "stopped" } : x])),
     }));
   };
   const mark = (k, task) => update((t) => (t.tasks[k] ? { tasks: { ...t.tasks, [k]: task } } : {}));
@@ -48,7 +48,7 @@ export function streamSearch(q, update) {
 
     plan: (meta) => {
       const keys = meta.pairs.flatMap(([o, r]) => meta.sources.map((s) => `${s}|${o}|${r}`));
-      update(() => ({ meta, tasks: Object.fromEntries(keys.map((k) => [k, { s: "pending", text: "waiting" }])) }));
+      update(() => ({ meta, tasks: Object.fromEntries(keys.map((k) => [k, { s: "pending" }])) }));
       if (meta.drive) {
         es.onerror = null;
         es.close();
@@ -58,9 +58,7 @@ export function streamSearch(q, update) {
 
     progress: (p) => {
       const k = `${p.src}|${p.out}|${p.ret}`;
-      if (p.status === "searching") mark(k, { s: "searching", text: "searching…" });
-      else if (p.status === "failed") mark(k, { s: "failed", text: "failed", error: p.error });
-      else mark(k, { s: "done", text: `${p.count} ${p.count === 1 ? "fare" : "fares"}` });
+      mark(k, p.status === "searching" ? { s: "searching" } : p.status === "failed" ? { s: "failed", error: p.error } : { s: "done", n: p.count });
     },
 
     result: ({ rows }) => {
@@ -89,9 +87,26 @@ export function streamSearch(q, update) {
   return { stop };
 }
 
+const FEW = 12;   // searches that each get a line of their own; more than this are listed a day to a line
+
+// One line of the reply's list: its searches' states as one. A day's searches are searching from its first until its
+// last is back, then say how many fares they found and how many of them failed.
+function tally(ts) {
+  const n = (s) => ts.filter((t) => t.s === s).length;
+  const failed = n("failed"), back = n("done") + failed;
+  if (failed === ts.length) return { s: "failed", text: "failed" };
+  if (back === ts.length) {
+    const fares = ts.reduce((a, t) => a + (t.n || 0), 0);
+    return { s: "done", text: `${fares} ${fares === 1 ? "fare" : "fares"}`, failed };
+  }
+  if (n("stopped")) return { s: "stopped", text: "stopped" };
+  return back || n("searching") ? { s: "searching", text: "searching…" } : { s: "pending", text: "waiting" };
+}
+
 // One search in the thread, which reads as a chat: your sentence as the message you sent, then the reply. Its first
 // message, from the site's symbol, says how the search is going: a status line, a rail with one segment per search
-// (as in a race's sector timing) and the searches by date. The answer follows across the full column.
+// (as in a race's sector timing) and the searches by date, a line each, or a line a day once there are too many to
+// read (by departure day, or by return day when those are fewer). The answer follows across the full column.
 export default function SearchTurn({ turn, onStop }) {
   const { said, status, running, meta, tasks, listed, rows } = turn;
   const entry = useRef(null);
@@ -112,9 +127,18 @@ export default function SearchTurn({ turn, onStop }) {
   const total = keys.length;
   const done = keys.filter((k) => tasks[k].s === "done" || tasks[k].s === "failed").length;
   const failed = keys.filter((k) => tasks[k].s === "failed");
-  const line = running && total
-    ? `Searching: ${done} of ${total} ${total === 1 ? "search" : "searches"} done, ${clock(Date.now() - turn.started)} so far.`
+  // Once every search is back, the cheapest fares' return flights are still being looked up (search.py's add_return).
+  const returns = running && total > 0 && done === total && failed.length < total;
+  const line = returns ? `Looking up return flights for the cheapest fares, ${clock(Date.now() - turn.started)} so far.`
+    : running && total ? `Searching: ${done} of ${total} ${total === 1 ? "search" : "searches"} done, ${clock(Date.now() - turn.started)} so far.`
     : status;
+  let lines = [];
+  if (listed && meta) {
+    const outs = new Set(meta.pairs.map(([o]) => o)), rets = new Set(meta.pairs.map(([, r]) => r));
+    const side = rets.size < outs.size ? 2 : 1;   // the side with fewer days makes the shorter list
+    lines = total <= FEW ? meta.pairs.map(([o, r]) => ({ id: `${o}|${r}`, label: `${day(o)} to ${day(r)}`, keys: meta.sources.map((s) => `${s}|${o}|${r}`) }))
+      : [...(side === 2 ? rets : outs)].map((d) => ({ id: d, label: `${side === 2 ? "Back" : "Out"} ${day(d)}`, keys: keys.filter((k) => k.split("|")[side] === d) }));
+  }
 
   return (
     <article className="turn" ref={entry} tabIndex={-1}>
@@ -128,21 +152,21 @@ export default function SearchTurn({ turn, onStop }) {
               {running && <button type="button" className="ghost stop" onClick={onStop}>Stop</button>}
             </div>
             {running && (
-              <div className="rail" role="progressbar" aria-label="Search progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow={total ? Math.round((done / total) * 100) : 0}>
+              <div className={returns ? "rail returns" : "rail"} style={{ "--n": total || 1 }} role="progressbar" aria-label="Search progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow={total ? Math.round((done / total) * 100) : 0}>
                 {keys.map((k) => <i key={k} data-k={k} data-s={tasks[k].s}></i>)}
               </div>
             )}
-            {listed && meta && (
+            {lines.length > 0 && (
               <ul className="tasks" aria-label="Searches by date">
-                {meta.pairs.map(([o, r]) => (
-                  <li key={`${o}|${r}`}>
-                    <b>{`${day(o)} to ${day(r)}`}</b>
-                    {meta.sources.map((s) => {
-                      const k = `${s}|${o}|${r}`;
-                      return <span key={k} className="s" data-k={k} data-s={tasks[k].s} title={tasks[k].error}><i>{tasks[k].text}</i></span>;
-                    })}
-                  </li>
-                ))}
+                {lines.map(({ id, label, keys: ks }) => {
+                  const t = tally(ks.map((k) => tasks[k]));
+                  return (
+                    <li key={id}>
+                      <b>{label}</b>
+                      <span className="s" data-s={t.s} title={ks.length === 1 ? tasks[ks[0]].error : undefined}><i>{t.text}</i>{t.failed > 0 && <i className="bad">{`, ${t.failed} failed`}</i>}</span>
+                    </li>
+                  );
+                })}
               </ul>
             )}
             {!running && failed.length > 0 && (
@@ -153,7 +177,7 @@ export default function SearchTurn({ turn, onStop }) {
             )}
           </div>
         </div>
-        <div className="answer">{rows && <Results rows={rows} meta={meta} trip={turn.trip} />}</div>
+        <div className="answer">{rows && <Results rows={rows} meta={meta} trip={turn.trip} tasks={tasks} />}</div>
       </div>
     </article>
   );

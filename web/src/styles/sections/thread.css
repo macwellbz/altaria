@@ -11,6 +11,7 @@
 
 .turn {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);   /* the column's width, however wide a table inside would like to be */
   gap: var(--s-5);
 }
 
@@ -69,17 +70,19 @@
   font-weight: 600;
 }
 
-/* One segment per search, as in a race's sector timing: pending, asking, done, failed, stopped. */
+/* One segment per search, as in a race's sector timing: pending, asking, done, failed, stopped. The gaps are a
+   quarter of a segment's pitch, from 4px down to 1px, so a hundred searches still fit a phone's bubble (--n, from
+   SearchTurn.jsx). */
 .rail {
   display: flex;
-  gap: var(--s-1);
+  gap: clamp(1px, 100% / (var(--n) * 4), var(--s-1));
   height: 4px;
   margin-block: var(--s-3);
 }
 
 .rail i {
   flex: 1;
-  min-width: 2px;
+  min-width: 1px;
   background: var(--line);
   border-radius: 2px;
   transition: background-color var(--dur-medium) var(--ease);
@@ -102,11 +105,10 @@
   opacity: .5;
 }
 
-/* The searches by date, as plain text in tabular figures: the dates in the ink, what each returned after them. */
+/* The searches by date, as plain text in tabular figures: the dates in the ink, what each returned after them. More
+   than one run down two columns where the bubble has room, each as wide as the other, so a line that changes never
+   moves its neighbour. */
 .tasks {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--s-1) var(--s-6);
   margin: var(--s-1) 0 0;
   padding: 0;
   font-size: var(--t-sm);
@@ -114,11 +116,17 @@
   list-style: none;
 }
 
+.tasks:has(li + li) {
+  columns: 2 13em;
+  column-gap: var(--s-6);
+}
+
 .tasks li {
-  display: inline-flex;
+  display: flex;
   flex-wrap: wrap;
   align-items: baseline;
   gap: 0 var(--s-2);
+  break-inside: avoid;
 }
 
 .tasks li b {
@@ -138,7 +146,8 @@
   color: var(--accent-text);
 }
 
-.tasks .s[data-s="failed"] i {
+.tasks .s[data-s="failed"] i,
+.tasks .s .bad {
   color: var(--risk);
 }
 
@@ -146,9 +155,11 @@
   opacity: .6;
 }
 
-/* A search in flight breathes. The pulse eases in and out evenly, which the page's one curve doesn't. */
+/* A search in flight breathes, and so does the whole rail while the return flights are looked up. The pulse eases
+   in and out evenly, which the page's one curve doesn't. */
 @media (prefers-reduced-motion: no-preference) {
   .rail i[data-s="searching"],
+  .rail.returns,
   .tasks .s[data-s="searching"] i {
     animation: breathe var(--dur-long) ease-in-out infinite;
   }

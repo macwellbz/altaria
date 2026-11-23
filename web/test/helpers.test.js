@@ -2,7 +2,7 @@ import { run } from "./setup.js";
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { airportsLoaded } from "../src/airports.js";
-import { airlines, dateSpan, day, fmtMin, landing, layovers, localDay, money, picks, remark, savedOn, stops, time, waits, weekday } from "../src/helpers.js";
+import { airlines, byDate, dateSpan, day, fmtMin, landing, layovers, localDay, money, picks, remark, savedOn, stops, time, waits, weekday, weeks } from "../src/helpers.js";
 
 const rows = run.rows;
 await airportsLoaded;
@@ -81,4 +81,29 @@ test("the summary points past the cheapest only to fares that are better in a wa
   const risky = { ...rows[0], source: "matrix", warnings: ["RISKY_CONNECTION"] };
   const clean = { ...rows[1], source: "matrix", warnings: ["OVERNIGHT"] };
   assert.deepEqual(picks([risky, clean]), [[clean, ["no connection warnings from Matrix", "the quickest outbound"]]]);
+});
+
+test("the cheapest fare by date, with a search that broke told apart from one that found nothing", () => {
+  // the saved run searched Dec 26 and Dec 27 out, Jan 10 back; here two more days come with it, one failed and one empty
+  const pairs = ["2026-12-26", "2026-12-27", "2026-12-28", "2026-12-29"].map((out) => [out, "2027-01-10"]);
+  const cells = byDate(rows, pairs, { "google|2026-12-28|2027-01-10": { s: "failed", error: "Google sent no results" }, "google|2026-12-29|2027-01-10": { s: "done", n: 0 } });
+  assert.deepEqual([...cells.keys()], pairs.map((p) => p.join("|")), "a cell for every day searched, in the order searched");
+  // the run's own cheapest for each day: 1,147 on the 26th and 1,443 on the 27th
+  assert.deepEqual([...cells.values()].map((c) => c.price), [1147, 1443, null, null]);
+  assert.deepEqual([...cells.values()].map((c) => c.failed), ["", "", "Google sent no results", ""]);
+  assert.equal(byDate([...rows].reverse(), pairs).get("2026-12-26|2027-01-10").price, 1147, "whatever order the rows come in");
+});
+
+test("a run of days sets out as a calendar's weeks, and a week or less as one row", () => {
+  assert.deepEqual(weeks("2026-12-26", "2026-12-27"), [["2026-12-26", "2026-12-27"]]);
+  const cal = weeks("2026-12-26", "2027-01-10");   // a Saturday to a Sunday, across the new year
+  assert.ok(cal.every((week) => week.length === 7 && weekday(week[0]) === "Sun" && weekday(week[6]) === "Sat"));
+  assert.equal(cal[0][6], "2026-12-26");
+  assert.equal(cal.at(-1)[0], "2027-01-10");
+  const days = cal.flat();
+  assert.deepEqual(days, [...days].sort(), "in order");
+  assert.equal(new Set(days).size, days.length, "and no day twice");
+  // the clocks go back on Nov 1 2026 in Toronto and forward on Mar 14 2027: no day is skipped or doubled
+  assert.equal(weeks("2026-10-25", "2026-11-07").flat().length, 14);
+  assert.equal(weeks("2027-03-07", "2027-03-20").flat().length, 14);
 });

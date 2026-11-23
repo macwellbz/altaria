@@ -12,8 +12,13 @@ import re
 import sys
 import time
 import urllib.request
+from concurrent.futures import ThreadPoolExecutor
 from datetime import date, datetime, timedelta
 from pathlib import Path
+
+AT_ONCE = 5   # Google requests in flight at once: date pairs, then returns
+DETAIL = 25   # the cheapest fares whose return flights are looked up; the rest keep only their return date
+
 
 def date_range(spec):
     """'2026-12-28..2026-12-30' -> ['2026-12-28', '2026-12-29', '2026-12-30']; a single date also works."""
@@ -122,13 +127,20 @@ def google_query(orig, dest, out, ret, currency, max_stops=None):
         trip="round-trip", currency=currency, language="en", max_stops=max_stops)
 
 
-def google(orig, dest, out, ret, currency, max_stops=None):
-    from concurrent.futures import ThreadPoolExecutor
+def fetch_google(q, currency):
+    """One Google Flights page, parsed. A page that comes back without results usually has them the second
+    time, so a failure is asked once more."""
     from fast_flights import fetch_flights_html
-    rows = parse_google(fetch_flights_html(google_query(orig, dest, out, ret, currency, max_stops)), currency)
-    with ThreadPoolExecutor(5) as pool:
-        list(pool.map(lambda r: add_return(r, orig, dest, out, ret, currency, max_stops), rows))
-    return rows
+    try:
+        return parse_google(fetch_flights_html(q), currency)
+    except Exception:
+        return parse_google(fetch_flights_html(q), currency)
+
+
+def google(orig, dest, out, ret, currency, max_stops=None):
+    """One date pair's outbound flights. Each is already priced as the whole round trip, with its cheapest
+    return; add_return finds which return that is."""
+    return fetch_google(google_query(orig, dest, out, ret, currency, max_stops), currency)
 
 
 def picked(segments):
@@ -143,11 +155,10 @@ def add_return(r, orig, dest, out, ret, currency, max_stops=None):
     """Google details the return only once an outbound is chosen, so choose this row's outbound and take
     the cheapest return, then the shortest. Its price is the whole trip's. A failed lookup leaves the
     return blank, never guessed."""
-    from fast_flights import fetch_flights_html
     q = google_query(orig, dest, out, ret, currency, max_stops)
     q.flight_data[0].MergeFromString(picked(r["segments"]))
     try:
-        backs = parse_google(fetch_flights_html(q), currency)
+        backs = fetch_google(q, currency)
     except Exception:
         return
     if backs:
@@ -276,37 +287,56 @@ def print_compare(rows, pairs, currency):
 def run_search(orig, dest, pairs, sources, currency, arrive_between=None, progress=lambda *a: None,
                max_stops=None):
     """Search each (out, ret) date pair on each source. Returns deduped rows sorted by price, then duration.
+    Google's pairs go AT_ONCE at a time, then the DETAIL cheapest Google fares get their return flights.
     Each row links to its trip on Google Flights, or else the search for its dates. max_stops caps stops on each leg.
     progress(src, out, ret, result) runs before each search (result=None) and after it (result = the
     offers found, or the exception that sank that one search). An exception raised by progress aborts the run."""
     global _pw, _browser
     rows = []
+
+    def found(src, out, ret, result):
+        if isinstance(result, Exception):  # one failed search shouldn't sink the run
+            return progress(src, out, ret, result)
+        link = google_query(orig, dest, out, ret, currency, max_stops).url()
+        for r in result:
+            r.update(search_out=out, search_ret=ret, link=link)
+        progress(src, out, ret, result)
+        rows.extend(result)
+
+    def attempt(search, *args):
+        try:
+            return search(*args)
+        except Exception as e:
+            return e
+
     try:
-        for (out, ret), src in itertools.product(pairs, sources):
-            progress(src, out, ret, None)
-            try:
-                found = (matrix(orig, dest, out, ret, max_stops) if src == "matrix"
-                         else google(orig, dest, out, ret, currency, max_stops))
-            except Exception as e:  # one failed search shouldn't sink the run
-                progress(src, out, ret, e)
-                continue
-            link = google_query(orig, dest, out, ret, currency, max_stops).url()
-            for r in found:
-                r.update(search_out=out, search_ret=ret)
-                r.setdefault("link", link)   # a Google row whose return was found already links to its own trip
-            progress(src, out, ret, found)
-            rows += found
-            if src == "google":
-                time.sleep(1)  # be polite to Google
+        if "google" in sources:
+            with ThreadPoolExecutor(AT_ONCE) as pool:
+                for i in range(0, len(pairs), AT_ONCE):
+                    if i:
+                        time.sleep(1)  # be polite to Google
+                    batch = pairs[i:i + AT_ONCE]
+                    for out, ret in batch:
+                        progress("google", out, ret, None)
+                    results = pool.map(lambda p: attempt(google, orig, dest, *p, currency, max_stops), batch)
+                    for (out, ret), result in zip(batch, list(results)):
+                        found("google", out, ret, result)
+        if "matrix" in sources:
+            for out, ret in pairs:
+                progress("matrix", out, ret, None)
+                found("matrix", out, ret, attempt(matrix, orig, dest, out, ret, max_stops))
     finally:
         if _browser:
             _browser.close()
             _pw.stop()
             _pw = _browser = None
-    convert(rows, currency)
-    rows = dedupe(rows)
     if arrive_between:
         rows = [r for r in rows if arrives_within(r, arrive_between)]
+    cheapest = sorted((r for r in rows if r["source"] == "google"), key=lambda r: (r["price"], r["duration"] or 10**6))
+    with ThreadPoolExecutor(AT_ONCE) as pool:
+        list(pool.map(lambda r: add_return(r, orig, dest, r["search_out"], r["search_ret"], currency, max_stops), cheapest[:DETAIL]))
+    convert(rows, currency)
+    rows = dedupe(rows)
     rows.sort(key=lambda r: (r["price_cmp"], r["duration"] or 10**6))
     return rows
 

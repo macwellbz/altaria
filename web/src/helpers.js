@@ -84,6 +84,32 @@ export function picks(rows) {
   if (fastest && fastest !== best && fastest.price_cmp > best.price_cmp) pick(fastest, "the quickest outbound");
   return [...found].sort(([a], [b]) => a.price_cmp - b.price_cmp);
 }
+// The cheapest fare for each departure and return day a search covered, keyed "out|ret", in the order searched:
+// { out, ret, price, failed }. price is null where no fare came back, and failed then says why when that search
+// broke, so a day that failed never reads as a day with no flights. tasks is the turn's (SearchTurn.jsx).
+export function byDate(rows, pairs, tasks = {}) {
+  const cells = new Map(pairs.map(([out, ret]) => [`${out}|${ret}`, { out, ret, price: null, failed: "" }]));
+  for (const [k, t] of Object.entries(tasks)) {
+    const c = t.s === "failed" && cells.get(k.slice(k.indexOf("|") + 1));
+    if (c) c.failed = t.error || "This search failed.";
+  }
+  for (const r of rows) {
+    const c = cells.get(`${r.search_out}|${r.search_ret}`);
+    if (c && (c.price === null || r.price_cmp < c.price)) c.price = r.price_cmp;
+  }
+  return cells;
+}
+// A run of days as a calendar: weeks of seven from the Sunday on or before the first day to the Saturday on or after
+// the last. A week or less is one row of just those days.
+export function weeks(first, last) {
+  const DAY = 864e5, a = Date.parse(first), b = Date.parse(last);   // a date alone parses as UTC, so no clock change enters
+  const wide = Math.min(7, (b - a) / DAY + 1);
+  const out = [];
+  for (let t = wide < 7 ? a : a - new Date(a).getUTCDay() * DAY; t <= b; t += wide * DAY) {
+    out.push(Array.from({ length: wide }, (_, i) => new Date(t + i * DAY).toISOString().slice(0, 10)));
+  }
+  return out;
+}
 // "Air Canada to Amsterdam, then Air Baltic to Vilnius": who flies which part. One airline's flights in a row read as one part.
 export function airlines(segs) {
   const runs = [];

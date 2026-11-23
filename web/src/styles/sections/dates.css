@@ -1,0 +1,205 @@
+/* The cheapest fare by date (Dates.jsx): a timetable of prices, departure days down the side and return days across
+   the top, or one side's days as a calendar. Its frame is as wide as its columns and no wider, so a few days make a
+   small card and a hundred fill the column; past that it scrolls sideways under its row headings, which stay put.
+   Four states read apart: a heading is small and in the second ink, the lowest price is shaded and bold, the price
+   whose fares are listed below is filled with the accent, and the keyboard's place is ringed. */
+.dates {
+  --side: 7.5rem;   /* the row headings' column, which the frame's own scrolling stops clear of */
+  width: fit-content;
+  max-width: 100%;
+  scroll-padding-left: var(--side);
+}
+
+/* Borders stay with a cell that sticks only when the table's cells are separate. */
+.dates table {
+  width: auto;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.dates th,
+.dates td {
+  padding: 0;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.dates td {
+  width: 7rem;
+  height: 44px;   /* a price's button is this tall, for a finger; a cell with no price keeps the row's height */
+  vertical-align: middle;
+}
+
+.dates thead th {
+  padding: var(--s-3) var(--s-4);
+  vertical-align: bottom;
+  line-height: 1.3;
+}
+
+/* A day as a heading: its weekday over its date across the top, and beside it down the side. */
+.dates th .wd {
+  display: block;
+}
+
+.dates th .nw {
+  color: var(--ink);
+}
+
+/* Which days run which way: "Depart" over the row headings, "Return" over the columns'. */
+.dates th.axis {
+  font-weight: 600;
+  text-align: left;
+  color: var(--ink);
+}
+
+.dates thead tr:first-child th.axis:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.dates th.axis span {
+  position: sticky;
+  left: calc(var(--side) + var(--s-4));
+}
+
+.grid tbody th,
+.grid thead tr:first-child th:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  width: var(--side);
+  min-width: var(--side);
+  padding-inline: var(--s-4);
+  text-align: left;
+  background: var(--surface);
+  border-right: 1px solid var(--line);
+}
+
+.grid tbody th {
+  line-height: 1.3;
+}
+
+.grid tbody th .wd {
+  display: inline;
+}
+
+/* A price is a button the size of its cell. */
+.dates td button,
+.dates td.none,
+.dates td.failed {
+  padding: var(--s-2) var(--s-4);
+  font-size: var(--t-sm);
+  line-height: 1.3;
+}
+
+.dates td button {
+  display: block;
+  width: 100%;
+  min-height: 44px;
+  font-family: inherit;
+  font-variant-numeric: inherit;
+  text-align: inherit;
+  color: var(--ink);
+  background: none;
+  border: 0;
+  border-radius: 0;
+  cursor: pointer;
+  transition: background-color var(--dur-short) var(--ease);
+}
+
+.dates td button:hover,
+.dates td button:active {
+  background: var(--press);
+}
+
+.dates td.low {
+  background: var(--cheapest);
+}
+
+.dates td.low .p {
+  font-weight: 600;
+}
+
+.dates td button[aria-pressed="true"] {
+  font-weight: 600;
+  color: var(--on-accent);
+  background: var(--accent);
+}
+
+/* The ring sits inside the cell, where the frame can't clip it, and on the accent it takes the label's colour. */
+.dates td button:focus-visible {
+  outline-offset: -2px;
+  border-radius: 0;
+}
+
+.dates td button[aria-pressed="true"]:focus-visible {
+  outline-color: var(--on-accent);
+}
+
+/* In place of a price: a search that broke, in the risk colour, or one that found nothing. */
+.dates td.none,
+.dates td.failed {
+  font-size: var(--t-xs);
+  color: var(--ink-2);
+}
+
+.dates td.failed .p {
+  color: var(--risk);
+}
+
+/* The calendar: seven days across, each cell its date over its price. */
+.cal th,
+.cal td {
+  text-align: center;
+}
+
+.cal td {
+  width: 6.5rem;
+}
+
+.cal .d,
+.cal .p {
+  display: block;
+}
+
+.cal .d {
+  font-size: var(--t-xs);
+  font-weight: 400;
+  color: var(--ink-2);
+}
+
+.cal button[aria-pressed="true"] .d {
+  color: inherit;
+}
+
+/* On a phone the figures step down to the page's smallest size and the padding to a mark's, so seven days fit across
+   without scrolling; the row headings stack as the columns' do. */
+@media (max-width: 600px) {
+  .dates {
+    --side: 4rem;
+  }
+
+  .dates thead th,
+  .dates td button,
+  .dates td.none,
+  .dates td.failed {
+    padding-inline: var(--s-2);
+    font-size: var(--t-xs);
+  }
+
+  .grid tbody th,
+  .grid thead tr:first-child th:first-child {
+    padding-inline: var(--s-3) var(--s-2);
+  }
+
+  .grid tbody th .wd {
+    display: block;
+  }
+
+  .cal thead th,
+  .cal td button,
+  .cal td.none,
+  .cal td.failed {
+    padding-inline: 2px;
+  }
+}

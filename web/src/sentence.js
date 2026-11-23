@@ -4,7 +4,9 @@
 import { STOPS, day, landing } from "./helpers.js";
 
 export const EMPTY = { from: "", to: "", stops: "", "out-from": "", "out-to": "", "arr-from": "", "arr-to": "", "ret-from": "", "ret-to": "", currency: "CAD" };
-const SECONDS = 8;   // one Google search: the outbound list, then each outbound's cheapest return
+// Seconds a search takes: date pairs go five at a time, about 2.5s a round with the pause, then the cheapest fares'
+// returns take about 5s more.
+const ROUND = 2.5, RETURNS = 5;
 const range = (a, b) => (b && b !== a ? `${a}..${b}` : a);
 const count = (a, b) => (a && b ? Math.round((new Date(b) - new Date(a)) / 864e5) + 1 : a ? 1 : 0);
 
@@ -13,7 +15,7 @@ const pairs = (f) => count(f["out-from"], f["out-to"]) * count(f["ret-from"], f[
 
 // "1 search, about 10 seconds", or "" before the dates are chosen.
 export function estimate(f) {
-  const n = pairs(f), secs = n * SECONDS;
+  const n = pairs(f), secs = Math.ceil(n / 5) * ROUND + RETURNS;
   if (n < 1) return "";
   return `${n} ${n === 1 ? "search" : "searches"}, about ${secs < 90 ? `${Math.max(5, Math.round(secs / 5) * 5)} seconds` : `${Math.round(secs / 60)} minutes`}`;
 }

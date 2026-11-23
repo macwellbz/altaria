@@ -78,6 +78,21 @@
   font-size: var(--t-lg);
 }
 
+/* The fares' heading, with "Show every date" beside it while a price chosen by date narrows them. The row is as tall
+   as that button from the start, so nothing under it moves when it comes and goes. */
+.block-h {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-2) var(--s-4);
+  min-height: 32px;
+}
+
+.block-h .ghost {
+  height: 32px;
+}
+
 .block > p {
   max-width: var(--measure);
   margin-top: var(--s-2);

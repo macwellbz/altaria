@@ -10,16 +10,20 @@ const outbound = run.rows.slice(0, 3).map(({ source, price, currency, carriers, 
 const q = new URLSearchParams({ from: "YYZ", to: "VNO", currency: "CAD", out: "2026-12-26", ret: "2027-01-10", stops: "1", sources: "google" });
 const plan = (pairs) => ({ pairs, sources: ["google"], currency: "CAD", drive: true });
 
-// Runs drive against answer(path, params) and collects what it reports.
-async function search(meta, answer, signal = new AbortController().signal) {
-  const heard = [];
+// Days from Dec 26, as dates, and each date pair's outbounds as the Worker would answer them, k dearer per pair.
+const dec = (n) => new Date(Date.UTC(2026, 11, 26 + n)).toISOString().slice(0, 10);
+const pairsOf = (n) => Array.from({ length: n }, (_, i) => [dec(i), "2027-01-10"]);
+const listed = (out, ret, k = 0) => outbound.map((r) => ({ ...structuredClone(r), price: r.price + k, search_out: out, search_ret: ret }));
+
+// Runs drive against answer(path, params) and collects what it reports in heard.
+async function search(meta, answer, { signal = new AbortController().signal, heard = [], query = q } = {}) {
   const on = Object.fromEntries(["progress", "result", "fail"].map((e) => [e, (d) => heard.push([e, d])]));
   const asked = [];
   await withFetch((url) => {
     const u = new URL(url, "http://x");
     asked.push(Object.fromEntries(u.searchParams));
     return answer(u.pathname, u.searchParams);
-  }, () => drive(q, meta, on, signal));
+  }, () => drive(query, meta, on, signal));
   return { heard, asked };
 }
 
@@ -32,7 +36,7 @@ test("each pair asks for its outbounds, then each outbound's return, and the row
     return flights === outbound[1].flights ? json(502, { error: "The fare search answered 302" }) : json(200, { ret: null });
   });
   assert.deepEqual(asked[0], { from: "YYZ", to: "VNO", currency: "CAD", stops: "1", out: "2026-12-26", ret: "2027-01-10" });
-  assert.equal(asked.length, 1 + outbound.length);
+  assert.equal(asked.length, 1 + outbound.length + 1, "the lookup that failed is asked once more");
   assert.deepEqual(Object.keys(JSON.parse(asked[1].pick)[0]), ["from", "to", "depart", "flight"], "a pick sends only what the server checks");
   assert.deepEqual(heard.slice(0, 2), [["progress", { src: "google", out: "2026-12-26", ret: "2027-01-10", status: "searching" }],
     ["progress", { src: "google", out: "2026-12-26", ret: "2027-01-10", status: "done", count: 3 }]]);
@@ -44,11 +48,60 @@ test("each pair asks for its outbounds, then each outbound's return, and the row
 });
 
 test("once today's searches are used up, the rest aren't asked and the search says so, never showing saved fares", async () => {
-  const pairs = [["2026-12-26", "2027-01-10"], ["2026-12-27", "2027-01-10"]];
+  const pairs = pairsOf(8);
   const { heard, asked } = await search(plan(pairs), () => json(429, { error: "Used up.", cap: true }));
-  assert.equal(asked.length, 1);
-  assert.deepEqual(heard.map(([e, d]) => [e, d.status, d.error]).slice(0, 3), [["progress", "searching", undefined], ["progress", "failed", "Used up."], ["progress", "failed", "Used up."]]);
+  assert.ok(asked.length < pairs.length, `asked ${asked.length} of ${pairs.length}`);
+  const failed = heard.filter(([e, d]) => e === "progress" && d.status === "failed");
+  assert.equal(failed.length, pairs.length);
+  assert.ok(failed.every(([, d]) => d.error === "Used up."));
   assert.deepEqual(heard.at(-1), ["fail", { message: "Used up." }]);
+});
+
+test("every date pair is searched, but only the cheapest fares get their returns, and the rest keep their dates", async () => {
+  const pairs = pairsOf(10);
+  const { heard, asked } = await search(plan(pairs), (path, p) => {
+    const k = pairs.findIndex(([o]) => o === p.get("out"));
+    if (!p.get("pick")) return json(200, { rows: listed(p.get("out"), p.get("ret"), k) });
+    const flights = JSON.parse(p.get("pick")).map((g) => g.flight).join(" ");
+    const r = listed(p.get("out"), p.get("ret"), k).find((x) => x.flights === flights);
+    return json(200, { ret: { price: r.price, return_flights: "BT961 AC809", return_depart: "2027-01-10T07:45", link: "trip" } });
+  });
+  const [kind, { rows }] = heard.at(-1);
+  assert.equal(kind, "result");
+  assert.equal(rows.length, pairs.length * outbound.length, "every pair's fares come back");
+  assert.deepEqual(heard.filter(([, d]) => d.status === "done").map(([, d]) => d.out).sort(), pairs.map(([o]) => o));
+  const full = rows.filter((r) => r.return_depart), bare = rows.filter((r) => !r.return_depart);
+  assert.ok(full.length > 0 && bare.length > 0, "some fares get their returns and some don't");
+  assert.equal(asked.filter((a) => a.pick).length, full.length, "one lookup per return found, and none for the rest");
+  assert.ok(Math.max(...full.map((r) => r.price_cmp)) <= Math.min(...bare.map((r) => r.price_cmp)), "the returns are the cheapest fares'");
+  assert.ok(bare.every((r) => r.link === "pair" && r.search_ret), "a fare without its return keeps its dates and its search");
+});
+
+test("fares that land outside the window never get a return lookup", async () => {
+  const query = new URLSearchParams({ ...Object.fromEntries(q), arrive: ",2026-12-27" });
+  const late = outbound.filter((r) => r.arrive.slice(0, 10) > "2026-12-27").map((r) => r.flights);
+  assert.ok(late.length > 0 && late.length < outbound.length, "the fixture has fares on both sides of the window");
+  const { heard, asked } = await search(plan([["2026-12-26", "2027-01-10"]]), (path, p) =>
+    p.get("pick") ? json(200, { ret: null }) : json(200, { rows: structuredClone(outbound) }), { query });
+  const picked = asked.filter((a) => a.pick).map((a) => JSON.parse(a.pick).map((g) => g.flight).join(" "));
+  assert.equal(picked.length, outbound.length - late.length);
+  assert.ok(picked.every((f) => !late.includes(f)));
+  assert.ok(heard.at(-1)[1].rows.every((r) => !late.includes(r.flights)));
+});
+
+test("a request that fails is asked once more, and only a second failure counts", async () => {
+  const pairs = pairsOf(3), tries = new Map();
+  const { heard } = await search(plan(pairs), (path, p) => {
+    const n = (tries.get(p.toString()) || 0) + 1;
+    tries.set(p.toString(), n);
+    if (n === 1 || (p.get("out") === pairs[2][0] && !p.get("pick"))) return json(502, { error: "The fare search answered 302" });   // the last fails twice
+    if (!p.get("pick")) return json(200, { rows: listed(p.get("out"), p.get("ret")) });
+    return json(200, { ret: { return_flights: "BT961 AC809", return_depart: "2027-01-10T07:45", link: "trip" } });
+  });
+  const ends = heard.filter(([e, d]) => e === "progress" && d.status !== "searching").map(([, d]) => [d.out, d.status]);
+  assert.deepEqual(ends.sort(), [[pairs[0][0], "done"], [pairs[1][0], "done"], [pairs[2][0], "failed"]]);
+  assert.ok([...tries.values()].every((n) => n <= 2), "nothing is asked more than twice");
+  assert.ok(heard.at(-1)[1].rows.every((r) => r.return_depart), "a return that failed once is found the second time");
 });
 
 test("a failed Google comes back empty, as server.py's does", async () => {
@@ -57,11 +110,14 @@ test("a failed Google comes back empty, as server.py's does", async () => {
 });
 
 test("a stopped search reports nothing more", async () => {
-  const stop = new AbortController();
-  const { heard } = await search(plan([["2026-12-26", "2027-01-10"]]), (path, p) => {
-    if (!p.get("pick")) return json(200, { rows: structuredClone(outbound) });
+  const stop = new AbortController(), heard = [];
+  let then = -1;
+  await search(plan(pairsOf(7)), (path, p) => {
+    if (!p.get("pick")) return json(200, { rows: listed(p.get("out"), p.get("ret")) });
+    then = heard.length;
     stop.abort();
     throw new DOMException("stopped", "AbortError");
-  }, stop.signal);
-  assert.deepEqual(heard.map(([e, d]) => d.status), ["searching"]);
+  }, { signal: stop.signal, heard });
+  assert.ok(then > 0, "it stopped while looking up returns");
+  assert.equal(heard.length, then);
 });

@@ -59,7 +59,7 @@ web/        the site: React and Vite in plain JavaScript, plain CSS, no UI kit
 worker/     the public site: a Cloudflare Worker serving the same page and API, Google only, with daily caps
 ```
 
-A search starts in the form's submit handler. The server runs one date pair at a time and streams a plan, then progress for each pair, then the ranked rows. The page shows a segmented progress rail while it waits. Every run is saved, and the newest one feeds the fare pass in the hero and the ranking board.
+A search starts in the form's submit handler. The server lists five date pairs' outbound flights at a time, then finds the return flights for the 25 cheapest fares, and streams a plan, then progress for each pair, then the ranked rows. The page shows a segmented progress rail while it waits, and when a search covers more than one date it sets out the cheapest fare for each day out and back as a timetable, where choosing a price lists that date's fares. Every run is saved, and the newest one feeds the fare pass in the hero and the ranking board.
 
 The Worker runs on Cloudflare's free plan, which allows each request 10ms of CPU and 50 subrequests. So it only checks the query and answers with the plan, and the page runs the search itself, one Google request per call. `web/src/flights.js` is the JavaScript port of `search.py`'s Google side, and `worker/ai.js` ports `ai.py`'s checks. There the fare pass and the board show the visitor's own last search, kept in their browser.
 

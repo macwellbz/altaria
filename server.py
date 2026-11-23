@@ -21,7 +21,7 @@ import search
 ROOT = Path(__file__).parent
 SITE = ROOT / "web" / "dist"   # what npm run build writes
 CODE = re.compile(r"[A-Z]{3}")
-MAX_SEARCHES = 80  # date pairs x sources; Matrix alone at this size is ~40 minutes
+MAX_SEARCHES = 100  # date pairs x sources; Google does this many in about a minute, Matrix in about 50
 # Matrix's Playwright browser is a module global in search.py, so one search at a time.
 one_search = threading.Lock()
 one_ai = threading.Lock()   # each trip read spends the user's model quota or machine: one at a time

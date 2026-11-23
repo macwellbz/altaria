@@ -53,9 +53,12 @@ reports what comes back.
 - Before the user books, tell them to confirm the top result on the operating airline's own site.
 
 ## Known gaps
-- Google lists only outbound flights until one is chosen. `add_return` chooses each outbound (a
-  protobuf field fast-flights doesn't model) and takes the cheapest, then shortest, return: one extra
-  request per row, five at a time. If that lookup fails, the return fields stay `null`.
+- Google lists only outbound flights until one is chosen, though each is already priced as the whole
+  round trip. So a search lists every date pair's outbounds first, five pairs at a time, then
+  `add_return` chooses the outbound of each of the 25 cheapest fares (a protobuf field fast-flights
+  doesn't model) and takes the cheapest, then shortest, return. The other fares, and any whose lookup
+  fails, keep their return date with the return fields `null`. About 1 Google page in 40 comes back
+  without results, so every failed request is asked once more before it counts as failed.
 - `norm_google` reads Google's private JSON by position, so it will break when Google changes that
   format. `tests/test_search.py` uses a real saved payload.
 - Matrix has no API. `matrix()` drives the real page in headless Chromium, because each search needs a

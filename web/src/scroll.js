@@ -122,10 +122,13 @@ export function focusOn(el, show = el) {
 }
 
 // Scrolls a list inside the page, such as the finder's matches, just far enough to show one of its items.
-// The page itself stays put.
-export function showIn(list, item) {
+// The page itself stays put. A table wider than its frame scrolls sideways the same way, with the item kept
+// `clear` of whatever is stuck to the frame's left edge (its row headings).
+export function showIn(list, item, clear = 0) {
   const outer = list.getBoundingClientRect();
   const inner = item.getBoundingClientRect();
   if (inner.top < outer.top) list.scrollTop -= outer.top - inner.top;
   else if (inner.bottom > outer.bottom) list.scrollTop += inner.bottom - outer.bottom;
+  if (inner.left < outer.left + clear) list.scrollLeft -= outer.left + clear - inner.left;
+  else if (inner.right > outer.right) list.scrollLeft += inner.right - outer.right;
 }

@@ -24,7 +24,7 @@ export default function Search() {
     <section className="search" id="search" aria-labelledby="search-title">
       <div className="wrap">
         <h2 id="search-title">Where are you headed?</h2>
-        <p className="search-lede">{`If your dates are flexible, give a range each way and ${NAME} searches every combination.`}</p>
+        <p className="search-lede">{`If your dates are flexible, give a range each way. ${NAME} searches every combination and shows which days are cheapest.`}</p>
         {turns.length > 0 && (
           <div className="thread" id="thread">
             {turns.map((t) => <SearchTurn key={t.id} turn={t} onStop={() => active.current.stop(STOPPED)} />)}
