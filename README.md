@@ -16,7 +16,7 @@ Try it at [altaria.macwell.workers.dev](https://altaria.macwell.workers.dev), or
 | | |
 |---|---|
 | ![The ranking board: the five cheapest fares of the last search in price order](docs/ranking-board.png) | ![The trip box: a sentence typed in plain English has filled in the search](docs/trip-box.png) |
-| ![A finished search at night: the cheapest fare as a headline, then the timetable](docs/results-dark.png) | ![The hero at night](docs/hero-dark.png) |
+| ![A finished search at night: a table of the cheapest fare for each day out and back, then the fares, where one row lists every return date that shares its flights](docs/results-dark.png) | ![The hero at night](docs/hero-dark.png) |
 
 The fares in these screenshots come from one real saved search, replayed, and the trip box's answer is a canned one, so taking the screenshots queried neither Google nor a model.
 
