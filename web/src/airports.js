@@ -24,5 +24,8 @@ export function airportsFor(q) {
   return AIRPORTS.map((a) => [rank(a), a]).filter(([r]) => r < 9).sort((x, y) => x[0] - y[0]).slice(0, 8).map(([, a]) => a);
 }
 
+// The airport a code names, if the list has it.
+export const airport = (code) => AIRPORTS.find((a) => a.c === code);
+
 // "AMS" -> "Amsterdam", from the finder's airport list, minus any district: "Helsinki (Vantaa)" -> "Helsinki".
-export const city = (code) => (AIRPORTS.find((a) => a.c === code)?.t || code).replace(/ \(.*\)$/, "");
+export const city = (code) => (airport(code)?.t || code).replace(/ \(.*\)$/, "");

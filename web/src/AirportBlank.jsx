@@ -1,6 +1,6 @@
 import { Fragment, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import Flap from "./bits/Flap.jsx";
-import { airportsFor, airportsLoaded } from "./airports.js";
+import { airport, airportsFor, airportsLoaded } from "./airports.js";
 import { MAX_AIRPORTS } from "./flights.js";
 import { focusOn, scrollToElement, showIn } from "./scroll.js";
 import { FILLED } from "./trip.js";
@@ -9,8 +9,9 @@ import { FILLED } from "./trip.js";
    code on a ruled line of its own. Each code is a button that shows only its code and opens the finder below it: a
    search box (an ARIA combobox) over a listbox of matches. Typing stays in the search box; Enter, Tab or a click
    puts the active match in that code's place, and Escape or clicking away keeps what the blank had. Before anything
-   is typed, the finder also offers to add another airport, which opens a new line after the last, there for as long
-   as its finder is, and to remove the code it hangs from; Delete on a code removes it too. `codes` is the form's
+   is typed, the finder names the airport its code stands for, with Remove at the end of that row, and under it
+   offers to add another airport, which opens a new line after the last, there for as long as its finder is. Delete
+   on a code removes it too. `codes` is the form's
    string, "EDI,GLA". A blank the trip box filled (mark) is tinted and says so, and its codes flip in at their place
    in the sentence. `lead` is the word that stays with the first code, and children (the swap) stay with the last. */
 export default function AirportBlank({ id, name, placeholder, lead = "", codes, mark, onChange, children }) {
@@ -146,7 +147,8 @@ function Finder({ name, typed, code, full, onPick, onClose, onAdd, onRemove }) {
   // after a tap whatever became of the pointerdown, so that is the one to stop: the blur would close the finder
   // before the click landed. Stopping the pointerdown instead costs the tap its click in Safari.
   const keepFocus = (e) => e.preventDefault();
-  const note = !q.trim() ? "Matching airports show as you type."
+  const held = airport(code);   // the airport this line holds, once the list is in and if it has the code
+  const note = !q.trim() ? (code ? "" : "Matching airports show as you type.")
     : picks.length ? "" : loaded === false ? "The airport list didn't load. Type a three-letter code instead." : "No airport matches that.";
 
   return (
@@ -167,13 +169,19 @@ function Finder({ name, typed, code, full, onPick, onClose, onAdd, onRemove }) {
         ))}
       </span>
       <span className="finder-note" id="finder-note" aria-live="polite">{note}</span>
-      {/* Before anything is typed: the other things to do with this blank. Buttons of their own, after the search
-          box in the Tab order, and pressed with the pointer they leave the focus where it is, as a match does. */}
-      {!q.trim() && (onAdd || onRemove || full) && (
+      {/* Before anything is typed, where the matches will be: the airport this line holds, laid out as a match is,
+          with its Remove at the end of its own row, as a chosen thing carries its own in every picker; then a row
+          to add another. Buttons of their own, after the search box in the Tab order, and pressed with the pointer
+          they leave the focus where it is, as a match does. */}
+      {!q.trim() && code && (
         <span className="finder-acts" onMouseDown={keepFocus}>
-          {onAdd && <button type="button" className="add" onClick={onAdd}>Add another airport</button>}
-          {onRemove && <button type="button" onClick={onRemove}>{`Remove ${code}`}</button>}
-          {full && <span>{`A search takes up to ${MAX_AIRPORTS} airports on each side.`}</span>}
+          <span className="held">
+            <b>{code}</b>
+            <span>{held ? <>{held.n}<small>{`${held.t}, ${held.k}`}</small></> : loaded && <small>Not in the airport list</small>}</span>
+            {onRemove && <button type="button" className="ghost" aria-label={`Remove ${code}`} onClick={onRemove}>Remove</button>}
+          </span>
+          {onAdd && <button type="button" className="add" onClick={onAdd}><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M7 1.2v11.6M1.2 7h11.6" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" /></svg>Add another airport</button>}
+          {full && <span className="full">{`A search takes up to ${MAX_AIRPORTS} airports on each side.`}</span>}
         </span>
       )}
     </span>

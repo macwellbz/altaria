@@ -4,6 +4,7 @@
 .finder {
   --corner: var(--r-3);
   --inset: var(--s-1);
+  container: finder / inline-size;
   position: absolute;
   top: calc(100% + 8px);
   right: 0;   /* until AirportBlank.jsx sets its left: to the blank's left, where it can't widen the page */
@@ -100,10 +101,12 @@
   display: none;
 }
 
-/* Before anything is typed, what else the blank can do: add another airport, or remove this one. Rows the list's
-   own shape, on the codes' edge, with adding in the accent since it leads. */
+/* Before anything is typed, where the matches will be: the airport this line holds, then a row to add another.
+   Both are laid out on a match's own columns, the code and the plus in the first and the names in the second, so
+   the finder keeps one left edge for its codes and one for its words whatever it shows. */
 .finder-acts {
   display: grid;
+  margin-top: var(--inset);   /* the list's own, so a code here stands where it will as a match */
 }
 
 .finder-acts > * {
@@ -111,15 +114,35 @@
   text-align: start;
 }
 
-/* Under a finger the rows are a finger tall. */
-@media (pointer: coarse) {
-  .finder-acts > * {
-    padding-block: var(--s-3);
-  }
+.finder .held,
+.finder-acts .add {
+  display: grid;
+  grid-template-columns: 3em minmax(0, 1fr);
+  gap: var(--s-2);
 }
 
-.finder-acts button {
-  color: var(--ink);
+/* Remove ends the row of the airport it removes: the site's ghost button at the size of a line in a list, centred
+   on the row and never the thing that sets its height. Its edge stands as far in from the finder's as the words
+   do on the other side. */
+.finder .held {
+  grid-template-columns: 3em minmax(0, 1fr) auto;
+  align-items: center;
+}
+
+.finder .held b {
+  align-self: start;
+}
+
+.finder .held .ghost {
+  height: 2rem;   /* in rem, so it grows with a larger text size */
+  margin-block: -.375rem;
+  padding: 0 var(--s-3);
+}
+
+.finder-acts .add {
+  align-items: center;
+  font-weight: 600;
+  color: var(--accent-text);
   background: none;
   border: 0;
   border-radius: calc(var(--corner) - var(--inset));
@@ -127,20 +150,51 @@
   transition: background-color var(--dur-short) var(--ease);
 }
 
-.finder-acts .add {
-  font-weight: 600;
-  color: var(--accent-text);
+.finder-acts .add svg {
+  width: .875em;
+  height: .875em;
 }
 
-.finder-acts button:hover {
+.finder-acts .add:hover {
   background: var(--wash);
 }
 
-.finder-acts button:active {
+.finder-acts .add:active {
   background: var(--press);
   transition-duration: 60ms;
 }
 
-.finder-acts span {
+/* its ring stays inside the finder */
+.finder-acts .add:focus-visible {
+  outline-offset: -2px;
+}
+
+.finder-acts .full {
   color: var(--ink-2);
+}
+
+/* Under a finger the rows and the button are a finger tall. */
+@media (pointer: coarse) {
+  .finder-acts .add,
+  .finder-acts .full {
+    padding-block: var(--s-3);
+  }
+
+  .finder .held .ghost {
+    height: 2.5rem;
+    margin-block: -.625rem;
+  }
+}
+
+/* Too narrow for a name beside the button (a phone at a large text size): Remove goes under the names. */
+@container finder (width < 18em) {
+  .finder .held {
+    grid-template-columns: 3em minmax(0, 1fr);
+  }
+
+  .finder .held .ghost {
+    grid-column: 2;
+    justify-self: start;
+    margin-block: 0;
+  }
 }

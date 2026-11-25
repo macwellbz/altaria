@@ -516,8 +516,10 @@ with sync_playwright() as p:
     page.keyboard.type("gla")
     page.click("#finder-0 >> text=GLA")
     page.click("#to")
+    assert "Edinburgh Airport" in text(page, "#finder"), "a code's finder names its airport, as airports.json does"
     page.get_by_role("button", name="Remove EDI").click()
-    assert airports(page, "to") == ["GLA"]
+    assert airports(page, "to") == ["GLA"] and page.evaluate("document.activeElement.id") == "to", \
+        "the finder's Remove takes its airport off, and focus lands on the one in its place"
     page.click("#to")
     page.get_by_role("button", name="Add another airport").click()
     page.keyboard.press("Escape")
