@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import Badges from "./Badges.jsx";
 import Flap from "./bits/Flap.jsx";
 import { example, pageStart } from "./example.js";
-import { airlines, dateSpan, day, money, savedOn, time } from "./helpers.js";
+import { airlines, dateSpan, day, either, money, savedOn, time } from "./helpers.js";
 
 // The fare pass: the cheapest row of the newest saved run, drawn as a boarding pass, with the itinerary on top
 // and the price on a stub below a perforation. It only ever shows a price a search really returned.
@@ -51,7 +51,7 @@ function describe(ex) {
   const legs = r.route.split("-");
   const later = (a, b) => (b.slice(0, 10) !== a.slice(0, 10) ? `${day(b, true)}, ` : "");   // a landing on another day names it, as the departure does
   return {
-    asked: a.out && a.ret ? `${a.orig} to ${a.dest}, out ${dateSpan(a.out)}, back ${dateSpan(a.ret)}` : "",
+    asked: a.out && a.ret ? `${either(a.orig)} to ${either(a.dest)}, out ${dateSpan(a.out)}, back ${dateSpan(a.ret)}` : "",
     from: legs[0],
     hop: legs.length > 2 ? `via ${legs.slice(1, -1).join(", ")}` : "nonstop",
     to: legs.at(-1),

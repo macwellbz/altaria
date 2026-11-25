@@ -1,6 +1,7 @@
 import "./setup.js";
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { MAX_AIRPORTS } from "../src/flights.js";
 import { EMPTY, arrive, check, echo, estimate, query } from "../src/sentence.js";
 
 // The fixture's search: Toronto to Vilnius, leaving Dec 26 or 27, back on Jan 10.
@@ -61,4 +62,33 @@ test("the sentence is echoed back in words", () => {
   const limited = echo({ ...trip, stops: "1", "arr-to": "2026-12-31" });
   assert.ok(limited.includes("1 stop") && limited.includes("Thu Dec 31"), limited);
   assert.ok(echo({ ...trip, stops: "0" }).includes("no stops"));
+});
+
+// Scotland's airports and London's, more than one side takes.
+const UK = ["EDI", "GLA", "PIK", "ABZ", "INV", "LHR", "LGW"];
+
+test("each side takes several airports, up to the most a search allows", () => {
+  assert.equal(check({ ...trip, to: "EDI,GLA" }), null);
+  assert.equal(check({ ...trip, from: "YYZ,YTZ", to: UK.slice(0, MAX_AIRPORTS).join(",") }), null);
+  assert.equal(field({ ...trip, to: UK.slice(0, MAX_AIRPORTS + 1).join(",") }), "to");
+  assert.equal(field({ ...trip, from: UK.slice(0, MAX_AIRPORTS + 1).join(","), to: "YYZ" }), "from");
+  assert.equal(field({ ...trip, to: "EDI,Glasgow" }), "from", "each one a three-letter code");
+  assert.equal(field({ ...trip, to: "EDI," }), "from");
+});
+
+test("no airport can be on both sides, and the check names the one that is", () => {
+  const both = { ...trip, from: "YYZ,GLA", to: "EDI,GLA" };
+  assert.equal(field(both), "to");
+  assert.ok(check(both)[1].includes("GLA") && !check(both)[1].includes("EDI"), check(both)[1]);
+});
+
+test("several airports are sent joined by commas, and said with an or", () => {
+  const q = query({ ...trip, from: "YYZ,YTZ", to: "EDI,GLA,PIK" });
+  assert.equal(q.get("from"), "YYZ,YTZ");
+  assert.equal(q.get("to"), "EDI,GLA,PIK");
+  assert.equal(new URLSearchParams(q.toString()).get("to"), "EDI,GLA,PIK", "and survive the trip through a URL");
+  const said = echo({ ...trip, from: "YYZ,YTZ", to: "EDI,GLA,PIK", "arr-to": "2026-12-31" });
+  assert.equal(said.split("YYZ or YTZ").length - 1, 3, `the origin, where it departs and where it returns: ${said}`);
+  assert.equal(said.split("EDI, GLA or PIK").length - 1, 2, `the destination, and where it lands: ${said}`);
+  assert.ok(!echo(trip).includes(" or "), "one airport a side reads as it always did");
 });

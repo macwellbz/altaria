@@ -35,14 +35,14 @@ test("tfs and links match search.py's google_query and picked", { skip: noPython
     ["YYZ", "VNO", "2026-12-28", "2027-01-11", "CAD", 0, segs, []],
     ["BUF", "RIX", "2027-03-01", "2027-03-30", "USD", 2, segs, back],
     ["YYZ", "VNO", "2026-12-26", "2027-01-10", "CAD", 1, long, back],
+    ["YYZ,BUF", "EDI,GLA", "2027-06-08", "2027-06-22", "CAD", null, [], []],
+    ["YYZ", "EDI,GLA,ABZ,INV", "2027-06-08", "2027-06-22", "GBP", 1, segs, back],
   ];
   const want = py(`
 import search
 out = []
-for o, d, a, b, cur, stops, p1, p2 in arg:
-    q = search.google_query(o, d, a, b, cur, stops)
-    q.flight_data[0].MergeFromString(search.picked(p1))
-    q.flight_data[1].MergeFromString(search.picked(p2))
+for args in arg:
+    q = search.google_query(*args)
     out.append([q.to_str(), q.url()])
 print(json.dumps(out))`, cases);
   assert.deepEqual(cases.map((c) => { const q = googleQuery(...c); return [q.tfs, q.url]; }), want);

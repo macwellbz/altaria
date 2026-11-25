@@ -67,6 +67,12 @@ assert r["fields"]["from"] == "" and r["fields"]["to"] == "YYZ" and "YTO isn't a
 assert "from" not in r["missing"], "a dropped value is listed in dropped, not missing"
 assert "same airport" in why(check(**{"from": "YYZ", "to": "yyz"}), "to")
 assert "isn't an airport" in why(check(**{"from": "Toronto"}), "from")
+r = check(**{"from": "yyz, BUF", "to": "EDI,gla,EDI"})
+assert (r["fields"]["from"], r["fields"]["to"]) == ("YYZ,BUF", "EDI,GLA"), "several airports a side, each once"
+assert "same airport" in why(check(**{"from": "YYZ,BUF", "to": "EDI,BUF"}), "to")
+assert "Glasgow isn't an airport" in why(check(**{"to": "EDI,Glasgow"}), "to")
+r = check(**{"to": ",".join(["EDI", "GLA", "ABZ", "INV", "LHR"][:ai.MAX_AIRPORTS + 1])})
+assert r["fields"]["to"] == "" and why(r, "to"), "more airports than a search takes"
 
 assert "before today" in why(check(**{"out-from": "2026-11-15"}), "out-from")
 assert check(**{"out-from": TODAY})["fields"]["out-from"] == TODAY

@@ -3,7 +3,7 @@ import Brief from "./Brief.jsx";
 import Dates from "./Dates.jsx";
 import FareRow from "./FareRow.jsx";
 import { DETAIL } from "./drive.js";
-import { LONG, STOPS, day, grouped, landing, money, waits } from "./helpers.js";
+import { LONG, STOPS, day, either, grouped, landing, money, waits } from "./helpers.js";
 import { scrollToElement } from "./scroll.js";
 
 const TOP = 25;    // rows shown before "Show all"
@@ -48,7 +48,7 @@ export default function Results({ rows, meta, trip, tasks }) {
       {meta.pairs.length > 1 && <Dates rows={rows} pairs={meta.pairs} tasks={tasks} cur={cur} pick={pick} onPick={choose} />}
       <section className="block" ref={fares}>
         <div className="block-h">
-          <h3>{days ? `${count} leaving ${days[0]} and returning ${days[1]}, cheapest first` : `${count} from ${trip.from} to ${trip.to}, cheapest first`}</h3>
+          <h3>{days ? `${count} leaving ${days[0]} and returning ${days[1]}, cheapest first` : `${count} from ${either(trip.from)} to ${either(trip.to)}, cheapest first`}</h3>
           {pick && <button type="button" className="ghost" onClick={() => setPick(null)}>Show every date</button>}
         </div>
         <p className="vh" role="status">{days ? `Showing ${count} leaving ${days[0]} and returning ${days[1]}.` : ""}</p>

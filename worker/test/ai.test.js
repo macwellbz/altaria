@@ -16,6 +16,10 @@ const SAID = [
   { from: "YTO", to: "YYZ", "out-from": "2026-11-16", "out-to": "2026-02-30", "arr-from": "2026-12-01", "arr-to": "2026-11-30", "ret-from": "2027-11-19", stops: "3", currency: "BTC" },
   { from: "YYZ", to: "YYZ", "out-from": "2026-12-01", "ret-from": "2026-11-30", "ret-to": "2026-12-05", stops: 1, currency: ["CAD"] },
   { "out-from": " 2026-12-01 ", "arr-to": "2026-11-20", "ret-to": "next week", stops: "0" },
+  { from: "yyz, BUF", to: "EDI,gla,EDI" },
+  { from: "YYZ", to: "EDI,GLA,ABZ,INV,LHR" },
+  { from: "YYZ,BUF", to: "EDI,BUF" },
+  { from: "YYZ,", to: "EDI,Glasgow" },
 ];
 
 test("the page, the worker and ai.py agree on the sentence's blanks", { skip: noPython }, () => {

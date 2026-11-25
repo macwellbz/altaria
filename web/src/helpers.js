@@ -23,6 +23,8 @@ export const time = (iso) => iso.slice(11, 16);
 export const fmtMin = (m) => (m ? `${Math.floor(m / 60)}h${String(m % 60).padStart(2, "0")}` : "?");
 export const money = (v) => Math.round(v).toLocaleString("en-US");
 export const stops = (n) => (n === 0 ? "nonstop" : n === 1 ? "1 stop" : `${n} stops`);
+// A search's airports on one side, as the page says them: "EDI,GLA,PIK" -> "EDI, GLA or PIK". One code reads as it is.
+export const either = (codes = "") => codes.split(",").join(", ").replace(/, (?=[^,]*$)/, " or ");
 // A date or a range as search.py takes it: "2026-12-26" -> "Dec 26", "2026-12-26..2026-12-28" -> "Dec 26 to 28",
 // "2026-12-30..2027-01-02" -> "Dec 30 to Jan 2".
 export const dateSpan = (spec) => {

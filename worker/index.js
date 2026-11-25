@@ -4,7 +4,7 @@
 // (web/src/drive.js): one call here per Google request. Nothing a visitor searches is stored; the only shared state is two daily counters (Caps).
 import { DurableObject } from "cloudflare:workers";
 import { CURRENCIES } from "../web/src/currencies.js";
-import { arrivalWindow, cheapestReturn, dateRange, googleQuery, isDate, parseGoogle } from "../web/src/flights.js";
+import { MAX_AIRPORTS, arrivalWindow, cheapestReturn, dateRange, googleQuery, isDate, parseGoogle } from "../web/src/flights.js";
 import { Gemini, ProviderError, readTrip } from "./ai.js";
 
 const GOOGLE_PER_DAY = 4000;   // Google requests a day, for everyone: a search takes one a date pair, plus up to 25 returns
@@ -48,7 +48,8 @@ const days = (spec) => {   // dates in "2026-12-28..2026-12-30", or 0 if it runs
 // server.py's parse(): the query checked, with each message fit to show on the page. Throws a RangeError.
 function parse(q) {
   const [orig, dest, currency] = [["from", ""], ["to", ""], ["currency", "CAD"]].map(([k, d]) => (q.get(k) ?? d).trim().toUpperCase());
-  if (![orig, dest, currency].every((c) => CODE.test(c))) throw new RangeError("Airports and currency must be 3-letter codes, like YYZ, VNO and CAD.");
+  if (![...orig.split(","), ...dest.split(","), currency].every((c) => CODE.test(c))) throw new RangeError("Airports and currency must be 3-letter codes, like YYZ, VNO and CAD.");
+  if ([orig.split(","), dest.split(",")].some((c) => c.length > MAX_AIRPORTS || new Set(c).size < c.length)) throw new RangeError(`Name up to ${MAX_AIRPORTS} airports on each side, each one once.`);
   if (!CURRENCIES.some(([c]) => c === currency)) throw new RangeError(`${currency} isn't one of the currencies this site converts.`);
   let spans, window = null;
   try {

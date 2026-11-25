@@ -124,6 +124,11 @@ def airport(page, sel):
     return page.get_attribute(sel, "aria-label")
 
 
+def airports(page, side):
+    """The codes one side of the search holds, from how each is named."""
+    return [b.get_attribute("aria-label").split(": ")[1] for b in page.locator(f".code > button[id^={side}]").all()]
+
+
 def backing(page):   # how far the header's backing has come in, 0 to 1
     return page.evaluate("+getComputedStyle(document.getElementById('nav')).getPropertyValue('--backing')")
 
@@ -480,11 +485,79 @@ with sync_playwright() as p:
     assert text(page, "#estimate").startswith("1 search") and page.locator("#form-error").is_visible()
     page.fill("#ret-to", "2027-01-12")
     assert text(page, "#estimate").startswith("2 searches")
+
+    # several airports on a side: another is added from a code's finder and one is removed, by keyboard and by pointer,
+    # and the search asks the server for them all at once
+    page.fill("#ret-from", "2027-01-10")
+    page.fill("#ret-to", "")
+    page.focus("#from")
+    for code in ("yyz", "edi"):   # the keyboard alone: typing on a blank searches, Enter picks, Tab moves on
+        page.keyboard.type(code)
+        page.wait_for_selector(f"#finder-0 >> text={code.upper()}")
+        page.keyboard.press("Enter")
+        page.keyboard.press("Tab")
+    page.keyboard.press("Shift+Tab")
+    page.keyboard.press("Enter")   # EDI's finder: before anything is typed, Tab goes on to what else it can do
+    page.keyboard.press("Tab")
+    assert page.evaluate("document.activeElement.textContent") == page.get_by_role("button", name="Add another airport").text_content()
+    page.keyboard.press("Enter")
+    page.keyboard.type("gla")
+    page.wait_for_selector("#finder-0 >> text=GLA")
+    page.keyboard.press("Enter")
+    assert airports(page, "to") == ["EDI", "GLA"] and airports(page, "from") == ["YYZ"]
+    assert page.locator("#finder").count() == 0 and page.evaluate("document.activeElement.getAttribute('aria-label')").endswith("GLA"), \
+        "focus lands on the airport just added"
+    page.keyboard.press("Delete")
+    assert airports(page, "to") == ["EDI"] and page.evaluate("document.activeElement.id") == "to", "Delete removes the airport under focus"
+    page.keyboard.press("Delete")
+    assert airports(page, "to") == ["EDI"], "a side keeps its last airport"
+    page.click("#to")   # the pointer
+    page.get_by_role("button", name="Add another airport").click()
+    page.keyboard.type("gla")
+    page.click("#finder-0 >> text=GLA")
+    page.click("#to")
+    page.get_by_role("button", name="Remove EDI").click()
+    assert airports(page, "to") == ["GLA"]
+    page.click("#to")
+    page.get_by_role("button", name="Add another airport").click()
+    page.keyboard.press("Escape")
+    assert airports(page, "to") == ["GLA"], "a line opened for another airport goes when nothing is picked"
+    page.click("#to")
+    page.get_by_role("button", name="Add another airport").click()
+    page.keyboard.type("edi")
+    page.click("#finder-0 >> text=EDI")
+    assert airports(page, "to") == ["GLA", "EDI"]
+    page.click("#swap")
+    assert airports(page, "from") == ["GLA", "EDI"] and airports(page, "to") == ["YYZ"], "the swap turns round both sides whole"
+    assert page.evaluate("document.activeElement.id") == "swap"
+    page.click("#swap")
+    page.click("#go")
+    page.wait_for_selector(".fares-table tbody tr")
+    assert (searched[-1]["orig"], searched[-1]["dest"]) == ("YYZ", "GLA,EDI"), searched[-1]
+    assert (saved[-1]["orig"], saved[-1]["dest"]) == ("YYZ", "GLA,EDI")
+    assert all(c in text(page, ".turn .said") for c in ("YYZ", "GLA", "EDI")), "the search is said back with every airport"
     done(page)
 
     # --- a value the server throws out, and a model that fails: said as given ---
 
     model = Model()
+    # --- a trip with as many airports as a side takes, on a 360px phone: the reading fills them all, and nothing spills ---
+    page = visit(browser, 360, 740)
+    model.said = dict(SAID, **{"from": "YYZ,YTZ,YHM,BUF", "to": "EDI,GLA,PIK,LGW"})
+    page.fill("#trip", TRIP)
+    page.click(".trip-go")
+    page.wait_for_selector(".trip-note[data-tone=done]")
+    assert airports(page, "from") == [f"{c}, {FILLED}" for c in ("YYZ", "YTZ", "YHM", "BUF")]
+    assert airports(page, "to") == [f"{c}, {FILLED}" for c in ("EDI", "GLA", "PIK", "LGW")]
+    rest(page)
+    assert wide(page) == []
+    page.click("#to-2")
+    assert page.get_by_role("button", name="Remove GLA").count() == 1 and page.get_by_role("button", name="Add another airport").count() == 0, \
+        "a full side offers to remove an airport, not to add one"
+    assert wide(page) == []
+    page.keyboard.press("Escape")
+    done(page)
+
     page = visit(browser)
     model.said = dict.fromkeys(ai.FIELDS, "") | {"from": "YTO"}   # Toronto's city-wide code, which no flight leaves from
     page.fill("#trip", "Out of Toronto, any airport")

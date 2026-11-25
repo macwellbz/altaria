@@ -3,7 +3,7 @@ import AirportBlank from "./AirportBlank.jsx";
 import TripBox from "./TripBox.jsx";
 import Flap from "./bits/Flap.jsx";
 import { CURRENCIES } from "./currencies.js";
-import { STOPS, day, localDay } from "./helpers.js";
+import { STOPS, day, either, localDay } from "./helpers.js";
 import { focusOn } from "./scroll.js";
 import { EMPTY, arrive, check, echo, estimate, query } from "./sentence.js";
 import { FIELDS, FILLED, ask, merge, outcome } from "./trip.js";
@@ -12,8 +12,8 @@ const STOP_CHOICES = [["", "Any number of stops"], ["0", "Nonstop only"], ["1", 
 
 /* The composer, one sheet: the trip box, when there's a model to read with, then the search as one sentence at one
    size, with no periods, a clause to a line, and Search where the sentence ends. Every field is a blank on the text's
-   baseline, as wide as what it holds: airports are buttons that open the finder (AirportBlank.jsx), and dates and
-   choices put a native control, invisible, over a readable label. */
+   baseline, as wide as what it holds: airports, one or several a side, are buttons that open the finder
+   (AirportBlank.jsx), and dates and choices put a native control, invisible, over a readable label. */
 export default function SearchForm({ busy, onSearch }) {
   const [fields, setFields] = useState(EMPTY);
   const [marks, setMarks] = useState({});   // blanks the trip box filled, until the person edits them or searches: id -> { was, delay }
@@ -95,19 +95,22 @@ export default function SearchForm({ busy, onSearch }) {
       <TripBox busy={reading} note={note} onRead={read} />
       <form id="form" className="sentence" noValidate aria-labelledby="search-title" onSubmit={submit}>
         {/* The sentence, a clause to a line. Each run of words is one string, spaces included, so it sets exactly as
-            plain HTML would. Where a clause wraps, it turns over whole phrases: "to" stays with its blank and the
-            swap, "each way" with its blank, and a pair of dates stays together as a range. */}
+            plain HTML would. Where a clause wraps, it turns over whole phrases: "from" and "to" stay with their
+            first airport, "or" with the last and the swap, "each way" with its blank, and a pair of dates stays
+            together as a range. */}
         <div className="say">
           <p className="clause">
-            {"Fly me from "}
-            <AirportBlank id="from" name="From" placeholder="YYZ" code={from} mark={marks.from} onPick={(c) => set("from", c)} />
+            {"Fly me "}
+            <AirportBlank id="from" name="From" lead="from " placeholder="YYZ" codes={from} mark={marks.from} onChange={(v) => set("from", v)} />
             {" "}
-            <span className="nw">{"to "}<AirportBlank id="to" name="To" placeholder="VNO" code={to} mark={marks.to} onPick={(c) => set("to", c)} /><button type="button" className="swap" id="swap" aria-label="Swap origin and destination" style={{ rotate: `${turns * 180}deg` }} onClick={() => { setFields((f) => ({ ...f, from: f.to, to: f.from })); unmark("from", "to"); setTurns((n) => n + 1); }}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 9h13l-3.5-3.5M19 15H6l3.5 3.5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg></button></span>
+            <AirportBlank id="to" name="To" lead="to " placeholder="VNO" codes={to} mark={marks.to} onChange={(v) => set("to", v)}>
+              <button type="button" className="swap" id="swap" aria-label="Swap origin and destination" style={{ rotate: `${turns * 180}deg` }} onClick={() => { setFields((f) => ({ ...f, from: f.to, to: f.from })); unmark("from", "to"); setTurns((n) => n + 1); }}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 9h13l-3.5-3.5M19 15H6l3.5 3.5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg></button>
+            </AirportBlank>
             {" "}
             <span className="keep">{"with "}<span className="tail"><PickBlank id="stops" label="Stops on each leg, outbound and return" value={val("stops")} choices={STOP_CHOICES} shown={(v) => STOPS[v]} mark={marks.stops} onChange={set} />{" each way"}</span></span>
           </p>
           <p className="clause">
-            {`Depart${from ? ` from ${from}` : ""} between `}
+            {`Depart${from ? ` from ${either(from)}` : ""} between `}
             <span className="range">
               {date("out-from", "Depart between: first date", true)}
               {" "}
@@ -115,7 +118,7 @@ export default function SearchForm({ busy, onSearch }) {
             </span>
           </p>
           <p className="clause">
-            {`Land${to ? ` in ${to}` : ""} between `}
+            {`Land${to ? ` in ${either(to)}` : ""} between `}
             <span className="range">
               {date("arr-from", "Land at the destination, outbound flight, local time: no earlier than (optional)")}
               {" "}
@@ -123,7 +126,7 @@ export default function SearchForm({ busy, onSearch }) {
             </span>
           </p>
           <p className="clause">
-            {`Return${from ? ` to ${from}` : ""} between `}
+            {`Return${from ? ` to ${either(from)}` : ""} between `}
             <span className="range">
               {date("ret-from", "Return between: first date", true)}
               {" "}

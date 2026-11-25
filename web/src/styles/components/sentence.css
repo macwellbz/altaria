@@ -107,8 +107,9 @@
   outline: none;
 }
 
-/* Airports: the blank is a button that only ever shows the chosen code; the finder below it takes the
-   typing (AirportBlank.jsx). */
+/* Airports: each code is a button on a line of its own, and only ever shows the chosen code; the finder below it
+   takes the typing (AirportBlank.jsx). A side with several reads "EDI, GLA or PIK", the words between in the
+   sentence's own type. */
 .code > button {
   margin: 0;
   padding: 0;
@@ -118,6 +119,14 @@
   border: 0;
   cursor: pointer;
   outline: none;
+}
+
+/* Another airport being added: an open line a code wide, there for as long as its finder is. The width is an empty
+   box standing on the baseline, so the line sets as it does with a code on it. */
+.code.another > button::before {
+  content: "";
+  display: inline-block;
+  width: 2em;
 }
 
 /* Dates and choices: a readable label on show, and the native control over it, invisible, taking the

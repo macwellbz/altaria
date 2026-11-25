@@ -16,8 +16,11 @@ from concurrent.futures import ThreadPoolExecutor
 from datetime import date, datetime, timedelta
 from pathlib import Path
 
+from fast_flights import Query
+
 AT_ONCE = 5   # Google requests in flight at once: date pairs, then returns
 DETAIL = 25   # the cheapest fares whose return flights are looked up; the rest keep only their return date
+MAX_AIRPORTS = 4   # airports on each side of a site search or a trip reading, joined by commas: "EDI,GLA"
 
 
 def date_range(spec):
@@ -53,7 +56,7 @@ def matrix(orig, dest, out, ret, max_stops=None):
         i, j = body.index("{"), body.rindex("}") + 1
         q = json.loads(body[i:j])
         for sl, (o, d, day) in zip(q["inputs"]["slices"], [(orig, dest, out), (dest, orig, ret)]):
-            sl.update(origins=[o], destinations=[d], date=day, dateModifier={"minus": 0, "plus": 0})
+            sl.update(origins=o.split(","), destinations=d.split(","), date=day, dateModifier={"minus": 0, "plus": 0})
         q["inputs"]["page"]["size"] = 100
         if max_stops is not None:
             q["inputs"]["maxStopCount"] = max_stops  # Matrix's own "Up to N stops", applied to each leg
@@ -65,10 +68,10 @@ def matrix(orig, dest, out, ret, max_stops=None):
         page.on("response", lambda r: "alkalimatrix-pa" in r.url
                 and "/v1/search" in (r.request.post_data or "") and got.append(r.text()))
         page.goto("https://matrix.itasoftware.com/search")
-        boxes = page.get_by_role("combobox", name="Add airport")
+        boxes = page.get_by_placeholder("Add airport")   # by placeholder: the fields lost their accessible name (Nov 2026)
         for i, code in enumerate([orig, dest]):
             boxes.nth(i).click()
-            boxes.nth(i).press_sequentially(code, delay=80)
+            boxes.nth(i).press_sequentially(code[:3], delay=80)   # the first airport; rewrite sends them all
             page.wait_for_timeout(1500)
             page.keyboard.press("Enter")
         mdy = lambda d: f"{d[5:7]}/{d[8:10]}/{d[:4]}"
@@ -117,14 +120,47 @@ def norm_matrix(d):
 
 # --- Google Flights via fast-flights (baseline to compare against) ---
 
-def google_query(orig, dest, out, ret, currency, max_stops=None):
-    """One date pair's Google Flights query. max_stops applies to each leg (0 = nonstop only).
-    Its .url() is also every result's link: Matrix can't sell tickets and its result links expire."""
-    from fast_flights import FlightQuery, create_query
-    return create_query(
-        flights=[FlightQuery(date=out, from_airport=orig, to_airport=dest),
-                 FlightQuery(date=ret, from_airport=dest, to_airport=orig)],
-        trip="round-trip", currency=currency, language="en", max_stops=max_stops)
+class Tfs(Query):
+    """A fast-flights query that sends these tfs bytes as they are."""
+
+    def __init__(self, tfs, currency):
+        super().__init__(flight_data=[], seat=None, trip=None, passengers=[], language="en", currency=currency)
+        self.tfs = tfs
+
+    def to_bytes(self):
+        return self.tfs
+
+
+def varint(n):
+    out = bytearray()
+    while n > 127:
+        out.append(n & 127 | 128)
+        n >>= 7
+    return bytes(out + bytes([n]))
+
+
+def message(n, b):
+    """Protobuf field n holding bytes: a string or a message."""
+    return varint(n << 3 | 2) + varint(len(b)) + b
+
+
+def text(n, s):
+    return message(n, s.encode())
+
+
+def google_query(orig, dest, out, ret, currency, max_stops=None, pick_out=(), pick_ret=()):
+    """One date pair's Google Flights query, byte for byte as fast-flights builds it, except that orig and dest may
+    each be several airports joined by commas ("EDI,GLA"): Google takes a repeated airport field, and fast-flights
+    has one airport a leg. max_stops applies to each leg (0 = nonstop only). pick_out and pick_ret are segments to
+    mark chosen on each leg. Its .url() is also every result's link: Matrix can't sell tickets and its result
+    links expire."""
+    def leg(day, a, b, chosen):   # FlightData: date (2), max_stops (5), from (13) and to (14) as Airport { airport (2) }
+        return (text(2, day) + (b"" if max_stops is None else varint(5 << 3) + varint(max_stops))
+                + b"".join(message(13, text(2, c)) for c in a.split(","))
+                + b"".join(message(14, text(2, c)) for c in b.split(",")) + picked(chosen))
+    # Info: a leg each (3), passengers (8, packed: one adult), seat (9: economy), trip (19: round trip)
+    return Tfs(message(3, leg(out, orig, dest, pick_out)) + message(3, leg(ret, dest, orig, pick_ret))
+               + message(8, varint(1)) + varint(9 << 3) + varint(1) + varint(19 << 3) + varint(1), currency)
 
 
 def fetch_google(q, currency):
@@ -145,26 +181,23 @@ def google(orig, dest, out, ret, currency, max_stops=None):
 
 def picked(segments):
     """Protobuf for 'these flights are chosen' on one leg: FlightData field 4, which Google's own URLs
-    carry after a click but fast-flights doesn't model. Every length here fits in one byte."""
-    f = lambda n, s: bytes([n << 3 | 2, len(s)]) + s
-    return b"".join(f(4, b"".join(f(n, v.encode()) for n, v in zip((1, 2, 3, 5, 6), (
+    carry after a click but fast-flights doesn't model."""
+    return b"".join(message(4, b"".join(text(n, v) for n, v in zip((1, 2, 3, 5, 6), (
         g["from"], g["depart"][:10], g["to"], g["flight"][:2], g["flight"][2:])))) for g in segments)
 
 
 def add_return(r, orig, dest, out, ret, currency, max_stops=None):
     """Google details the return only once an outbound is chosen, so choose this row's outbound and take
-    the cheapest return, then the shortest. Its price is the whole trip's. A failed lookup leaves the
-    return blank, never guessed."""
-    q = google_query(orig, dest, out, ret, currency, max_stops)
-    q.flight_data[0].MergeFromString(picked(r["segments"]))
+    the cheapest return, then the shortest. Its price is the whole trip's. The return leg keeps every airport
+    the search had, as the outbound's price did. A failed lookup leaves the return blank, never guessed."""
     try:
-        backs = fetch_google(q, currency)
+        backs = fetch_google(google_query(orig, dest, out, ret, currency, max_stops, r["segments"]), currency)
     except Exception:
         return
     if backs:
         b = min(backs, key=lambda x: (x["price"], x["duration"] or 0))
-        q.flight_data[1].MergeFromString(picked(b["segments"]))   # both legs chosen: the link opens this trip
-        r.update(link=q.url(), price=b["price"], return_depart=b["depart"], return_arrive=b["arrive"], return_route=b["route"],
+        link = google_query(orig, dest, out, ret, currency, max_stops, r["segments"], b["segments"]).url()   # opens this trip
+        r.update(link=link, price=b["price"], return_depart=b["depart"], return_arrive=b["arrive"], return_route=b["route"],
                  return_flights=b["flights"], return_stops=b["stops"], return_duration=b["duration"],
                  return_segments=b["segments"])
 
@@ -352,8 +385,8 @@ def save(args, rows):
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--from", dest="orig", required=True, help="origin IATA, e.g. YYZ")
-    ap.add_argument("--to", dest="dest", required=True, help="destination IATA, e.g. VNO")
+    ap.add_argument("--from", dest="orig", required=True, help="origin IATA, e.g. YYZ, or several joined by commas")
+    ap.add_argument("--to", dest="dest", required=True, help="destination IATA, e.g. VNO, or several: EDI,GLA")
     ap.add_argument("--out", required=True, help="outbound date or range A..B")
     ap.add_argument("--ret", required=True, help="return date or range A..B")
     ap.add_argument("--arrive-between", help="keep outbound arrivals within local dates A,B (inclusive; "

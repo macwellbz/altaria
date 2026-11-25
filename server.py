@@ -30,8 +30,10 @@ one_ai = threading.Lock()   # each trip read spends the user's model quota or ma
 def parse(q):
     """Validate the query string; a ValueError carries a message fit to show on the page."""
     orig, dest, currency = (q.get(k, d).upper() for k, d in (("from", ""), ("to", ""), ("currency", "CAD")))
-    if not all(CODE.fullmatch(c) for c in (orig, dest, currency)):
+    if not all(CODE.fullmatch(c) for c in (*orig.split(","), *dest.split(","), currency)):
         raise ValueError("Airports and currency must be 3-letter codes, like YYZ, VNO and CAD.")
+    if any(len(c) > search.MAX_AIRPORTS or len(set(c)) < len(c) for c in (orig.split(","), dest.split(","))):
+        raise ValueError(f"Name up to {search.MAX_AIRPORTS} airports on each side, each one once.")
     try:
         spans = [days(q.get(k, "")) for k in ("out", "ret")]
         window = search.arrival_window(q["arrive"]) if q.get("arrive", "").strip(",") else None

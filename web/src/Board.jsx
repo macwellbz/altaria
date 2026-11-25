@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import Flap from "./bits/Flap.jsx";
 import { example } from "./example.js";
-import { dateSpan, fmtMin, money, remark, savedOn } from "./helpers.js";
+import { dateSpan, either, fmtMin, money, remark, savedOn } from "./helpers.js";
 
 // The ranking board: up to five fares from the newest saved search, ranked the way every search here is, by
 // price and then by the outbound flight's length (search.py's own order, which /api/example keeps). When the
@@ -38,7 +38,7 @@ export default function Board() {
       <table>
       <caption>
         <span className="board-title">{`${which} from your search on ${savedOn(file)}`}</span>
-        <span className="board-trip">{`${a.orig} to ${a.dest}, out ${dateSpan(a.out)}, back ${dateSpan(a.ret)}, prices in ${cur}`}</span>
+        <span className="board-trip">{`${either(a.orig)} to ${either(a.dest)}, out ${dateSpan(a.out)}, back ${dateSpan(a.ret)}, prices in ${cur}`}</span>
       </caption>
       <thead>
         <tr><th scope="col" className="num" aria-sort="ascending">Price</th><th scope="col" className="num">Outbound</th><th scope="col" className="num">Return</th><th scope="col">Route</th><th scope="col">Airline</th><th scope="col"><span className="vh">Remarks</span></th></tr>

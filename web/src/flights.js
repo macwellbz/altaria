@@ -3,6 +3,8 @@
 // Google request at a time (drive.js). Every function keeps search.py's name, in camelCase, and its result shapes.
 // worker/test/flights.test.js checks it against the Python.
 
+export const MAX_AIRPORTS = 4;   // airports on each side of a search or a trip reading, as search.py's
+
 // "2026-12-28..2026-12-30" -> ["2026-12-28", "2026-12-29", "2026-12-30"]; a single date also works.
 export function dateRange(spec) {
   const [start, end = start] = spec.split("..");
@@ -25,9 +27,11 @@ const str = (n, s) => field(n, [...text.encode(s)]);
 const int = (n, v) => [...varint(n << 3), ...varint(v)];
 
 // One leg, FlightData: date (2), max_stops (5) when set, from (13) and to (14) as Airport { airport (2) }, then any
-// chosen flights (picked), which protobuf keeps after the fields it knows.
+// chosen flights (picked), which protobuf keeps after the fields it knows. from and to may each be several airports
+// joined by commas ("EDI,GLA"): Google takes the airport fields repeated, and one request covers them all.
+const airports = (n, codes) => codes.split(",").flatMap((c) => field(n, str(2, c)));
 const leg = (date, from, to, maxStops, chosen = []) =>
-  [...str(2, date), ...(maxStops == null ? [] : int(5, maxStops)), ...field(13, str(2, from)), ...field(14, str(2, to)), ...chosen];
+  [...str(2, date), ...(maxStops == null ? [] : int(5, maxStops)), ...airports(13, from), ...airports(14, to), ...chosen];
 
 // Protobuf for 'these flights are chosen' on one leg: FlightData field 4, which Google's own URLs carry after a click
 // but fast-flights doesn't model. Each segment is { from, to, depart, flight }.

@@ -1,7 +1,9 @@
 // The search sentence apart from the page (SearchForm.jsx draws it): what it checks before a search, the query it
 // sends to /api/search, how it's echoed in the thread, and what the search will take. Fields are keyed by the
-// form's own ids, and every value is a string, "" when the blank is empty.
-import { STOPS, day, landing } from "./helpers.js";
+// form's own ids, and every value is a string, "" when the blank is empty. An airport blank holds one code or several
+// joined by commas, "EDI,GLA", which is also how /api/search takes them.
+import { MAX_AIRPORTS } from "./flights.js";
+import { STOPS, day, either, landing } from "./helpers.js";
 
 export const EMPTY = { from: "", to: "", stops: "", "out-from": "", "out-to": "", "arr-from": "", "arr-to": "", "ret-from": "", "ret-to": "", currency: "CAD" };
 // Seconds a search takes: date pairs go five at a time, about 2.5s a round with the pause, then the cheapest fares'
@@ -22,9 +24,13 @@ export function estimate(f) {
 
 // What's wrong before a search can run, as [the field to fix, what to say], or null.
 export function check(f) {
-  const code = /^[A-Z]{3}$/;
-  if (!code.test(f.from) || !code.test(f.to)) return ["from", "Pick both airports from the suggestions, or type three-letter codes like YYZ and VNO."];
-  if (f.from === f.to) return ["to", "Origin and destination are the same airport."];
+  const from = f.from.split(","), to = f.to.split(",");
+  if (![...from, ...to].every((c) => /^[A-Z]{3}$/.test(c))) return ["from", "Pick both airports from the suggestions, or type three-letter codes like YYZ and VNO."];
+  for (const [id, side, what] of [["from", from, "origin"], ["to", to, "destination"]]) {
+    if (side.length > MAX_AIRPORTS) return [id, `A search takes up to ${MAX_AIRPORTS} airports on each side, and the ${what} has ${side.length}. Remove ${side.length - MAX_AIRPORTS}.`];
+  }
+  const both = to.find((c) => from.includes(c));
+  if (both) return ["to", `${both} is both an origin and a destination. Change it on one side.`];
   if (!f["out-from"]) return ["out-from", "Choose the first day you could depart."];
   if (!f["ret-from"]) return ["ret-from", "Choose the first day you could return."];
   if (f["out-to"] && f["out-to"] < f["out-from"]) return ["out-to", "The second departure date is before the first."];
@@ -52,9 +58,10 @@ export function query(f) {
 // The sentence echoed back as the person's turn in the thread.
 export function echo(f) {
   const when = (a, b) => (b && b !== a ? `between ${day(a, true)} and ${day(b, true)}` : `on ${day(a, true)}`);
-  return `Fly me from ${f.from} to ${f.to}${f.stops ? ` with ${STOPS[f.stops]} each way` : ""}.` +
-    ` Depart from ${f.from} ${when(f["out-from"], f["out-to"])}.` +
-    (arrive(f) ? ` Land in ${f.to} ${landing(arrive(f), true)}.` : "") +
-    ` Return to ${f.from} ${when(f["ret-from"], f["ret-to"])}.` +
+  const from = either(f.from), to = either(f.to);
+  return `Fly me from ${from} to ${to}${f.stops ? ` with ${STOPS[f.stops]} each way` : ""}.` +
+    ` Depart from ${from} ${when(f["out-from"], f["out-to"])}.` +
+    (arrive(f) ? ` Land in ${to} ${landing(arrive(f), true)}.` : "") +
+    ` Return to ${from} ${when(f["ret-from"], f["ret-to"])}.` +
     ` Show prices in ${f.currency}.`;
 }

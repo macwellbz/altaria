@@ -22,7 +22,7 @@ Run `.venv/bin/python server.py`, then open http://localhost:8000. It listens on
 - **Stack:** React and Vite in plain JavaScript (JSX). The Vite project is `web/`, components are in `web/src/` with their logic in plain modules (`helpers.js`, `sentence.js`, `trip.js`), and `npm run build` writes `web/dist/`, which is what `server.py` serves.
 - **Google Flights only:** the site always searches Google, because Matrix takes about 30s per date pair. `server.py` still accepts `sources=matrix`, and the CLI keeps both.
 - **Search size:** a site search takes up to 100 date pairs (`MAX_SEARCHES` in `server.py`, `MAX_PAIRS` in `worker/index.js`); the CLI has no cap. When a search covers more than one date pair, the page shows the cheapest fare for each (`web/src/Dates.jsx`).
-- **Airports:** the airport fields open a finder that searches `web/public/airports.json` (OurAirports, public domain) by city, name or code. A code missing from the list can still be typed.
+- **Airports:** the airport fields open a finder that searches `web/public/airports.json` (OurAirports, public domain) by city, name or code. A code missing from the list can still be typed. Each side takes up to 4 airports (`MAX_AIRPORTS` in `search.py` and `web/src/flights.js`), sent joined by commas (`to=EDI,GLA`). One Google request covers them all, and a return lookup keeps every airport, as the outbound's price did.
 - **Endpoints:** `server.py` serves `web/dist/` and streams `/api/search` runs as Server-Sent Events. Each site search is saved to `results/` like a CLI run, and `/api/example` feeds the hero's fare pass and the ranking board from the newest one (`row`, plus up to five `rows`).
 - **Trip reader:** `GET /api/ai` says whether a model is set up, without calling it. `POST /api/ai/trip` with `{"text", "today"}` has the model fill the form's blanks from a trip in plain English; `ai.py` checks each value against `airports.json`, the form's `CURRENCIES` (read from `web/src/`) and the calendar, and the model never sees a fare. Only this page or `npm run dev` may post, one call at a time.
 - **Trip box:** with a model available, a field above the search sentence takes the trip in plain words, fills the blanks the answer settles (marked until edited or searched), says what it filled and what's still open, and never searches by itself. With no model, the box isn't on the page.
@@ -39,8 +39,8 @@ Run `.venv/bin/python server.py`, then open http://localhost:8000. It listens on
 The user describes a trip in plain English. Claude turns it into one or more `search.py` calls and
 reports what comes back.
 
-- Expand what the user said: date windows (`--out A..B`), nearby airports (run separate searches,
-  e.g. YYZ and BUF, or VNO and KUN/RIX), arrival windows that cross midnight (`--arrive-between`),
+- Expand what the user said: date windows (`--out A..B`), nearby airports (one search takes several
+  a side, joined by commas: `--from YYZ,BUF`, `--to VNO,KUN,RIX`), arrival windows that cross midnight (`--arrive-between`),
   and a cap on stops per leg (`--max-stops 0|1|2`).
 - **Only cite prices and flights that appear in `search.py` output.** Never estimate or remember a fare.
 - Ideas that come from web search (split tickets on Ryanair or Wizz via WAW/RIX/KUN, positioning

@@ -40,15 +40,15 @@ assert date_range("2026-12-30..2027-01-01") == ["2026-12-30", "2026-12-31", "202
 PAGE = f"""<script class="ds:1">AF_initDataCallback({{key: 'ds:1', hash: '9', data:{json.dumps([None, None, g["2"], g["3"]])}, sideChannel: {{}}}});</script>"""
 
 
-def search_with_stub(pairs, window=None):
-    plain = {search.google_query("YYZ", "VNO", o, r, "CAD").to_str() for o, r in pairs}
+def search_with_stub(pairs, window=None, dest="VNO"):
+    plain = {search.google_query("YYZ", dest, o, r, "CAD").to_str() for o, r in pairs}
     asked = {"pairs": 0, "returns": 0}
 
     def fetch(q):
         asked["pairs" if q.to_str() in plain else "returns"] += 1
         return PAGE
     fast_flights.fetch_flights_html = fetch
-    return search.run_search("YYZ", "VNO", pairs, ["google"], "CAD", window), asked
+    return search.run_search("YYZ", dest, pairs, ["google"], "CAD", window), asked
 
 
 pairs = [(f"2027-01-{d:02d}", "2027-02-01") for d in range(1, 16)]
@@ -62,6 +62,9 @@ assert all(r["link"] == search.google_query("YYZ", "VNO", r["search_out"], r["se
 
 found, asked = search_with_stub(pairs[:3], window=("2026-12-30", "2026-12-30"))   # only KLM lands on Dec 30
 assert [r["flights"] for r in found] == ["KL692 BT962"] * 3 and asked["returns"] == 3, "a fare outside the window is never looked up"
+
+found, asked = search_with_stub(pairs[:2], dest="EDI,GLA")
+assert asked == {"pairs": 2, "returns": 4}, "one request a date pair covers every airport"
 
 tries = {}   # a page that comes back without results is asked once more, for a date pair and a return alike
 

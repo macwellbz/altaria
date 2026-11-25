@@ -99,3 +99,48 @@
 .finder-note:empty {
   display: none;
 }
+
+/* Before anything is typed, what else the blank can do: add another airport, or remove this one. Rows the list's
+   own shape, on the codes' edge, with adding in the accent since it leads. */
+.finder-acts {
+  display: grid;
+}
+
+.finder-acts > * {
+  padding: var(--s-2) var(--s-3);
+  text-align: start;
+}
+
+/* Under a finger the rows are a finger tall. */
+@media (pointer: coarse) {
+  .finder-acts > * {
+    padding-block: var(--s-3);
+  }
+}
+
+.finder-acts button {
+  color: var(--ink);
+  background: none;
+  border: 0;
+  border-radius: calc(var(--corner) - var(--inset));
+  cursor: pointer;
+  transition: background-color var(--dur-short) var(--ease);
+}
+
+.finder-acts .add {
+  font-weight: 600;
+  color: var(--accent-text);
+}
+
+.finder-acts button:hover {
+  background: var(--wash);
+}
+
+.finder-acts button:active {
+  background: var(--press);
+  transition-duration: 60ms;
+}
+
+.finder-acts span {
+  color: var(--ink-2);
+}
