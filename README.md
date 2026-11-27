@@ -9,6 +9,7 @@ Try it at [altaria.macwell.workers.dev](https://altaria.macwell.workers.dev), or
 ## What it does
 
 - **Searches a window of dates, not one date.** Three possible departure days and three return days are nine searches, each run live against Google Flights, and a search can cover up to 100. A table then shows the cheapest fare for each day out and back, so the cheap days stand out. The command line can also search ITA Matrix, the fare engine airlines price with.
+- **Searches nearby airports together.** Each end of a trip takes up to four airports, such as Edinburgh or Glasgow, and costs no more than one, because Google prices them all in the same request.
 - **Ranks by price, then flight time.** There is no paid slot and no affiliate link. A tie on price goes to the shorter trip.
 - **Shows the whole trip.** Each fare lists every flight and layover both ways, and marks layovers over six hours.
 - **Takes a trip in plain English.** With a model set up, "Toronto to Vilnius for New Year's, back mid January, one stop at most" fills in the search for you to check. The model never sees or produces a price.
@@ -49,6 +50,8 @@ From the command line, with both sources:
   --ret 2027-01-10..2027-01-15 --arrive-between 2026-12-30,2026-12-31 --source both
 ```
 
+Several airports at one end go in the same search, joined by commas: `--to EDI,GLA`.
+
 ## How it works
 
 ```
@@ -79,7 +82,7 @@ The direction is calm, exact and candid. The page belongs to two places: the win
 - Everything works by keyboard with a visible focus ring, text pairs meet AA contrast, and the layout holds at a 24px default text size and at 360px wide.
 - `prefers-reduced-motion` gets a still composition and native scrolling. `prefers-reduced-transparency` and `prefers-contrast: more` get a solid header.
 - Measured in headless Chromium on the development Mac: layout shift from the font swap in the hero is 0.0000 at 1440px and 390px, and no frame takes longer than 25ms while scrolling the hero with the sky running.
-- The main bundle is 92.4 kB gzipped and the stylesheet 19.3 kB. The sky's chunk (143 kB gzipped) is fetched after first paint.
+- The main bundle is 96.0 kB gzipped and the stylesheet 23.4 kB. The sky's chunk (143 kB gzipped) is fetched after first paint.
 
 ## The trip reader
 
@@ -99,7 +102,7 @@ The public site reads trips with Gemini instead, under a daily cap.
 ```
 .venv/bin/python tests/test_search.py     parsers and filters, on real saved responses
 .venv/bin/python tests/test_ai.py         field checks, both providers against stand-ins, the endpoints and their rejections
-cd web && npm test && cd ..               33 unit tests on the page's plain modules, with Node's own runner
+cd web && npm test && cd ..               44 unit tests on the page's plain modules, with Node's own runner
 .venv/bin/python tests/test_site.py       the built site in headless Chromium, with a replayed run and a stand-in model
 cd worker && npm test && cd ..            the Cloudflare version's search and trip reader, checked against the Python
 ```
